@@ -1,0 +1,1 @@
+<?php 	require_once("../Modele/DB.php");	require_once("../Modele/ObjetCollector.php");	$tday = date("d-m-Y");	$today = date("Y-m-d H:i:s");	$timestamp = strtotime($today);	$todayj =date('d-m-Y', $timestamp);	$todayh =date('H:i', $timestamp);	$today = "$today: ";?>Imprimee le <?php echo $todayj; ?> a <?php echo $todayh; ?>

@@ -1,0 +1,1 @@
+<?php  require_once("../Modele/DB.php"); require_once("../Modele/ObjetCollector.php");?><img style="width:700px; height:90px;" alt="logo CM" src="../images/Zumi_Logo.png" />	

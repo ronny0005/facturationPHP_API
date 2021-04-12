@@ -1,0 +1,68 @@
+Header set Access-Control-Allow-Origin "*"
+
+Options +FollowSymlinks
+RewriteEngine on
+
+RewriteRule ^accueil$  indexMVC.php?module=1&action=1 [L]
+RewriteRule ^connexion$  index.php [L]
+RewriteRule ^connexion-([0-9]+)$  index.php?code=$1 [L]
+RewriteRule ^logout$  index.php?action=logout [L]
+
+RewriteRule ^listeFacture-([A-z]+)$  indexMVC.php?module=2&action=1&type=$1 [L]
+RewriteRule ^Document-Facture-([A-z]+)$  indexMVC.php?module=2&action=2&type=$1 [L]
+RewriteRule ^Document-Mvt-([A-z]+)$  indexMVC.php?module=4&action=1&type=$1 [L]
+RewriteRule ^Document-Mvttrft-([A-z]+)$  indexMVC.php?module=4&action=2&type=$1 [L]
+
+
+RewriteRule ^listeArticle$  indexMVC.php?module=3&action=3 [L]
+RewriteRule ^listeArticle-([0-z]+)$  indexMVC.php?module=3&action=3&statut=$1 [L]
+RewriteRule ^listeArticle-([0-z]+)-([0-z]+)$  indexMVC.php?module=3&action=3&acte=$1&AR_Ref=$2 [L]
+RewriteRule ^listeArticle-([0-z]+)-([0-z]+)$  indexMVC.php?module=3&action=3&statut=$1&AR_Ref=$2 [L]
+RewriteRule ^listeArticle-([0-z]+)-([0-z]+)-([0-z]+)$  indexMVC.php?module=3&action=3&statut=$1&acte=$2&AR_Ref=$3 [L]
+RewriteRule ^listeArticle-(-?[0-9]+)-(-?[0-9]+)-(-?[0-9]+)$  indexMVC.php?module=3&action=3&sommeil=$1&stockFlag=$2&prixFlag=$3 [L]
+
+RewriteRule ^listeFamille-([0-z]+)$  indexMVC.php?module=3&action=6&statut=$1 [L]
+RewriteRule ^listeFamille-([0-z]+)-([0-z]+)$  indexMVC.php?module=3&action=6&statut=$1&FA_CodeFamille=$2 [L]
+RewriteRule ^supprFamille-([0-z]+)$  Traitement/Creation.php?acte=suppr_famille&FA_CodeFamille=$1 [L]
+
+RewriteRule ^listeBanque$  indexMVC.php?module=9&action=9 [L]
+
+
+RewriteRule ^ficheFamille$ indexMVC.php?module=3&action=7 [L]
+RewriteRule ^ficheFamille-([0-z]+)$ indexMVC.php?module=3&action=7&FA_CodeFamille=$1 [L]
+
+RewriteRule ^ficheArticle$  indexMVC.php?module=3&action=1 [L]
+RewriteRule ^ficheArticle-([0-z]+)$  indexMVC.php?module=3&action=1&AR_Ref=$1 [L]
+RewriteRule ^ficheArticle-([0-z]+)-([0-z]+)$  indexMVC.php?module=3&action=1&AR_Ref=$1&window=$2 [L]
+
+RewriteRule ^listeTiers$  indexMVC.php?module=3&action=4 [L]
+RewriteRule ^listeTiers-([0-z]+)-([0-z]+)$  indexMVC.php?module=3&action=4&statut=$1&type=$2 [L]
+RewriteRule ^listeTiers-([0-z]+)-([0-z]+)-([0-z]+)$  indexMVC.php?module=3&action=4&statut=$1&type=$2&CT_Num=$3 [L]
+RewriteRule ^listeTiers-([0-z]+)-([0-z]+)-([0-z]+)-([0-z]+)$  indexMVC.php?module=3&action=4&statut=$1&type=$2&CT_Sommeil=$3&CT_Num=$4 [L]
+
+RewriteRule ^FicheTiers-([0-z]+)$  indexMVC.php?module=3&action=2&type=$1 [L]
+RewriteRule ^FicheTiers-([0-z]+)-([0-z]+)$  indexMVC.php?module=3&action=2&type=$1&CT_Num=$2 [L]
+
+RewriteRule ^Document-Facture-([0-9]+)-([A-z]+)$  indexMVC.php?module=2&action=2&cbMarq=$1&type=$2 [L]
+RewriteRule ^Document-Mvt-([0-9]+)-([A-z]+)$  indexMVC.php?module=4&action=1&cbMarq=$1&type=$2 [L]
+RewriteRule ^Document-Mvttrft-([0-9]+)-([A-z]+)$  indexMVC.php?module=4&action=2&cbMarq=$1&type=$2 [L]
+
+RewriteRule ^Reglement-([0-z]+)$  indexMVC.php?module=1&action=2&typeRegl=$1 [L]
+RewriteRule ^Reglement-([0-z]+)-([0-z]+)-([0-z]+)-([0-z]+)-([0-z]+)-([0-z]+)-([0-z]+)-([0-z]+)-([0-z]+)-([0-z]+)$  indexMVC.php?module=1&action=2&typeRegl=$1&caissier=$2&client=$3&dateReglementEntete_deb=$4&dateReglementEntete_fin=$5&mode_reglement=$6&journal=$7&caisse=$8&type=$9&cloture=$10 [L]
+
+
+RewriteRule ^mvtCaisse$  indexMVC.php?module=6&action=1 [L]
+RewriteRule ^mvtBanque$  indexMVC.php?module=6&action=2 [L]
+RewriteRule ^clotureDeCaisse$ indexMVC.php?module=9&action=18 [L]
+RewriteRule ^clotureComptable$ indexMVC.php?module=9&action=20 [L]
+RewriteRule ^majAnalytique$ indexMVC.php?module=9&action=17 [L]
+RewriteRule ^majComptable$ indexMVC.php?module=9&action=16 [L]
+RewriteRule ^Interrogation-([0-z]+)$ indexMVC.php?module=9&action=19&type=$1 [L]
+
+
+RewriteRule ^impressionMajAnalytique-([0-z]+)-([0-z]+)-([0-z]+)-([0-z]+)$ etatspdf/miseAJourAnalytique.php?dateDebut=$1&dateFin=$2&statut=$3&caNum=$4 [L]
+
+
+
+
+

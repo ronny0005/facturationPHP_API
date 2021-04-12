@@ -1,0 +1,91 @@
+/*******************
+*   CSS GENERAL    *
+*******************/
+
+body {
+  background:#01DF01;
+  padding-bottom:160px;
+}
+
+h1 {
+  margin-top:7%;
+  text-align:center;
+  width:100%;
+  color:#333;
+  font:bold 32px Arial;
+}
+
+h2 {
+  margin:40px auto 0 auto;
+  font:bold 14px Verdana;
+  text-align:center;
+}
+
+h2 a {
+  color:#cc0000;
+  text-decoration:none;
+}
+
+h2 a:hover {
+  text-decoration:undelrine;
+}
+
+h4 {
+	text-align:center;
+	font:12px Verdana;
+}
+
+h4 a {
+	color:#533cff;
+}
+
+article {
+  margin:auto;
+  margin-bottom:30px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  background:#fff;
+  font-family: 'Glass Antiqua', cursive;
+  font-size:20px;
+  width:80%;
+  padding:25px;
+}
+
+.presentation {
+  margin:auto;
+  margin-top:60px;
+  margin-bottom:50px;
+  font:bold 14px Arial;
+  color:#3662a0;
+  width:80%;
+  text-align:left;
+}
+
+footer {
+  font:11px Arial;
+  margin-top:2%;
+  text-align:center
+}
+
+footer p a {
+  color:#cc0000;
+  text-decoration:none;
+}
+
+footer p a:hover {
+  text-decoration:underline;
+}
+
+
+.centerAlign {
+  margin-right:120px;
+}
+
+
+/*******************
+*   NOTIFICATION   *
+*******************/
+
+
+
+
