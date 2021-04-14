@@ -13,12 +13,12 @@ class CollaborateurClass Extends Objet{
     ,$CO_Pays,$CO_Service,$CO_Vendeur,$CO_Caissier
     ,$CO_DateCreation,$CO_Acheteur,$CO_Telephone,$CO_Telecopie
     ,$CO_EMail,$CO_Receptionnaire,$PROT_No,$CO_TelPortable,$CO_ChargeRecouvr,$cbCreateur;
-    public $table = '.dbo.F_COLLABORATEUR';
+    public $table = 'F_COLLABORATEUR';
+    public $lien ="fcollaborateur";
 
     function __construct($id,$db=null)
     {
-        $this->class="fcollaborateur";
-        parent::__construct($this->table, $id, 'CO_No',$db);
+        $this->data = $this->getApiJson("/$id");
         if (sizeof($this->data)>0) {
 
             $this->CO_No = $this->data[0]->CO_No;

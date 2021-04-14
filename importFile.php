@@ -33,6 +33,7 @@ include("Modele/ArticleClass.php");
 include("Modele/F_TarifClass.php");
 include("Modele/CompteGClass.php");
 include("Modele/BanqueClass.php");
+include("Modele/PReglementClass.php");
 include("module/Menu.php");
 include("module/Facturation.php");
 include("module/Creation.php");

@@ -18,7 +18,7 @@ $datefin="";
 $typeRegl = "Client";
 if(isset($_GET["typeRegl"]))
     $typeRegl = $_GET["typeRegl"];
-$protectionClass = new ProtectionClass($_SESSION["id"],$_SESSION["login"]);
+$protectionClass = new ProtectionClass($_SESSION["login"],$_SESSION["mdp"]);
 
 /*if($profil_caisse==1)
     $caisse=$_SESSION["CA_No"];*/
@@ -32,11 +32,11 @@ $clientLibelle ="";
 if (isset($_GET["CT_Num"])) {
     if($typeRegl=="Collaborateur"){
         $client = $_GET["CT_Num"];
-        $comptet = new CollaborateurClass($client,$objet->db);
+        $comptet = new CollaborateurClass($client);
         $clientLibelle = $comptet->CO_Nom;
     }else {
         $client = $_GET["CT_Num"];
-        $comptet = new ComptetClass($client, "none", $objet->db);
+        $comptet = new ComptetClass($client, "none");
         $clientLibelle = $comptet->CT_Intitule;
     }
 }
@@ -128,8 +128,8 @@ else {
                 <label>Type Règlement</label>
                 <select type="checkbox" id="mode_reglement" name="mode_reglement" class="form-control">
                     <?php
-                    $result = $objet->db->requete( $objet->listeTypeReglement());
-                    $rows = $result->fetchAll(PDO::FETCH_OBJ);
+                    $preglementClass = new PReglementClass(0);
+                    $rows = $preglementClass->all();
                     echo "<option value='0'";
                     if($treglement==0) echo " selected ";
                     echo ">TOUT REGLEMENTS</option>";
@@ -148,7 +148,7 @@ else {
                 <label>Journal</label>
                 <select class="form-control" name="journal" id="journal">
                     <?php
-                    $journalClass = new JournalClass(0,$objet->db);
+                    $journalClass = new JournalClass(0);
                     $rows = $journalClass->getJournaux(1);
                     foreach($rows as $row)
                         echo "<option value='{$row->JO_Num}'>{$row->JO_Intitule}</option>";
@@ -249,8 +249,8 @@ else {
                         <div class="col-6 col-sm-6 col-md-4 col-lg-2">
                             <select type="checkbox" id="mode_reglementRec" name="mode_reglementRec" class="form-control">
                                 <?php
-                                $result = $objet->db->requete( $objet->listeTypeReglement());
-                                $rows = $result->fetchAll(PDO::FETCH_OBJ);
+                                $reglementClass = new ReglementClass(0);
+                                $rows = $reglementClass->listeTypeReglement();
                                 if($rows !=null) {
                                     foreach ($rows as $row) {
 
@@ -447,7 +447,7 @@ else {
                     <select class="form-control" name="caissier_choix" id="caissier_choix">
                         <?php
                         $caisseClass = new CaisseClass(0);
-                        $rows = $caisseClass ->getCaissierByCaisse($caisse);
+                        $rows = $caisseClass->getCaissierByCaisse($caisse);
                         $depot="";
                         if($rows!=null){
                             foreach($rows as $row){

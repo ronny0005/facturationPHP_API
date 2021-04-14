@@ -216,19 +216,14 @@ switch ($val) {
             $searchTerm = $_GET['term'];
         if(isset($_GET['searchTerm']))
             $searchTerm = $_GET['searchTerm'];
-        $rechEtat = "";
-
+        $rechEtat = "0";
+        if(isset($_GET['rechEtat']))
+            $rechEtat = 1;
         if($de_no!="null") {
             if ($_GET["type"] == "Ticket" || $_GET["type"] == "AchatRetour" || $_GET["type"] == "Vente" || $_GET["type"] == "BonLivraison" || $_GET["type"] == "Sortie" || $_GET["type"] == "Transfert"  || $_GET["type"] == "Transfert_confirmation" || $_GET["type"] == "Transfert_detail") {
-                if(isset($_GET['rechEtat']))
-                    $rechEtat = "UNION SELECT AR_Type = 0,AR_Sommeil = 0,id = '0',AR_Ref = '0',AR_Design = 'Tout'Transfert
-                        ,text = 'Tout',value = 'Tout',AR_PrixAch = 0,AR_PrixVen = 0,AS_QteSto = 0";
                 echo json_encode($article->getAllArticleDispoByArRef($de_no, 0, $searchTerm,$rechEtat));
             }
             else {
-                if(isset($_GET['rechEtat']))
-                    $rechEtat = "UNION SELECT AR_Type = 0,AR_Sommeil = 0,AR_Ref = '0',AR_Design = 'Tout',id = '0'
-                        ,text = 'Tout',value = 'Tout',AR_PrixAch = 0,AR_PrixVen = 0";
                 echo json_encode($article->all(0, $searchTerm,10,-1,$rechEtat));
             }
         }
@@ -415,7 +410,8 @@ switch ($val) {
         envoiRequete($objet->getJournauxByJONum($_GET["JO_Num"]),$objet);
         break;
     case "getJournaux":
-        envoiRequete($objet->getJournaux($_GET["JO_Sommeil"]),$objet);
+        $journal = new JournalClass(0);
+        echo json_encode($journal->getJournaux($_GET["JO_Sommeil"]));
         break;
     case "getJournauxCount":
         envoiRequete($objet->getJournauxCount($_GET["JO_Sommeil"]),$objet);
@@ -1095,9 +1091,11 @@ switch ($val) {
         echo json_encode($famille->getNextArticleByFam($_GET['codeFam']));
         break;
     case "getCaisseByCA_No":
-        envoiRequete($objet->getCaisseByCA_No($_GET['CA_No']),$objet);
+        $caisse = new CaisseClass(0);
+        $rows = $caisse->getCaisseByCA_No($_GET['CA_No']);
+        if(sizeof($rows)>0)
+            echo json_encode($rows[0]);
         break;
-
     case "getArticleByRef":
         $article = new ArticleClass($_GET['AR_Ref']);
         echo json_encode($article);
@@ -1166,7 +1164,8 @@ switch ($val) {
         $collab=0;
         if(isset($_GET["collab"]))
             $collab = $_GET["collab"];
-        envoiRequete($objet->getFactureCORecouvrement($_GET['CT_Num'],$collab),$objet);
+        $docEntete = new DocEnteteClass(0);
+        echo json_encode($docEntete->getFactureCORecouvrement($collab, $_GET['CT_Num']));
         break;
     case "getFactureRGNo":
         $reglement = new ReglementClass(0);
@@ -1245,7 +1244,7 @@ switch ($val) {
         break;
     case "getCaissierByCaisse" :
         $caisseClass = new CaisseClass(0);
-        echo json_encode($caisseClass ->getCaissierByCaisse($_GET['CA_No']));
+        echo json_encode($caisseClass->getCaissierByCaisse($_GET['CA_No']));
         break;
     case "getReglementByClientFacture":
         envoiRequete($objet->getReglementByClientFacture($_GET['CT_Num'],$_GET['DO_Piece']),$objet);

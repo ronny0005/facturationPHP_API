@@ -37,31 +37,19 @@ $mobile="";
 
 if($_GET["acte"] =="regle") {
 
+    $cbMarq = 0;
+    if (isset($_GET["cbMarqEntete"]))
+        $cbMarq = $_GET["cbMarqEntete"];
+
         if (isset($_GET["cbMarqEntete"]))
             $docEntete = new DocEnteteClass($_GET["cbMarqEntete"], $objet->db);
 
-        $isVisu = 1;
-        $type = $_GET["typeFacture"];
-        $prot_no = 0;
         if (isset($_GET["PROT_No"])) {
-            $protection = new ProtectionClass("", "");
-            $protection->connexionProctectionByProtNo($_GET["PROT_No"]);
-            $isSecurite = $protection->IssecuriteAdmin($docEntete->DE_No);
-            $isVisu = $docEntete->isVisu($protection->PROT_Administrator, $protection->protectedType($type), $protection->PROT_APRES_IMPRESSION,$isSecurite);
-//        if (!$isVisu) {
-            $comptet = new ComptetClass($docEntete->DO_Tiers, $objet->db);
-            $rg_type = 0;
-            $valideRegle = 1;
             if (isset($_GET["valideRegle"]))
                 $valideRegle = $_GET["valideRegle"];
-            $entete = $docEntete->DO_Piece;
-            $caisse = $docEntete->CA_No;
-            $do_domaine = $docEntete->DO_Domaine;
-            $do_type = $docEntete->DO_Type;
             if ($valideRegle == 1) {
                 if (!isset($_GET["valideRegltImprime"])) {
                     $mtt_avance = $_GET["montant_avance"];
-                    $mtt = $_GET["montant_total"];
                     $mode_reglement = $_GET["mode_reglement"];
                     $date_reglt = $_GET["date_reglt"];
                     $lib_reglt = substr($_GET["lib_reglt"], 0, 30);
@@ -71,39 +59,21 @@ if($_GET["acte"] =="regle") {
 
                 } else {
                     $mtt_avance = str_replace(" ", "", $_GET["mtt_avance"]);
-                    $mtt = $docEntete->montantRegle();
                     $mode_reglement = $_GET["mode_reglement_val"];
-                    $date_reglt = $objet->getDate($_GET["date_rglt"]);
+                    $date_reglt = $_GET["date_rglt"];
                     $lib_reglt = substr($_GET["libelle_rglt"], 0, 30);
-                    $date_ech = $objet->getDate($_GET["date_ech"]);
+                    $date_ech = $_GET["date_ech"];
                 }
-                $creglement = new ReglementClass(0, $objet->db);
-                if ($mtt_avance <> 0) {
-                    $dr_no = $creglement->addCReglementFacture($_GET["cbMarqEntete"], $mtt_avance, $comptet->CT_Type, $mode_reglement, $caisse, $date_reglt, $lib_reglt, $date_ech,$_GET["PROT_No"]);
-                    $creglement = new ReglementClass($dr_no,$objet->db);
-                    //    $log = new LogFile();
-                    //    $log->user = $_GET["PROT_No"];
-                    //    $log->writeReglement("Ajout Règlement",$mtt_avance,$creglement->RG_No,$creglement->RG_Piece,$dr_no,'F_ARTSTOCK',$_GET["PROT_No"],$_GET["PROT_No"]);
-                }
-            }
-            if (isset($_GET["valideRegltImprime"])) {
-                if ($_GET["valideRegltImprime"] == "true")
-                    doImprim($docEntete->cbMarq);
-            }
-
-            if (isset($_GET["cbMarqEntete"])) {
-//                $docEntete = new DocEnteteClass(0, $objet->db);
-//                header('Location: ../' . $docEntete->redirectToListe($_GET["typeFacture"]));
+                $url = "/regle&cbMarq=$cbMarq&typeFacture={$docEntete->formatString($_GET["typeFacture"])}&protNo={$_SESSION["id"]}&valideRegle=$valideRegle&valideRegltImprime=".((isset($_GET["valideRegltImprime"])) ? 1:0)."&montantAvance=$mtt_avance&modeReglement=$mode_reglement&dateReglt={$objet->getDate($date_reglt)}&libReglt={$docEntete->formatString($lib_reglt)}&dateEch={$objet->getDate($date_ech)}";
+                $docEntete->getApiString($url);
             }
         }
-        //  }
     }
 
 
     function doImprim($cbMarq){
         $docEntete = new DocEnteteClass($cbMarq);
         $imprim = $docEntete->DO_Imprim;
-
         if ($imprim == 0) {
             $docEntete->maj("DO_Imprim", 1);
         }
@@ -151,50 +121,19 @@ function dateDiff($date1, $date2){
 }
 // Création de l'entete de document
 if($_GET["acte"] =="ajout_entete"){
-    $admin = 0;
-    $limitmoinsDate = "";
-    $limitplusDate = "";
-    $docEntete = new DocEnteteClass(0,$objet->db);
-    if(isset($_SESSION)){
-        $protectionClass = new ProtectionClass($_SESSION["login"],$_SESSION["mdp"],$objet->db);
-        if($protectionClass->PROT_Right!=1) {
-            if($protectionClass->getDelai()!=0) {
-                $limitmoinsDate = date('d/m/Y', strtotime(date('Y-m-d') . " - " . $protectionClass->getDelai() . " day"));
-                $limitplusDate = date('d/m/Y', strtotime(date('Y-m-d') . " + " . $protectionClass->getDelai() . " day"));
-                $str = strtotime(date("M d Y ")) - (strtotime($_GET["date"]));
-                $nbDay = abs(floor($str / 3600 / 24));
-                if ($nbDay > $protectionClass->getDelai())
-                    $admin = 1;
-            }
-        }
-    }
-
-    $cloture = $docEntete->journeeCloture($_GET["date"],$_GET["ca_no"]);
-    if($admin==0 && (($_GET["type_fac"] != "Devis" && $_GET["type_fac"] != "AchatPreparationCommande" && $cloture == 0) || $_GET["type_fac"] == "Devis" || $_GET["type_fac"] == "AchatPreparationCommande")) {
-        echo json_encode($docEntete->ajoutEntete( isset($_GET["do_piece"]) ? $_GET["do_piece"] : "",
-            $_GET["type_fac"], $_GET["date"], $_GET["date"], $_GET["affaire"], $_GET["client"], isset($_GET["userName"]) ? $_GET["userName"] : "",
-            $mobile, isset($_GET["machineName"]) ? $_GET["machineName"] : "",
-            isset($_GET["doCood2"]) ? $_GET["doCood2"] : "", isset($_GET["doCood3"]) ? $_GET["doCood3"] : "",isset($_GET["DO_Coord04"]) ? $_GET["DO_Coord04"] : "",
-            $_GET["do_statut"], $latitude, $longitude, $_GET["de_no"], $_GET["cat_tarif"], $_GET["cat_compta"], $_GET["souche"], $_GET["ca_no"],
-            $_GET["co_no"], str_replace("'","''",$_GET["reference"])));
-    }
-    else
-        if($cloture > 0)
-            echo "Cette journée est déjà cloturée !";
-       else
-           echo "la date doit être comprise entre $limitmoinsDate et $limitplusDate.";
+    $docEntete = new DocEnteteClass(0);
+    echo json_encode($docEntete->ajoutEntete( isset($_GET["do_piece"]) ? $_GET["do_piece"] : "",
+        $_GET["type_fac"], $_GET["date"], $_GET["date"], $_GET["affaire"], $_GET["client"], isset($_GET["userName"]) ? $_GET["userName"] : "",
+        $mobile, isset($_GET["machineName"]) ? $_GET["machineName"] : "",
+        isset($_GET["doCood2"]) ? $_GET["doCood2"] : "", isset($_GET["doCood3"]) ? $_GET["doCood3"] : "",isset($_GET["DO_Coord04"]) ? $_GET["DO_Coord04"] : "",
+        $_GET["do_statut"], $latitude, $longitude, $_GET["de_no"], $_GET["cat_tarif"], $_GET["cat_compta"], $_GET["souche"], $_GET["ca_no"],
+        $_GET["co_no"], str_replace("'","''",$_GET["reference"])));
 }
 
 // mise à jour de la référence
 if( $_GET["acte"] =="ajout_reference"){
-    $docEntete = new DocEnteteClass(0,$objet->db);
+    $docEntete = new DocEnteteClass(0);
     $docEntete->majLigneByCbMarq("DO_Ref",str_replace("'","''",$_GET["reference"]),$_GET["cbMarq"],$_GET["protNo"]);
-}
-
-// mise à jour de la référence
-if( $_GET["acte"] =="modif_nomClient"){
-    $docEntete = new DocEnteteClass(0,$objet->db);
-    $docEntete->majByCbMarq("DO_Coord04",$_GET["DO_Coord04"],$_GET["cbMarq"]);
 }
 
 // mise à jour de la référence
@@ -212,20 +151,6 @@ if( $_GET["acte"] =="liste_article_source"){
 }
 
 // mise à jour de la référence
-if( $_GET["acte"] =="rafraichir_listeClient"){
-    $typefac= $_GET["typefac"];
-    if($typefac!="Achat" && $typefac!="PreparationCommande") {
-        $comptet = new ComptetClass(0,$objet->db);
-        $rows = $comptet->allClients();
-    }
-    else{
-        $comptet = new ComptetClass(0,$objet->db);
-        $rows = $comptet->allFournisseur();
-    }
-    echo json_encode($rows);
-}
-
-// mise à jour de la référence
 if( $_GET["acte"] =="entete_document") {
     $docEntete = new DocEnteteClass(0,$objet->db);
     $type_fac = $_GET["type_fac"];
@@ -237,13 +162,6 @@ if( $_GET["acte"] =="entete_document") {
 }
 
 // mise à jour de la référence
-if( $_GET["acte"] =="ajout_statut"){
-    $docEntete = new DocEnteteClass(0,$objet->db);
-    $docEntete->majByCbMarq("DO_Statut",$_GET["do_statut"],$_GET["EntetecbMarq"]);
-}
-
-
-// mise à jour de la référence
 if( $_GET["acte"] =="reste_a_payer"){
     $docEntete = new DocEnteteClass($_GET["EntetecbMarq"],$objet->db);
     $reste_a_payer = $docEntete->resteAPayer;
@@ -253,7 +171,7 @@ if( $_GET["acte"] =="reste_a_payer"){
 
 // mise à jour de la référence
 if( $_GET["acte"] =="ajout_date"){
-    $docEntete = new DocEnteteClass(0,$objet->db);
+    $docEntete = new DocEnteteClass(0);
     $docEntete->majByCbMarq("DO_Date",$_GET["date"],$_GET["cbMarq"]);
 }
 
@@ -264,29 +182,29 @@ if( $_GET["acte"] =="doImprim") {
 
 // mise à jour de la référence
 if( $_GET["acte"] =="maj_collaborateur"){
-    $docEntete = new DocEnteteClass(0,$objet->db);
+    $docEntete = new DocEnteteClass(0);
     $docEntete->majLigneByCbMarq("CO_No",$_GET["collab"],$_GET["cbMarq"],$_GET["protNo"]);
 }
 
 if( $_GET["acte"] =="maj_Depot"){
-    $docEntete = new DocEnteteClass(0,$objet->db);
+    $docEntete = new DocEnteteClass(0);
     $docEntete->majByCbMarq("DE_No",$_GET["DE_No"],$_GET["cbMarq"]);
 }
 
 if( $_GET["acte"] =="client"){
-    $tiers = new ComptetClass(0,$objet->db);
+    $tiers = new ComptetClass(0);
     $data = array("valeur" => $tiers-> tiersByCTIntitule($_GET["CT_Intitule"]));
     echo json_encode($data);
 }
 
 // mise à jour de la référence
 if( $_GET["acte"] =="maj_affaire"){
-    $docEntete = new DocEnteteClass(0,$objet->db);
+    $docEntete = new DocEnteteClass(0);
     $docEntete->majLigneByCbMarq("CA_Num",$_GET["affaire"],$_GET["cbMarq"],$_GET["protNo"]);
 }
 // mise à jour de la référence
 if( $_GET["acte"] == "liste_article"){
-    $docEntete = new DocEnteteClass($_GET["cbMarq"],$objet->db);
+    $docEntete = new DocEnteteClass($_GET["cbMarq"]);
     $entete = $docEntete->DO_Piece;
     $typefac = $_GET["type_fac"];
     $catcompta = (isset($_GET["catcompta"]))? $_GET["catcompta"]:0;
@@ -557,31 +475,13 @@ if($_GET["acte"] =="ajout_ligne"|| $_GET["acte"] =="modif"){
     if(isset($_GET["cbMarq"]))
         $cbMarq = $_GET["cbMarq"];
     $docligne = new DocLigneClass($cbMarq,$objet->db);
-    $isVisu = 1;
-    $docEntete = new DocEnteteClass($_GET["cbMarqEntete"],$objet->db);
-    $type=$_GET["type_fac"];
-    $prot_no = 0;
 
-    $cloture = $docEntete->journeeCloture($docEntete->DO_Date,$docEntete->CA_No);
-
-
-    if(isset($_GET["PROT_No"]) && ($cloture==0 || $type=="Devis" || $type=="AchatPreparationCommande")) {
-        $protection = new ProtectionClass("","",$objet->db);
-        $protection->connexionProctectionByProtNo($_GET["PROT_No"]);
-        $isSecurite = $protection->IssecuriteAdmin($docEntete->DE_No);
-        if($_GET["type_fac"]!="Devis")
-        $isVisu = $docEntete->isVisu($protection->PROT_Administrator,$protection->protectedType($type),$protection ->PROT_APRES_IMPRESSION,$isSecurite);
-        else
-            $isVisu =false;
-        if(!$isVisu){
+    if(isset($_GET["PROT_No"])) {
             echo $docligne->ajout_ligneFacturation($_GET["quantite"],
                 isset($_GET["designation"])? $_GET["designation"]:""
                 ,$_GET["cbMarqEntete"],$_GET["type_fac"],
                 $_GET["cat_tarif"],$_GET["prix"],$_GET["remise"],
                 $_GET["machineName"], $_GET["acte"],$_GET["PROT_No"]);
-        }
-    } else{
-        echo "Cette journée est déjà cloturée !";
     }
 }
 
@@ -604,8 +504,8 @@ if($_GET["acte"]=="ligneFacture"){
             $docligne = new DocLigneClass($row->cbMarq,$objet->db);
             $typefac = 0;
             $rows = $docligne->getPrixClientHT($docligne->AR_Ref, $docEntete->N_CatCompta, $cat_tarif, 0, 0, $docligne->DL_Qte, $fournisseur);
-            if ($rows != null) {
-                $typefac = $rows->AC_PrixTTC;
+            if (sizeof($rows)>0) {
+                $typefac = $rows[0]->AC_PrixTTC;
             }
             $i++;
             if ($i % 2 == 0) $classe = "info";

@@ -132,7 +132,11 @@ class CaisseClass Extends Objet{
 
     public function getCaissierByCaisse($ca_no)
     {
-        return $this->getApiJson("/getCaissierByCaisse&caNo={$ca_no}");
+        return $this->getApiJson("/getCaissierByCaisse&caNo=$ca_no");
+    }
+
+    public function getCaisseByCA_No($ca_no) {
+        return $this->getApiJson("/getCaisseByCA_No&caNo=$ca_no");
     }
 
     public function __toString() {

@@ -2235,56 +2235,6 @@ FROM P_PARAMETRECIAL
         return $requete;
     }
 
-    public function getFactureCORecouvrement($ct_num,$collab) {
-        $requete = "
-                DECLARE @collab AS INT
-                DECLARE @ctNum AS NVARCHAR(150) 
-                SET @collab = $collab;
-                SET @ctNum = '$ct_num';
-                WITH _ReglEch_ AS (
-                    SELECT DR_No, SUM(RC_MONTANT) avance 
-                    FROM F_REGLECH R 
-                    INNER JOIN F_Creglement Re 
-                        ON Re.RG_No=R.RG_No 
-                    GROUP BY DR_No
-                )
-                ,_DocLigne_ AS (
-                    SELECT cbDO_Piece,DO_Type,DO_Domaine,SUM(DL_MontantTTC) DL_MontantTTC 
-                    FROM F_DOCLIGNE L 
-                    GROUP BY cbDO_Piece,DO_Type,DO_Domaine,DO_Date
-                )
-                SELECT *
-                    FROM(
-                         SELECT E.cbMarq,DO_Provenance,E.cbModification,DE_Intitule,E.DO_Piece,E.DO_Type,E.DO_Domaine,E.DO_Ref,CAST(CAST(E.DO_Date AS DATE) AS VARCHAR(10)) AS DO_Date,ISNULL(MAX(CASE WHEN E.N_CatCompta=0 THEN (C.N_CatCompta) ELSE (E.N_CatCompta) END),'0') N_CatCompta,E.DO_Tiers as CT_Num,CT_Intitule, ROUND(SUM(L.DL_MontantTTC),0) AS ttc, 
-                                ISNULL(MAX(latitude),0) as latitude,ISNULL(MAX(longitude),0) as longitude,ISNULL(sum(avance),0) AS avance  
-                         FROM  F_DOCENTETE E 
-                         LEFT JOIN _DocLigne_ L 
-                            ON  E.cbDO_Piece=L.cbDO_Piece  
-                            AND E.DO_Domaine= L.DO_Domaine 
-                            AND E.DO_Type=L.DO_Type
-                         LEFT JOIN F_DOCREGL R 
-                            ON  R.cbDO_Piece=E.cbDO_Piece 
-                            AND R.DO_Type=E.DO_Type 
-                            AND R.DO_Domaine=E.DO_Domaine
-                         INNER JOIN F_DEPOT D 
-                            ON D.DE_No=E.DE_No 
-                         INNER JOIN F_COMPTET C 
-                            ON C.cbCT_Num=E.cbDO_Tiers
-                         LEFT JOIN _ReglEch_ A 
-                            ON A.DR_No=R.DR_No  
-                         WHERE (@collab = 0 AND (E.DO_Domaine=0 
-                            AND (E.DO_Type=6 OR E.DO_Type=7) 
-                            AND DO_Provenance IN(0,1)) OR (E.DO_Domaine=1
-                            AND (E.DO_Type=16 OR E.DO_Type=17 OR E.DO_Type=12)) OR (@collab = 1 AND E.DO_Domaine=1 ) )  
-                            AND ISNULL(r.dr_regle,0)=0 AND (@collab = 1 OR (@collab = 0 AND C.CT_Num = @ctNum))
-                            AND (0 = @collab OR (@collab=1 AND CAST(E.CO_No AS NVARCHAR(50)) = @ctNum))
-                            GROUP BY E.cbMarq,DO_Provenance,E.cbModification,DE_Intitule,E.DO_Piece,E.DO_Type,E.DO_Domaine,E.DO_Ref,E.DO_Date,E.DO_Tiers,CT_Intitule
-                    )A
-                    WHERE ((DO_Provenance =0 AND ttc>0) OR DO_Provenance=1) 
-                    AND     NOT (TTC=AVANCE) 
-                    ORDER BY DO_Date DESC";
-        return $requete;
-    }
 
     public function getFactureRGNo($rg_no){
         return "SELECT E.cbMarq,DE_Intitule,L.DO_Piece,L.DO_Ref,CAST(CAST(L.DO_Date AS DATE) AS VARCHAR(10)) AS DO_Date,CO.CT_Num,CT_Intitule, ROUND(SUM(L.DL_MontantTTC),0) AS ttc, 
@@ -2302,13 +2252,6 @@ FROM P_PARAMETRECIAL
                 FROM [dbo].[Z_RGLT_BONDECAISSE] A
                 INNER JOIN F_CREGLEMENT B ON A.RG_No=B.RG_No
                 WHERE RG_No_RGLT=$rg_no";
-    }
-
-    public function getCaisseByCA_No($ca_no) {
-        return "SELECT CT_Intitule,C.* 
-                FROM F_CAISSE C 
-                LEFT JOIN F_COMPTET T ON C.CT_Num=T.CT_Num 
-                WHERE CA_No =$ca_no";
     }
 
     public function addDocligneEntreeMagasinProcess($AR_Ref, $DO_Piece, $DL_Qte, $MvtStock, $DE_No,$mvtEntree,$prix,$login,$type_fac,$machine) {

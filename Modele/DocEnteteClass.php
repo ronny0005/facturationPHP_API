@@ -429,34 +429,9 @@ class DocEnteteClass Extends Objet{
         $result= $this->db->query($query);
         return $result->fetchAll(PDO::FETCH_OBJ);
     }
+
     public function getLigneFacture() {
-        $val = "";
-        $query = "SELECT    DL_PUDevise,CA_Num,DL_TTC,$val DL_PUTTC,DL_MvtStock,CT_Num,cbMarq,DL_TypeTaux1,DL_TypeTaux2,DL_TypeTaux3,cbCreateur,DL_NoColis
-                            ,CASE WHEN DL_TypeTaux1=0 THEN DL_MontantHT*(DL_Taxe1/100) ELSE CASE WHEN DL_TypeTaux1=1 THEN DL_Taxe1*DL_Qte ELSE DL_Taxe1 END END MT_Taxe1
-                            ,CASE WHEN DL_TypeTaux2=0 THEN DL_MontantHT*(DL_Taxe2/100) ELSE CASE WHEN DL_TypeTaux2=1 THEN DL_Taxe2*DL_Qte ELSE DL_Taxe2 END END MT_Taxe2
-                            ,CASE WHEN DL_TypeTaux3=0 THEN DL_MontantHT*(DL_Taxe3/100) ELSE CASE WHEN DL_TypeTaux3=1 THEN DL_Taxe3*DL_Qte ELSE DL_Taxe3 END END MT_Taxe3
-                            ,DL_MontantHT,DO_Piece,
-                            AR_Ref,DE_No,DL_CMUP AS AR_PrixAch,DL_Design,DL_Qte,DL_PrixUnitaire,DL_CMUP,DL_Taxe1,DL_Taxe2,DL_Taxe3,DL_MontantTTC,DL_Ligne,DL_Remise01REM_Valeur,DL_Remise01REM_Type,
-                            DL_Remise = CASE WHEN DL_Remise01REM_Type=0 THEN ''  
-                                 WHEN DL_Remise01REM_Type=1 THEN cast(cast(DL_Remise01REM_Valeur as numeric(9,2)) as varchar(10))+'%' 
-                                    ELSE cast(cast(DL_Remise01REM_Valeur as numeric(9,2)) as varchar(10))+'U' END ,
-                            DL_PrixUnitaire_Rem = DL_PrixUnitaire -(CASE WHEN DL_Remise01REM_Type= 0 THEN DL_PrixUnitaire
-                                                    WHEN DL_Remise01REM_Type=1 THEN  DL_PrixUnitaire * DL_Remise01REM_Valeur / 100
-                                                     WHEN DL_Remise01REM_Type=2 THEN DL_Remise01REM_Valeur ELSE 0 END) ,
-                            DL_PUTTC_Rem = DL_PUTTC -(CASE WHEN DL_Remise01REM_Type= 0 THEN DL_PUTTC
-                                                                     WHEN DL_Remise01REM_Type=1 THEN  DL_PrixUnitaire * DL_Remise01REM_Valeur / 100
-                                                                        WHEN DL_Remise01REM_Type=2 THEN DL_Remise01REM_Valeur ELSE 0 END) ,
-                            DL_PrixUnitaire_Rem0 = DL_PrixUnitaire -(CASE WHEN DL_Remise01REM_Type= 0 THEN 0
-                                                                            WHEN DL_Remise01REM_Type=1 THEN  DL_PrixUnitaire * DL_Remise01REM_Valeur / 100
-                                                                                WHEN DL_Remise01REM_Type=2 THEN DL_Remise01REM_Valeur ELSE 0 END),
-                             DL_PUTTC_Rem0 = DL_PUTTC -(CASE WHEN DL_Remise01REM_Type= 0 THEN 0
-                                                                    WHEN DL_Remise01REM_Type=1 THEN  DL_PrixUnitaire * DL_Remise01REM_Valeur / 100
-                                                                    WHEN DL_Remise01REM_Type=2 THEN DL_Remise01REM_Valeur ELSE 0 END)
-                    FROM    F_DOCLIGNE  
-                    WHERE DO_Piece ='{$this->DO_Piece}' AND DO_Domaine={$this->DO_Domaine} AND DO_Type = {$this->DO_Type}
-                    ORDER BY cbMarq";
-        $result = $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getLigneFacture&cbMarq={$this->cbMarq}");
     }
 
     public function majCompta(){
@@ -1565,19 +1540,7 @@ FROM _ResultCpta_
     }
 
     public function majLigneByCbMarq($champ,$value,$cbMarq,$protNo){
-        $query = "	UPDATE F_DOCENTETE 
-						SET $champ='$value' 
-							,cbCreateur = '$protNo'
-					WHERE cbMarq=$cbMarq;
-					UPDATE F_DOCLIGNE 
-						SET F_DOCLIGNE.$champ='$value' 
-							,cbCreateur = '$protNo'
-					FROM 	F_DOCENTETE
-					WHERE	F_DOCENTETE.DO_Domaine = F_DOCLIGNE.DO_Domaine  
-					AND 	F_DOCENTETE.DO_Type = F_DOCLIGNE.DO_Type  
-					AND 	F_DOCENTETE.cbDO_Piece = F_DOCLIGNE.cbDO_Piece 
-					AND 	F_DOCENTETE.cbMarq=$cbMarq";
-        $this->db->query($query);
+        $this->getApiExecute("/majLigneByCbMarq&champ=$champ&value=$value&cbMarq=$cbMarq&protNo=$protNo");
     }
 
     public function addDocenteteEntreeMagasin($type, $do_date, $do_ref, $do_tiers, $ca_num, $longitude, $latitude, $do_piece)
@@ -2115,6 +2078,7 @@ public function setValueMvtEntree (){
     public function ajoutEntete($do_pieceG,$typeFacG,$doDate,$doDateEch,$affaireG,$client,$username,$mobile,$machine_pc,$doCoord2,$doCoord3,$doCoord4,$doStatut,$latitude,$longitude,$de_no,$catTarif,$catCompta,$souche,$ca_no,$co_no,$reference,$transform=0){
         $DO_Coord02 = (isset($doCoord2)) ? $doCoord2 : "";
         $DO_Coord03 = (isset($doCoord3)) ? $doCoord3 : "";
+        $DO_Coord04 = (isset($doCoord4)) ? $doCoord4 : "";
         $do_piece = (isset($do_pieceG)) ? $do_pieceG : "";
         $affaire = ($affaireG=="null" || $affaireG=="0") ? "" : $affaireG;
         $date_ech = (isset($doDateEch)) ? $doDateEch : $doDate;
@@ -2122,20 +2086,12 @@ public function setValueMvtEntree (){
         $machine = (isset($machine_pc)) ? $machine_pc : "";
         $ca_no = ($ca_no=="") ? 0 : $ca_no;
 
-        $docEntete = new DocEnteteClass(0,$this->db);
-        $type_fac=$typeFacG;
-        $controleClient = null;
-        $PparametreLivr = new P_ParametreLivrClass(1,$this->db);
-        if($PparametreLivr->PL_Reliquat==2 && $docEntete->getTypeFac()!="Devis") {
-            $comptet = new ComptetClass($docEntete->DO_Tiers, "all", $this->db);
-            $controleClient = $comptet->controleEncours($type_fac, 0, $docEntete->getTypeFac());
-        }
+        $url = "/ajoutEntete&protNo={$_SESSION["id"]}&doPiece={$this->formatString($do_piece)}&typeFacture=$typeFacG&doDate=$doDate&doSouche=$souche&caNum={$this->formatString($affaire)}&ctNum={$this->formatString($client)}&machineName={$this->formatString($machine_pc)}&doCoord01=&doCoord02=$DO_Coord02&doCoord03=$DO_Coord03&doCoord04=$DO_Coord04&doStatut=$doStatut&catTarif=$catTarif&catCompta=$catCompta&deNo=$de_no&caNo=$ca_no&coNo=$co_no&reference={$this->formatString($reference)}&longitude=$longitude&latitude=$latitude";
+        $docEntete = $this->getApiJson($url);
+        if(isset($docEntete[0]->message))
+            return $docEntete[0]->message;
 
-        if($controleClient != null)
-            return $controleClient;
-        $cbMarq=$this->addDocenteteFactureProcess($client,$co_no, str_replace("'","''",$reference),$doDate,1,$de_no,$catTarif,$catCompta,$souche,$ca_no,$affaire,$type_fac,$doStatut,$latitude,$longitude,$date_ech,$do_piece,$DO_Coord02,$DO_Coord03,$doCoord4,$mobile,$user,$transform);
-        $docEntete = new DocEnteteClass($cbMarq,$this->db);
-        $data = array('entete' => $docEntete->DO_Piece,'cbMarq' => $docEntete->cbMarq,'DO_Cours' => $docEntete->DO_Cours);
+        $data = array('entete' => $docEntete[0]->DO_Piece,'cbMarq' => $docEntete[0]->cbMarq,'DO_Cours' => $docEntete[0]->DO_Cours);
         return $data;
     }
 
@@ -3966,24 +3922,12 @@ public function setValueMvtEntree (){
 
     public function ResteARegler($avance)
     {
-        $query = "SELECT CASE WHEN MTT_A_REGLER>=0 THEN 
-                            CASE WHEN  MTT_A_REGLER>=$avance THEN 1 ELSE 0 END 
-                        ELSE CASE WHEN  MTT_A_REGLER<=$avance THEN 1 ELSE 0 END END AS VAL
-                FROM(SELECT ROUND(SUM(DL_MontantTTC) - ISNULL(SUM(RC_Montant),0),2) MTT_A_REGLER
-                FROM (	SELECT DO_Domaine,DO_Type,cbDO_Piece,SUM(DL_MontantTTC)DL_MontantTTC 
-                        FROM F_DOCLIGNE 
-                        WHERE DO_Piece='{$this->DO_Piece}' 
-                        AND DO_Domaine={$this->DO_Domaine}
-                        AND DO_Type={$this->DO_Type}
-                        GROUP BY DO_Domaine,DO_Type,cbDO_Piece)D
-                LEFT JOIN F_REGLECH R 
-                    ON  D.DO_Domaine=R.DO_Domaine 
-                    AND D.DO_Type=R.DO_Type 
-                    AND D.cbDO_Piece=R.cbDO_Piece)A";
-        $result = $this->db->requete($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/resteARegler&cbMarq={$this->cbMarq}&avance=$avance");
     }
 
+    public function getFactureCORecouvrement($collab,$ctNum){
+        return $this->getApiJson("/getFactureCORecouvrement&collab={$collab}&ctNum={$ctNum}");
+    }
 
     public function getEnteteTicketByDOPiece() {
         $result = $this->db->requete( "SELECT ISNULL(Max(DO_Piece),0) DO_Piece 

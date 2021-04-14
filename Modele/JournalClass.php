@@ -13,9 +13,10 @@ class JournalClass Extends Objet{
     ,$JO_Sommeil,$JO_IFRS,$JO_Reglement
     ,$JO_SuiviTreso,$cbCreateur,$cbModification;
     public $table = 'F_JOURNAUX';
+    public $lien = "fjournaux";
 
     function __construct($id,$db=null) {
-        parent::__construct($this->table, $id,'JO_Num',$db);
+        $this->data = $this->getApiJson("/$id");
         if(sizeof($this->data)>0) {
             $this->JO_Num = $this->data[0]->JO_Num;
             $this->JO_Intitule = stripslashes($this->data[0]->JO_Intitule);
@@ -53,132 +54,30 @@ class JournalClass Extends Objet{
     }
 
     public function getJournaux($val){
-        $query = "SELECT JO_Num,JO_Intitule,CG_Num,cbModification
-                FROM ".$this->db->baseCompta.".dbo.F_JOURNAUX
-                WHERE ($val=0 AND 1=1) OR ($val=1 AND JO_Sommeil=0) OR ($val=2 AND JO_Sommeil=1)";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getJournaux&joSommeil=$val");
     }
 
     public function getJournauxSaufTotaux(){
-        $query = "SELECT JO_Num,JO_Intitule,CG_Num,cbModification
-                FROM F_JOURNAUX
-                WHERE JO_Type<>0";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getJournauxSaufTotaux");
     }
 
     public function getJournauxType($type,$sommeil=-1){
-        $query = "SELECT JO_Num,JO_Intitule,CG_Num,cbModification
-                FROM F_JOURNAUX
-                WHERE JO_Type=$type
-                AND ($sommeil = -1 OR JO_Sommeil=$sommeil)";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getJournauxType&joType=$type&joSommeil=$sommeil");
     }
 
 
     function getJournauxSaisieSelect($ouvert,$mois,$journal){
-        $query = "  SET language french;
-                    DECLARE @mois AS INT = $mois;
-                    DECLARE @ouvert AS INT = $ouvert;
-                    DECLARE @journal AS VARCHAR(50) = '$journal';
-                
-                WITH months(NomMois,MonthNumber) AS
-                (
-                    SELECT  NomMois = DateName( month , DateAdd( month , 1, 0 ) - 1 )
-                            ,MonthNumber = 1 
-                    UNION ALL
-                    SELECT  NomMois = DateName( month , DateAdd( month , MonthNumber+1, 0 ) - 1 )
-                            ,MonthNumber = MonthNumber+1  
-                    FROM    months
-                    WHERE   MonthNumber < 12
-                )
-
-                SELECT  MonthNumber
-                        ,NomMois = CASE WHEN @mois=1 THEN NomMois ELSE '' END 
-                        ,JO_Num = CASE WHEN @journal=1 THEN A.JO_Num ELSE '' END 
-                FROM(
-                SELECT  NomMois
-                        ,MonthNumber
-                        ,JO_Num
-                        ,JO_Intitule
-                FROM    F_JOURNAUX,months
-                )A
-                LEFT JOIN F_JMOUV B 
-                    ON  A.JO_Num =B.JO_Num 
-                    AND A.MonthNumber=MONTH(JM_Date)
-                WHERE   (@ouvert!=1 OR (@ouvert=1 AND B.JO_Num IS NOT NULL))
-                AND     (@ouvert!=2 OR (@ouvert=2 AND B.JO_Num IS NULL))
-                GROUP BY MonthNumber
-                         ,CASE WHEN @mois=1 THEN NomMois ELSE '' END 
-                         ,CASE WHEN @journal=1 THEN A.JO_Num ELSE '' END
-                ORDER BY MonthNumber";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getJournauxSaisieSelect/ouvert=$ouvert&mois=$mois&joNum={$this->formatString($journal)}");
     }
 
     function getJournauxSaisie($ouvert,$NomMois,$JO_Num,$annee){
-        $query = "SET language french;
-                    DECLARE @NomMois AS VARCHAR(50) = '$NomMois';
-                    DECLARE @ouvert AS INT = $ouvert;
-                    DECLARE @annee AS INT = $annee;
-                    DECLARE @joNum AS VARCHAR(50) = '$JO_Num';
-                WITH months AS
-                (
-                    SELECT  NomMois = DateName( month , DateAdd( month , 1, 0 ) - 1 )
-                            ,MonthNumber = 1 
-                            ,YearMonth = CONCAT(@annee,'01')
-                    UNION ALL
-                    SELECT  NomMois = DateName( month , DateAdd( month , MonthNumber+1, 0 ) - 1 )
-                            ,MonthNumber = MonthNumber+1  
-                            ,YearMonth = CONCAT(@annee,RIGHT(CONCAT('0',MonthNumber+1),2))
-                    FROM    months
-                    WHERE   MonthNumber < 12
-                ),
-                _Journal_ AS (
-                SELECT  NomMois
-                        ,MonthNumber
-                        ,JO_Num
-                        ,JO_Intitule
-                        ,YearMonth
-                FROM    F_JOURNAUX,months
-                ),
-                _Mouv_ AS (
-                SELECT	JO_Num
-                        ,YearMonth = CONCAT(YEAR(JM_Date),RIGHT(CONCAT('0',MONTH(JM_Date)),2))
-                FROM	F_JMOUV 
-                WHERE	YEAR(JM_Date) = @annee
-                )
-                SELECT	A.*
-                FROM	_Journal_ A
-                LEFT JOIN _Mouv_ B
-                    ON  A.JO_Num = B.JO_Num 
-                    AND A.YearMonth = B.YearMonth
-                WHERE 
-                (@ouvert<>1 OR (@ouvert=1 AND B.JO_Num IS NOT NULL))
-                AND (@ouvert<>2 OR (@ouvert=2 AND B.JO_Num IS NULL))
-                AND (@NomMois='0' OR NomMois=@NomMois)
-                AND (@joNum='0' OR A.JO_Num=@joNum)
-                ORDER BY MonthNumber
-";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getJournauxSaisie/ouvert=$ouvert&NomMois=$NomMois&joNum={$this->formatString($JO_Num)}&annee=$annee");
     }
 
     public function calculSoldeLettrage($listCbMarq){
         if($listCbMarq=="")
             $listCbMarq = 0;
-        $query = " 
-                SELECT EC_MontantCredit = CASE WHEN EC_MontantCredit <= EC_MontantDebit THEN 0 ELSE EC_MontantCredit-EC_MontantDebit END
-                        , EC_MontantDebit = CASE WHEN EC_MontantDebit <= EC_MontantCredit THEN 0 ELSE EC_MontantDebit-EC_MontantCredit END
-                FROM (SELECT  EC_MontantCredit = SUM(CASE WHEN EC_Sens=1 THEN EC_Montant ELSE 0 END) 
-                        ,EC_MontantDebit = SUM(CASE WHEN EC_Sens=0 THEN EC_Montant ELSE 0 END)
-                FROM    F_ECRITUREC A
-                WHERE cbMarq IN ($listCbMarq))A";
-
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/calculSoldeLettrage/listCbMarq=$listCbMarq");
     }
     public function getSaisieJournalExercice($JO_Num,$Mois,$Annee,$CT_Num,$dateDebut,$dateFin,$lettrage,$CG_Num){
         $query= "

@@ -100,6 +100,7 @@ class ArticleClass Extends Objet{
     ,$Qte_Gros;
 
     public $table = 'F_ARTICLE';
+    public $lien = 'farticle';
 
     function __construct($id,$db=null)
     {
@@ -957,63 +958,10 @@ class ArticleClass Extends Objet{
 
     public function getAllArticleDispoByArRef($de_no,$codeFamille=0,$intitule = "",$rechEtat="")
     {
-        $value =str_replace(" ","%",$intitule);
-        $query= "   DECLARE @deNo AS INT = $de_no
-                    DECLARE @codeFamille AS NVARCHAR(50) = '$codeFamille'
-                    DECLARE @value AS NVARCHAR(150) = '$value' 
-                    SELECT TOP 10 AR_Type
-                            ,AR_Sommeil
-                            ,A.AR_Ref as id
-                            ,A.AR_Ref
-                            ,AR_Design
-                            ,CONCAT(CONCAT(A.AR_Ref,' - '),AR_Design) as text
-                            ,CONCAT(CONCAT(A.AR_Ref,' - '),AR_Design) as value
-                            ,AR_PrixAch
-                            ,AR_PrixVen 
-                            ,AS_QteSto
-                    FROM    F_ARTICLE A 
-                    INNER JOIN F_ARTSTOCK S 
-                        ON  A.cbAR_Ref=S.cbAR_Ref  
-                    WHERE (@deNo=0 OR DE_No=@deNo) 
-                    AND   S.AS_QteSto>0
-                    AND   ('0'=@codeFamille OR FA_CodeFamille=@codeFamille)
-                    AND   AR_Sommeil=0
-                    AND   CONCAT(CONCAT(CONCAT(CONCAT(A.AR_Ref,' - '),AR_Design), ' - '),AR_CodeBarre) LIKE CONCAT(CONCAT('%',@value),'%')
-                    $rechEtat
-                    ORDER BY AR_Design";
-        $result= $this->db->query($query);
-        $this->list = Array();
-        $this->list = $result->fetchAll(PDO::FETCH_OBJ);
-        return $this->list;
+        return $this->getApiJson("/getAllArticleDispoByArRef&deNo=$de_no&codeFamille=$codeFamille&valeur=$intitule&rechEtat=$rechEtat");
     }
 
     public function all($sommeil=-1,$intitule="",$top=0,$arPublie=-1,$rechEtat=""){
-        $valeurSaisie =str_replace(" ","%",$intitule);
-        $value = "";
-        if($top!=0)
-            $value = "TOP $top";
-        $query = "DECLARE @arPublie INT = $arPublie
-                  DECLARE @arSommeil INT = $sommeil
-                  DECLARE @arText NVARCHAR(250) = '$valeurSaisie'
-                  
-                  SELECT  $value AR_Type
-                          ,AR_Sommeil
-                          ,AR_Ref
-                          ,AR_Design
-                          ,AR_Ref as id
-                          ,CONCAT(CONCAT(AR_Ref,' - '),AR_Design) as text
-                          ,CONCAT(CONCAT(AR_Ref,' - '),AR_Design) as value
-                        ,AR_PrixAch
-                        ,AR_PrixVen
-                  FROM F_ARTICLE
-                  WHERE (-1=@arPublie OR AR_Publie=@arPublie)
-                  AND (-1=@arSommeil OR AR_Sommeil=@arSommeil)
-                  AND CONCAT(CONCAT(AR_Ref,' - '),AR_Design) LIKE CONCAT(CONCAT('%',@arText),'%') 
-                  $rechEtat
-                  ORDER BY AR_Design";
-        $result= $this->db->query($query);
-        $this->list = Array();
-        $this->list = $result->fetchAll(PDO::FETCH_OBJ);
-        return $this->list;
+        return $this->getApiJson("/all&intitule=$intitule&top=$top&sommeil=$sommeil&arPublie=$arPublie&rechEtat=$rechEtat");
     }
 }

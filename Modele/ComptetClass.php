@@ -33,7 +33,7 @@ class ComptetClass Extends Objet{
         $this->CT_Intitule = "";
         $this->CT_Type = "";
         $this->CG_NumPrinc = "";
-        if($type=="ctNum")
+        if($type!="cbMarq")
             $this->data = $this->getApiJson("/ctNum=$id");
         else
             $this->data = $this->getApiJson("/cbMarq=$id");
