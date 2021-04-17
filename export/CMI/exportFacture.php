@@ -6,6 +6,7 @@ include("../../Modele/Objet.php");
 include("../../Modele/ComptetClass.php");
 include("../../Modele/DepotClass.php");
 include("../../Modele/ProtectionClass.php");
+include("../../Modele/FamilleClass.php");
 include("../../Modele/DocEnteteClass.php");
 include("../../Modele/CollaborateurClass.php");
 session_start();
@@ -145,9 +146,8 @@ $caisse =  $docEntete->CA_No;
 $nCatCompta = 0;
 if($docEntete->N_CatCompta != "")
     $nCatCompta = $docEntete->N_CatCompta;
-$sql = $objet->getLibTaxePied($typeFac, $nCatCompta);
-$result=$objet->db->requete($sql);
-$rowsLibelle = $result->fetchAll(PDO::FETCH_OBJ);
+$familleClass = new FamilleClass(0);
+$rowsLibelle = $familleClass->getLibTaxePied($typeFac, $nCatCompta);
 if($rowsLibelle!=null){
     $libelle1 = $rowsLibelle[0]->LIB1;
     $libelle2 = $rowsLibelle[0]->LIB2;
@@ -192,8 +192,7 @@ $tel = "";
 $email = "";
 $commentaire ="";
 $profession = "";
-$result=$objet->db->requete($objet->getNumContribuable());
-$rows = $result->fetchAll(PDO::FETCH_OBJ);
+$rows = $protection->getNumContribuable();
 if($rows==null){
 }
 else{

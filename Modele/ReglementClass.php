@@ -972,22 +972,6 @@ if($flagCtrlTtCaisse==0) echo "<td></td>";
     }
 
 
-    public function getReglementByFacture($DO_Domaine,$DO_Type,$DO_Piece){
-        $query = "  SELECT A.RG_No
-                    FROM F_CREGLEMENT A
-                    INNER JOIN (SELECT  DO_Domaine,DO_Type,DO_Piece,RG_No
-                                FROM    F_REGLECH
-                                GROUP BY DO_Domaine,DO_Type,DO_Piece,RG_No)B ON A.RG_No=B.RG_No
-                    WHERE DO_Domaine=$DO_Domaine AND DO_Type=$DO_Type AND DO_Piece = '$DO_Piece'";// AND EC_No = 0
-        $result= $this->db->query($query);
-        $this->list = array();
-        foreach ($result->fetchAll(PDO::FETCH_OBJ) as $resultat)
-        {
-            $docEntete = new ReglementClass($resultat->RG_No);
-            array_push($this->list,$docEntete);
-        }
-        return $this->list;
-    }
 
     public function getMajComptaListe()
     {

@@ -64,6 +64,7 @@ class FamilleClass Extends Objet{
     ,$cbCreateur
     ,$cbModification;
     public $table = 'F_Famille';
+    public $lien ="ffamille";
 
     function __construct($id,$db=null)
     {
@@ -183,6 +184,11 @@ class FamilleClass Extends Objet{
         parent::maj(cbMarq , $this->cbMarq);
         parent::maj(cbCreateur , $this->userName);
         parent::maj(cbModification , $this->cbModification);
+    }
+
+    public function getLibTaxePied($cattarif,$catcompta){
+        $this->lien="ffamcompta";
+        return $this->getApiJson("/getLibTaxePied&fcpType=$cattarif&fcpChamp=$catcompta");
     }
 
     public function getShortList() {

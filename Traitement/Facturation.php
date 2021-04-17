@@ -393,8 +393,8 @@ if($_GET["acte"] =="majCompta") {
 }
 
 function saisie_comptable ($cbMarq,$objet){
-    $docEntete = new DocEnteteClass($cbMarq,$objet->db);
-    return $docEntete->majCompta();
+    $docEntete = new DocEnteteClass($cbMarq);
+    return $docEntete->saisie_comptable();
 }
 
 function getItemCompta($table,$val){
@@ -436,9 +436,8 @@ if($_GET["acte"] =="saisie_comptableCaisse") {
 }
 
 function saisieComptableCaisse($cbMarq,$objet){
-    $docEntete = new DocEnteteClass($cbMarq,$objet);
-    $reglement = new ReglementClass(0,$objet);
-    $listReglt = $reglement->getReglementByFacture($docEntete->DO_Domaine,$docEntete->DO_Type,$docEntete->DO_Piece);
+    $docEntete = new DocEnteteClass($cbMarq);
+    $listReglt = $docEntete->getReglementByFacture($docEntete->cbMarq);
     $result = array();
     foreach ($listReglt as $rglt){
         foreach (saisieComptableCaisseReglement($rglt->RG_No,$objet) as $elem)

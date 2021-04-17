@@ -1976,25 +1976,6 @@ FROM P_PARAMETRECIAL
                  END;";
     }
 
-    public function getLibTaxePied($cattarif,$catcompta){
-        return" SELECT  LIB1 = TU.TA_Intitule
-                        ,LIB2 = TD.TA_Intitule
-                        ,LIB3 = TT.TA_Intitule
-                        ,TA_Code1 = TU.TA_Code
-                        ,TA_Code2 = TD.TA_Code
-                        ,TA_Code3 = TT.TA_Code
-                FROM F_FAMCOMPTA FA
-                        LEFT JOIN DBO.F_TAXE TU 
-                            ON  TU.TA_Code = FA.FCP_ComptaCPT_Taxe1 
-                        LEFT JOIN DBO.F_TAXE TD 
-                            ON  TD.TA_Code = FA.FCP_ComptaCPT_Taxe2 
-                        LEFT JOIN DBO.F_TAXE TT 
-                            ON  TT.TA_Code = FA.FCP_ComptaCPT_Taxe3 
-                        WHERE   FCP_Type=$cattarif 
-                        AND     FCP_Champ=$catcompta
-                GROUP BY TU.TA_Intitule,TD.TA_Intitule,TT.TA_Intitule,TU.TA_Code,TD.TA_Code,TT.TA_Code";
-    }
-
     public function getF_Artclient(){
         return "SELECT AR_Ref,AC_Categorie,AC_PrixVen,AC_PrixTTC,cbModification 
             FROM F_ARTCLIENT";
