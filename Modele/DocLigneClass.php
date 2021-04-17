@@ -211,33 +211,9 @@ class DocLigneClass Extends Objet
         return $result->fetchAll(PDO::FETCH_OBJ);
     }
 
-    public function modifDocligneFactureMagasin($DL_Qte, $prix, $type_fac,$protNo)
+    public function modifDocligneFactureMagasin($DL_Qte, $prix, $type_fac,$protNo,$cbMarqEntete)
     {
-        $AR_PrixAch = $prix;
-        if ($AR_PrixAch == "") $AR_PrixAch = 0;
-        $montantHT = round(($AR_PrixAch) * $DL_Qte, 2);
-        $DL_PUTTC = $montantHT;
-        if ($type_fac == "Transfert" || $type_fac == "Sortie" || $type_fac == "Entree")
-            $DL_PUTTC = round($AR_PrixAch, 2);
-        if ($type_fac == "Entree" || $type_fac == "Sortie" || $type_fac == "Transfert" || $type_fac == "Achat" || $type_fac == "AchatPreparationCommande") {
-            $this->DL_CMUP = round($AR_PrixAch, 2);
-            $this->DL_PrixRU = round($AR_PrixAch, 2);
-        }
-        $this->DL_QtePL = $DL_Qte;
-        $this->DL_Qte = $DL_Qte;
-        $this->DL_QteBC = $DL_Qte;
-        $this->DL_QteBL = $DL_Qte;
-        if ($type_fac == "Sortie") {
-            $this->DL_QteBL = 0;
-            $this->DL_QtePL = 0;
-        }
-        $this->EU_Qte = $DL_Qte;
-        $this->DL_PUTTC = $DL_PUTTC;
-        $this->DL_MontantHT = $montantHT;
-        $this->DL_MontantTTC = $montantHT;
-        $this->DL_PrixUnitaire = round($AR_PrixAch, 2);
-        $this->userName= $protNo;
-        $this->maj_docLigne($prix,$this->cbCreateur);
+        return $this->ajout_ligneFacturation($DL_Qte," ",$cbMarqEntete,$type_fac,0,$prix," "," ","modif_ligne",$protNo);
     }
 
 
@@ -370,7 +346,9 @@ class DocLigneClass Extends Objet
         return $result->fetchAll(PDO::FETCH_OBJ)[0]->cbMarq;
     }
 
-
+    public function ajoutLigneTransfert($qte,$prix,$typeFacture,$cbMarq,$cbMarqEntete,$protNo,$acte,$arRef,$machineName){
+        return $this->getApiJson("/ajoutLigneTransfert&qte=$qte&prix=$prix&typeFacture=$typeFacture&cbMarq=$cbMarq&cbMarqEntete=$cbMarqEntete&protNo=$protNo&acte=$acte&arRef={$this->formatString($arRef)}&machineName={$this->formatString($machineName)}");
+    }
 
     public function deleteConfirmation()
     {
@@ -1286,168 +1264,12 @@ INSERT INTO [dbo].[F_DOCLIGNE]
 
     public function addDocligneEntreeMagasinProcess($AR_Ref, $cbMarqEntete, $DL_Qte, $MvtStock, $mvtEntree, $prix, $type_fac, $machine, $protNo)
     {
-        $AR_PrixAch = 0;
-        $AR_Design = "";
-        $AR_PrixVen = 0;
-        $montantHT = 0;
-        $AR_UniteVen = 0;
-        $U_Intitule = "";
-        $docEntete = new DocEnteteClass($cbMarqEntete, $this->db);
-        $DO_Domaine = $docEntete->DO_Domaine;
-        $DO_Type = $docEntete->DO_Type;
-        $DO_Piece = $docEntete->DO_Piece;
-        $DO_Date = $docEntete->getDO_DateC();
-        if ($type_fac == "Entree")
-            $DE_No = $docEntete->DO_Tiers;
-        $article = new ArticleClass($AR_Ref, $this->db);
-        $AR_Design = str_replace("'", "''", $article->AR_Design);
-        $AR_Ref = $article->AR_Ref;
-        if ($mvtEntree == 1) {
-            $AR_PrixAch = $article->AR_PrixAch;
-            $AR_PrixVen = $article->AR_PrixVen;
-            if ($AR_PrixVen == "") $AR_PrixVen = 0;
-            if ($AR_PrixAch == "") $AR_PrixAch = 0;
-        } else $AR_PrixAch = $prix;
-        $AR_UniteVen = $article->AR_UniteVen;
-        $montantHT = ROUND($AR_PrixAch * $DL_Qte, 2);
-        $result = $this->db->requete($this->objetCollection->getUnite($AR_UniteVen));
-        $rows = $result->fetchAll(PDO::FETCH_OBJ);
-        if ($rows != null) {
-            $U_Intitule = $rows[0]->U_Intitule;
-        }
-        $do_ref = $docEntete->DO_Ref;
-        $DO_Domaine = $docEntete->DO_Domaine;
-        $DO_Type = $docEntete->DO_Type;
-        $docligne = new DocLigneClass(0, $this->db);
-        $docligne->initVariables();
-        $docligne->DL_MvtStock = $MvtStock;
-        $docligne->DO_Domaine = $DO_Domaine;
-        $docligne->DO_Type = $DO_Type;
-        $docligne->CT_Num = $docEntete->DO_Tiers;
-        $docligne->DO_Piece = $docEntete->DO_Piece;
-        $docligne->DO_Date = $DO_Date;
-        $docligne->DO_Ref = $docEntete->DO_Ref;
-        $docligne->AR_Ref = $AR_Ref;
-        $docligne->DL_Design = $AR_Design;
-        $docligne->DL_Qte = $DL_Qte;
-        $docligne->DL_QteBC = $DL_Qte;
-        $docligne->DL_QteBL = 0;
-        $docligne->EU_Qte = $DL_Qte;
-        $docligne->DL_Remise01REM_Valeur = 0;
-        $docligne->DL_PrixUnitaire = $AR_PrixAch;
-        $docligne->DL_Taxe1 = 0;
-        $docligne->DL_Taxe2 = 0;
-        $docligne->DL_Taxe3 = 0;
-        $docligne->CO_No = 0;
-        $docligne->DL_PrixRU = $AR_PrixAch;
-        $docligne->EU_Enumere = $U_Intitule;
-        $docligne->DE_No = $DE_No;
-        $docligne->DL_PUTTC = $AR_PrixAch;
-        $docligne->CA_Num = $docEntete->CA_Num;
-        $docligne->DL_MontantHT = $montantHT;
-        $docligne->DL_MontantTTC = $montantHT;
-        $docligne->DL_Remise01REM_Type = 0;
-        $docligne->DL_QtePL = 0;
-        $docligne->DL_QteBL = 0;
-        $docligne->DL_TypePL = 0;
-        $docligne->DL_TTC = 0;
-        $docligne->DL_TypeTaux1 = 0;
-        $docligne->DL_TypeTaux2 = 0;
-        $docligne->DL_TypeTaux3 = 0;
-        $docligne->DL_TypeTaxe1 = 0;
-        $docligne->DL_TypeTaxe2 = 0;
-        $docligne->DL_TypeTaxe3 = 0;
-        $docligne->DL_PieceBL = '';
-        $docligne->DL_DateBC = '1900-01-01';
-        $docligne->DL_DateBL = $DO_Date;
-        $docligne->DL_CMUP = $AR_PrixAch;
-        $docligne->DL_DatePL = '1900-01-01';
-        $docligne->MACHINEPC = $machine;
-        $docligne->userName = $protNo;
-        $this->cbMarq = $docligne->insertDocligneMagasin();
-        $rows = $this->getLigneFactureDernierElement();
-        return json_encode($rows);
+        return $this->ajout_ligneFacturation($DL_Qte,$AR_Ref,$cbMarqEntete,$type_fac,0,$prix,"",$machine,"ajout_ligne",$protNo);
     }
 
     public function addDocligneSortieMagasinProcess($AR_Ref, $cbMarqEntete, $DL_Qte, $MvtStock, $typefac, $machine, $protNo)
     {
-        $AR_PrixAch = "";
-        $AR_Design = "";
-        $AR_PrixVen = "";
-        $montantHT = "";
-        $AR_UniteVen = 0;
-        $U_Intitule = "";
-        $DO_Date = "";
-        $docEntete = new DocEnteteClass($cbMarqEntete, $this->db);
-        $article = new ArticleClass($AR_Ref, $this->db);
-        $isStock = $article->isStock($docEntete->DO_Tiers);
-        if ($isStock != null) {
-            $AR_PrixAch = 0;
-            if ($isStock[0]->AS_QteSto != 0)
-                $AR_PrixAch = Round($isStock[0]->AS_MontSto / $isStock[0]->AS_QteSto, 2);
-            $AR_Design = str_replace("'", "''", $article->AR_Design);
-            $AR_Ref = $article->AR_Ref;
-            $AR_PrixVen = $article->AR_PrixVen;
-            $AR_UniteVen = $article->AR_UniteVen;
-            if ($AR_PrixVen == "") $AR_PrixVen = 0;
-            $montantHT = ROUND($AR_PrixAch * $DL_Qte, 2);
-            if ($typefac == "Transfert")
-                $DL_PUTTC = round($AR_PrixAch, 2);
-            $result = $this->db->requete($this->objetCollection->getUnite($AR_UniteVen));
-            $rows = $result->fetchAll(PDO::FETCH_OBJ);
-            if ($rows != null) {
-                $U_Intitule = $rows[0]->U_Intitule;
-            }
-            $DO_Date = $docEntete->getDO_DateC();
-            $do_ref = $docEntete->DO_Ref;
-            $this->initVariables();
-            $this->DL_MvtStock = $MvtStock;
-            $this->DO_Domaine = $docEntete->DO_Domaine;
-            $this->DO_Type = $docEntete->DO_Type;
-            $this->CT_Num = $docEntete->DO_Tiers;
-            $this->DO_Piece = $docEntete->DO_Piece;
-            $this->DO_Date = $DO_Date;
-            $this->DO_Ref = $docEntete->DO_Ref;
-            $this->AR_Ref = $AR_Ref;
-            $this->DL_Design = $AR_Design;
-            $this->DL_Qte = $DL_Qte;
-            $this->DL_QteBC = $DL_Qte;
-            $this->DL_QteBL = 0;
-            $this->EU_Qte = $DL_Qte;
-            $this->DL_Remise01REM_Valeur = 0;
-            $this->DL_PrixUnitaire = $AR_PrixAch;
-            $this->DL_Taxe1 = 0;
-            $this->DL_Taxe2 = 0;
-            $this->DL_Taxe3 = 0;
-            $this->CO_No = 0;
-            $this->DL_PrixRU = $AR_PrixAch;
-            $this->EU_Enumere = $U_Intitule;
-            $this->DE_No = $docEntete->DO_Tiers;
-            $this->DL_PUTTC = $AR_PrixAch;
-            $this->CA_Num = $docEntete->CA_Num;
-            $this->DL_MontantHT = $montantHT;
-            $this->DL_MontantTTC = $montantHT;
-            $this->DL_Remise01REM_Type = 0;
-            $this->DL_QtePL = 0;
-            $this->DL_TypePL = 0;
-            $this->DL_TTC = 0;
-            $this->DL_TypeTaux1 = 0;
-            $this->DL_TypeTaux2 = 0;
-            $this->DL_TypeTaux3 = 0;
-            $this->DL_TypeTaxe1 = 0;
-            $this->DL_TypeTaxe2 = 0;
-            $this->DL_TypeTaxe3 = 0;
-            $this->DL_PieceBL = '';
-            $this->DL_DateBC = '1900-01-01';
-            $this->DL_DateBL = $DO_Date;
-            $this->DL_CMUP = $AR_PrixAch;
-            $this->DL_DatePL = '1900-01-01';
-            $this->MACHINEPC = $machine;
-            $this->userName = $protNo;
-            $this->cbMarq = $this->insertDocligneMagasin();
-            $rows = $this->getLigneFactureDernierElement();
-            return json_encode($rows);
-        }
+        return $this->ajout_ligneFacturation($DL_Qte,$AR_Ref,$cbMarqEntete,$typefac,0,0,"",$machine,"ajout_ligne",$protNo);
     }
 
 
@@ -2327,49 +2149,10 @@ INSERT INTO [dbo].[F_DOCLIGNE]
 ";
     }
 
-    public function supprLigneTransfert($idSec,$trans){
-
-        $docEntete = new DocEnteteClass($this->getcbMarqEntete(), $this->db);
-        $docEntete->getTypeFac();
-        if (isset($_SESSION["id"])) {
-            $protection = new ProtectionClass("", "", $this->db);
-            $protection->connexionProctectionByProtNo($_SESSION["id"]);
-            $isSecurite = $protection->IssecuriteAdmin($docEntete->DE_No);
-            $isVisu = $docEntete->isVisu($protection->PROT_Administrator, $protection->protectedType($docEntete->type_fac), $protection->PROT_APRES_IMPRESSION,$isSecurite);
-            if ($trans==1 || !$isVisu) {
-                    $AR_Ref = $this->AR_Ref;
-                    if ($this->DL_MvtStock == 3) {
-                        $DE_No = $docEntete->DE_No;
-                        $AR_PrixAch = $this->DL_CMUP;
-                        $DL_Qte = $this->DL_Qte;
-                    } else {
-                        $DE_No = $docEntete->DO_Tiers;
-                        $AR_PrixAch = $this->DL_CMUP;
-                        $DL_Qte = -$this->DL_Qte;
-                    }
-
-                    $article = new ArticleClass($AR_Ref, $this->db);
-                    $article->updateArtStock($DE_No, $DL_Qte, $AR_PrixAch * $DL_Qte, $_SESSION["id"], "suppr");
-
-                    $docligneSec = new DocLigneClass($idSec, $this->db);
-                    $AR_Ref = $docligneSec->AR_Ref;
-                    if ($docligneSec->DL_MvtStock == 3) {
-                        $DE_No = $docEntete->DE_No;
-                        $AR_PrixAch = $docligneSec->DL_CMUP;
-                        $DL_Qte = $docligneSec->DL_Qte;
-                    } else {
-                        $DE_No = $docEntete->DO_Tiers;
-                        $AR_PrixAch = $docligneSec->DL_CMUP;
-                        $DL_Qte = -$docligneSec->DL_Qte;
-                    }
-
-                    $docligneSec->delete($_SESSION["id"]);
-                    $this->delete($_SESSION["id"]);
-                    $this->deleteConfirmation();
-
-            }
-        }
+    public function supprLigneFacture($cbMarq,$cbMarqSec,$typeFacture,$protNo){
+        $this->getApiExecute("/supprLigneFacture&cbMarq=$cbMarq&cbMarqSec=$cbMarqSec&typeFacture=$typeFacture&protNo=$protNo");
     }
+
     public function __toString() {
         return "";
     }

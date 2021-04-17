@@ -434,10 +434,10 @@ else {
                     <select class="form-control" name="journal_choix" id="journal_choix">
                         <?php
                         $journalClass = new JournalClass(0);
-                        $rows = $journalClass->getJournaux(1);
+                        $rows = $journalClass->getJournauxReglement(1);
                         if($rows!=null){
                             foreach($rows as $row)
-                                echo "<option value='" . $row->JO_Num . "'>" . $row->JO_Intitule . "</option>";
+                                echo "<option value='{$row->JO_Num}'>{$row->JO_Intitule}</option>";
                         }
                         ?>
                     </select>

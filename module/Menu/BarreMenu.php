@@ -152,7 +152,7 @@ $lien="http://209.126.69.121/ReportServer/Pages/ReportViewer.aspx?%2fEtatBiophar
                                                 foreach ($subMenu->subMenu as $subMenu2){
                                                     if($subMenu2->active!="") {
                                                         $titleMenu = $subMenu2->menuName;
-                                                        $_SESSION->titleName = $titleMenu;
+                                                        $_SESSION["titleName"] = $titleMenu;
                                                     }
                                                     ?><li>
                                                     <a tabindex="-1" href="<?= $subMenu2->link ?>" class="<?= isset($subMenu2->active) ? $subMenu2->active : "" ?> dropdown-item <?= isset($subMenu2->class) ? $subMenu2->class:"" ?> "><?= $subMenu2->menuName ?></a>
@@ -166,7 +166,7 @@ $lien="http://209.126.69.121/ReportServer/Pages/ReportViewer.aspx?%2fEtatBiophar
                                     }else{
                                         if(isset($subMenu->active) && $subMenu->active!="") {
                                             $titleMenu = $subMenu->menuName;
-                                            $_SESSION->titleName = $titleMenu;
+                                            $_SESSION["titleName"] = $titleMenu;
                                         }
                                         ?>
                                         <li><a href="<?= $subMenu->link ?>" class="<?= isset($subMenu->active) ? $subMenu->active : "" ?> <?= isset($subMenu->class) ? $subMenu->class:"" ?> dropdown-item"><?= $subMenu->menuName ?></a></li>

@@ -2096,35 +2096,8 @@ public function setValueMvtEntree (){
     }
 
 
-    public function isRegleFullDOPiece(){
-        $query=" WITH _Entete_ AS(
-                    SELECT  fde.DO_Type,fde.DO_Domaine,fde.cbDO_Piece,DL_MontantTTC = SUM(DL_MontantTTC) 
-                    FROM    F_DOCENTETE fde
-                    INNER JOIN F_DOCLIGNE fdl
-                        ON  fde.DO_Domaine = fdl.DO_Domaine
-                        AND fde.DO_Type = fdl.DO_Type
-                        AND fde.cbDO_Piece = fdl.cbDO_Piece
-                    WHERE   fde.cbMarq = {$this->cbMarq}
-                    GROUP BY fde.DO_Type,fde.DO_Domaine,fde.cbDO_Piece  
-                )
-                ,_ReglEch_ AS (
-                    SELECT  DO_Type,DO_Domaine,cbDO_Piece, SUM(RC_Montant)RC_Montant
-                    FROM    F_REGLECH 
-                    GROUP BY DO_Type,DO_Domaine,cbDO_Piece
-                )
-
-                SELECT VAL = CASE WHEN RC_Montant >= DL_MontantTTC THEN 1 ELSE 0 END
-                FROM(
-                SELECT  A.*,RC_Montant = ISNULL(RC_Montant,0)  
-                FROM    _Entete_ A
-                LEFT JOIN _ReglEch_ D 
-                    ON  D.cbDO_Piece=A.cbDO_Piece 
-                    AND D.DO_Domaine = A.DO_Domaine 
-                    AND A.DO_Type = D.DO_Type
-                ) A";
-
-        $result = $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ)[0]->VAL;
+    public function isRegleFullDOPiece($cbMarq){
+        $this->getApiExecute("/isRegleFullDOPiece&cbMarq=$cbMarq");
     }
 
     public function getListeReglementMajComptable($typeTransfert,$datedeb, $datefin,$caisse,$transfert,$journal){
@@ -3640,52 +3613,11 @@ public function setValueMvtEntree (){
     }
 
     public function getLigneTransfert(){
-        $query= "SELECT ISNULL(idSec,0)idSec,A.*,userReception,cbCreateurReception
-                FROM (	SELECT	DL_Ligne AS Ligne , M.cbMarq,E.DO_Piece,AR_Ref,DL_Design,DL_PieceBL
-                                ,cbCreateurEmission = M.cbCreateur,userEmission = pro.PROT_User
-                                ,DL_Qte,DL_PrixUnitaire,DL_CMUP ,DL_Taxe1,DL_Taxe2,DL_Taxe3,DL_MontantTTC,DL_MontantHT,DL_Ligne 
-                                ,CASE WHEN DL_Remise01REM_Type=0 THEN '' WHEN DL_Remise01REM_Type=1 THEN cast(cast(DL_Remise01REM_Valeur as numeric(9,2)) as varchar(10))+'%' ELSE cast(cast(DL_Remise01REM_Valeur as numeric(9,2)) as varchar(10))+'U' END DL_Remise 
-                        FROM	F_DOCENTETE E 
-                        INNER JOIN F_DOCLIGNE M 
-                            ON  E.DO_Domaine = M.DO_Domaine 
-                            AND E.DO_Type = M.DO_Type 
-                            AND E.DO_Piece = M.DO_Piece 
-                        LEFT JOIN F_PROTECTIONCIAL pro
-                            ON  CAST(pro.PROT_No AS NVARCHAR(30)) = CAST(M.CbCreateur AS NVARCHAR(30))
-                        WHERE	M.DL_MvtStock=3 AND E.cbMarq='{$this->cbMarq}') AS A 
-                LEFT JOIN (SELECT	DL_Ligne Ligne,idSec = cbMarq,AR_Ref,userReception,cbCreateurReception
-                            FROM	(	SELECT DL_Ligne,M.cbMarq,M.AR_Ref
-                                                ,cbCreateurReception = M.cbCreateur,userReception = pro.PROT_User
-                                        FROM	F_DOCENTETE E 
-                                        INNER JOIN F_DOCLIGNE M 
-                                            ON  E.DO_Domaine = M.DO_Domaine 
-                                            AND E.DO_Type = M.DO_Type 
-                                            AND E.DO_Piece = M.DO_Piece 
-                                        LEFT JOIN F_PROTECTIONCIAL pro
-                                            ON  CAST(pro.PROT_No AS NVARCHAR(30)) = CAST(M.CbCreateur AS NVARCHAR(30))
-                                        WHERE	M.DL_MvtStock=1 
-                                        AND     E.cbMarq='{$this->cbMarq}')B 
-                            ) B ON (B.Ligne-A.Ligne )=10000 AND A.AR_Ref = B.AR_Ref";
-        $result = $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getLigneTransfert&cbMarq={$this->cbMarq}");
     }
 
     public function getLigneFactureTransfert() {
-        $query=  "SELECT    idSec = 0,M.cbMarq,M.DO_Piece,AR_Ref,DL_Design
-                            ,DL_Qte,DL_PrixUnitaire,DL_CMUP,DL_Taxe1,DL_Taxe2
-                            ,DL_Taxe3,DL_MontantTTC,DL_MontantHT,DL_Ligne
-                            ,DL_Remise = CASE WHEN DL_Remise01REM_Type=0 THEN '' 
-                                WHEN DL_Remise01REM_Type=1 THEN cast(cast(DL_Remise01REM_Valeur as numeric(9,2)) as varchar(10))+'%' 
-                             ELSE cast(cast(DL_Remise01REM_Valeur as numeric(9,2)) as varchar(10))+'U' END   
-                    FROM F_DOCENTETE E
-                    INNER JOIN F_DOCLIGNE M 
-                        ON E.DO_Domaine = M.DO_Domaine 
-                        AND E.DO_Type = M.DO_Type 
-                        AND E.cbDO_Piece = M.cbDO_Piece  
-                    WHERE E.cbMarq = '{$this->cbMarq}'
-                    ORDER BY M.cbMarq";
-        $result = $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getLigneFactureTransfert&cbMarq={$this->cbMarq}");
     }
 
     public function  clotureVente($ca_num){
@@ -3884,9 +3816,6 @@ public function setValueMvtEntree (){
 
     public function getEnteteDocument($do_souche){
         return $this->getApiString("/getEnteteDocument&typeFac={$this->type_fac}&doSouche=$do_souche");
-        $this->DO_Piece = $this->getEnteteTable($do_souche);
-        $do_piece = $this->getEnteteDispo();
-        return $do_piece;
     }
 
     public function montantRegle() {

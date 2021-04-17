@@ -15,7 +15,8 @@ class DepotClass Extends Objet{
     public $lien = "fdepot";
 
     function __construct($id,$db=null) {
-
+        if($id =="")
+            $id = 0;
         $this->data = $this->getApiJson("/deNo=$id");
         if(sizeof($this->data) > 0) {
             $this->DE_No = $this->data[0]->DE_No;
@@ -219,26 +220,7 @@ SET NOCOUNT ON;
     }
 
     public function getDepotUserSearch($Prot_No,$depotExclude,$searchTerm,$principal=1){
-        $query = "  
-                    SELECT * 
-					FROM(SELECT  A.DE_No
-								,DE_Intitule
-								,DE_Intitule as value
-								,IsPrincipal
-						FROM    F_DEPOT A
-						INNER JOIN Z_DEPOTUSER B 
-							ON A.DE_No = B.DE_No
-						WHERE   Prot_No=$Prot_No
-						AND 	($depotExclude=-1 OR A.DE_No<>$depotExclude)
-						AND 	DE_Intitule like '%{$searchTerm}%'
-						GROUP BY A.DE_No
-								,DE_Intitule
-								,IsPrincipal) A 
-					WHERE $principal=-1 OR IsPrincipal=$principal";
-        $result= $this->db->query($query);
-        $this->list = Array();
-        $this->list = $result->fetchAll(PDO::FETCH_OBJ);
-        return $this->list;
+        return $this->getApiJson("/getDepotUserSearch&protNo=$Prot_No&depotExclude=$depotExclude&searchTerm={$this->formatString($searchTerm)}&principal=$principal");
     }
 
     public function getDepotUserPrincipal($Prot_No){
@@ -288,15 +270,8 @@ SET NOCOUNT ON;
     }
 
     public function getDepotByIntitule($intitule,$depotExclude=-1){
-        $query="SELECT  DE_No
-                        ,DE_Intitule
-                        ,DE_Intitule as value
-                FROM F_DEPOT
-                WHERE CONCAT(CONCAT(DE_No,' - '),DE_Intitule) LIKE '%{$intitule}%'
-                AND ($$depotExclude=-1 OR DE_No<>$depotExclude)";
-        $result= $this->db->query($query);
-        $rows = array();
-        $value = $result->fetchAll(PDO::FETCH_OBJ);
+        $value = $this->getApiJson("/getDepotByIntitule&deNo=$depotExclude&intitule={$this->formatString($intitule)}");
+        $rows=array();
         foreach ($value as $val){
             $rows[] = array("id" => $val->DE_No , "text" => $val->DE_Intitule,"DE_Intitule" => $val->DE_Intitule,"DE_No" => $val->DE_No , "value" => $val->DE_Intitule );
         }

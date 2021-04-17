@@ -2631,32 +2631,6 @@ LEFT JOIN (SELECT cbMarq,DO_Piece AS DO_Piece_Dest,DL_PrixUnitaire AS DL_PrixUni
         return "SELECT *,CONVERT(char(10), CAST(DO_Date AS DATE),126) AS DO_DateC FROM F_DOCENTETE WHERE DO_Domaine=$do_domaine AND DO_Type = $do_type AND DO_Piece='$do_piece'";
     }
 
-    public function getReglementByClient($ct_num,$ca_no,$type,$treglement,$datedeb,$datefin,$caissier,$collab,$typeSelectRegl=0) {
-        $query= "    SELECT CASE WHEN ABS(DATEDIFF(d,GETDATE(),C.RG_Date))>= (select PR_DelaiPreAlert
-                from P_PREFERENCES) THEN 1 ELSE 0 END DO_Modif,C.JO_Num,C.CO_NoCaissier
-         ,C.CT_NumPayeur,C.CG_Num,RG_Piece,ISNULL(RC_Montant,0) AS RC_Montant,C.RG_No,CAST(RG_Date as date) RG_Date
-         ,RG_Libelle,RG_Montant,C.CA_No,C.CO_NoCaissier,ISNULL(CO_Nom,'')CO_Nom,ISNULL(CA_Intitule,'')CA_Intitule
-         ,RG_Impute,RG_TypeReg,N_Reglement,cbCreateur = pr.PROT_User
-                    FROM F_CREGLEMENT C
-                    LEFT JOIN F_CAISSE CA ON CA.CA_No=C.CA_No 
-                    LEFT JOIN F_COLLABORATEUR CO ON C.CO_NoCaissier = CO.CO_No
-                    LEFT JOIN F_PROTECTIONCIAL pr ON CAST(pr.PROT_No AS NVARCHAR(50)) = c.cbCreateur
-                    LEFT JOIN (	SELECT A.RG_No,RC_Montant + ISNULL(RG_Montant,0) AS RC_Montant
-                                FROM(	SELECT RG_No,sum(RC_Montant) AS RC_Montant 
-                                        FROM F_REGLECH
-                                        GROUP BY RG_No)A
-                                LEFT JOIN Z_RGLT_BONDECAISSE B ON A.RG_No = B.RG_No_RGLT
-                                LEFT JOIN F_CREGLEMENT C ON C.RG_No = B.RG_No  
-                                ) R ON R.RG_No=c.RG_No
-			        WHERE 
-			        $typeSelectRegl = RG_Type AND RG_Date BETWEEN '$datedeb' AND '$datefin' AND (-1=$type OR RG_Impute=$type)
-                    AND ((''='$ct_num' AND ct_numpayeur IS NOT NULL) OR ct_numpayeur = '$ct_num' OR ('1'=$collab AND C.CO_NoCaissier='$ct_num'))
-                    AND (((0=$treglement OR N_Reglement=$treglement) AND (($collab = 1 AND RG_Banque=3) OR ($collab = 0))
-                    AND ('0'=$ca_no OR CA.CA_No=$ca_no)) OR ('0'<>$ca_no AND C.CO_NoCaissier=$caissier AND N_Reglement='05') )
-                    ORDER BY C.RG_No";
-        return $query;
-    }
-
     public function convertTransToRegl($ca_no,$co_no,$jo_num,$rg_no){
         return"UPDATE F_CREGLEMENT SET CA_No=$ca_no,cbModification=GETDATE(),JO_Num='$jo_num',cbCA_No=$ca_no,CO_NoCaissier=$co_no,cbCO_NoCaissier=$co_no WHERE RG_No=$rg_no";
     }

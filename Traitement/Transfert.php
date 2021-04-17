@@ -116,93 +116,42 @@ if( $_GET["acte"] =="liste_article_sourceDevise"){
 //ajout article 
 if($_GET["acte"] =="ajout_ligne"|| $_GET["acte"] =="modif"){
 
-    if($_GET["quantite"]!=""){
-        $qte=$_GET["quantite"];
+    if($_GET["quantite"]!="") {
+        $qte = $_GET["quantite"];
         $prix = $_GET["prix"];
         $typefac = $_GET["type_fac"];
         $remise = $_GET["remise"];
-        $cbMarq =  $_GET["cbMarq"];
-        $id_sec =  $_GET["id_sec"];
+        $cbMarq = $_GET["cbMarq"];
+        if($cbMarq=="undefined") $cbMarq = 0;
+        $id_sec = $_GET["id_sec"];
         $cbMarqEntete = $_GET["cbMarqEntete"];
-        $type_rem="P";
+        $type_rem = "P";
         $type_remise = 0;
-        $login ="";
-        if(isset($_GET["userName"]))
+        $login = "";
+        if (isset($_GET["userName"]))
             $login = $_GET["userName"];
-        $machine ="";
-        $docEntete = new DocEnteteClass($cbMarqEntete,$objet->db);
+        $machine = "";
+        $docEntete = new DocEnteteClass($cbMarqEntete, $objet->db);
         $docEntete->type_fac;
-        if(isset($_GET["machineName"]))
+        if (isset($_GET["machineName"]))
             $machine = $_GET["machineName"];
 
         if (isset($_GET["PROT_No"])) {
-            $protection = new ProtectionClass("", "", $objet->db);
-            $protection->connexionProctectionByProtNo($_GET["PROT_No"]);
-            $isSecurite = $protection->IssecuriteAdmin($docEntete->DE_No);
-            $isVisu = $docEntete->isVisu($protection->PROT_Administrator, $protection->protectedType($typefac), $protection->PROT_APRES_IMPRESSION,$isSecurite);
-            if (!$isVisu) {
-                if ($_GET["acte"] == "ajout_ligne") {
-                    $ref_article = $_GET["designation"];
-                    $qteSource = 0;
-                    $prixSource = 0;
-                    $article = new ArticleClass($ref_article, $objet->db);
-                    $depotSource = new DepotClass($docEntete->DE_No, $objet->db);
-                    $isStock = $article->isStock($docEntete->DE_No);
-                    if ($isStock == null) {
-                        echo "Le dépot {$depotSource->DE_Intitule} n'a pas de stock pour l'article {$article->AR_Ref} !";
-                    } else {
-                        $prixSource = $isStock[0]->AS_MontSto;
-                        $qteSource = $isStock[0]->AS_QteSto;
-
-                        $docligne = new DocLigneClass(0, $objet->db);
-                        try {
-                            $docligne->db->connexion_bdd->beginTransaction();
-                            $var1 = $docligne->addDocligneTransfertProcess($ref_article, $prixSource / $qteSource, $qte, "3", $machine, $cbMarqEntete, $_GET["PROT_No"], 0);
-                            if ($typefac == "Transfert")
-                                $var2 = $docligne->addDocligneTransfertProcess($ref_article, $prix, $qte, "1", $machine, $cbMarqEntete, $_GET["PROT_No"], $var1->cbMarq);
-                            if ($typefac == "Transfert_confirmation")
-                                $docligne->addDocligneTransfertConfirmationProcess($ref_article, $prix, $qte, $cbMarqEntete, $var1->cbMarq);
-                            if ($typefac == "Transfert")
-                                echo json_encode($var2);
-
-                            if ($typefac == "Transfert_confirmation") {
-                                $data = array('entete' => "", 'cbMarq' => $var1->cbMarq);
-                                echo json_encode($data);
-                            }
-                            $docligne->db->connexion_bdd->commit();
-                        }
-                        catch(Exception $e){
-                            $docligne->db->connexion_bdd->rollBack();
-                            return json_encode($e);
-                        }
-                    }
-                } else {
-                    $qte = $_GET["quantite"];
-                    $prix = $_GET["prix"];
-                    $typefac = $_GET["type_fac"];
-                    $cbMarq = $_GET["cbMarq"];
-                    $id_sec = $_GET["id_sec"];
-                    $cbMarqEntete = $_GET["cbMarqEntete"];
-                    $login = "";
-                    if (isset($_GET["userName"]))
-                        $login = $_GET["userName"];
-                    $machine = "";
-                    $docligne = new DocLigneClass(0, $objet->db);
-                    $docligne->alerteCumulStock();
-                    $docEntete = new DocEnteteClass($cbMarqEntete, $objet->db);
-                    $docligne->majQteZLigneConfirmation($cbMarq, $qte);
-                    $data = $docligne->getZLigneConfirmation($cbMarq);
-                    echo json_encode($data);
-                }
+            if ($_GET["acte"] == "ajout_ligne") {
+                $ref_article = $_GET["designation"];
+                $qteSource = 0;
+                $prixSource = 0;
+                $docLigne = new DocLigneClass(0);
+                echo json_encode($docLigne->ajoutLigneTransfert($qte, $prix, $typefac, $cbMarq, $cbMarqEntete, $_SESSION["id"], $_GET["acte"], $ref_article, $machine));
             }
         }
-        }
-    $protectionClass = new ProtectionClass("","",$objet->db);
+    }
+/*    $protectionClass = new ProtectionClass("","",$objet->db);
     $html = $protectionClass->alerteTransfert();
     if($html !="") {
         $mail = new Mail();
         $mail->sendMail("$html <br/><br/><br/> {$objet->db->db}","info@it-solution-sarl.com","Liste des transferts à une ligne");
-    }
+    }*/
 }
 
 if($_GET["acte"] =="vaid_confirmation"){

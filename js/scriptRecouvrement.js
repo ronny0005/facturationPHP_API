@@ -562,9 +562,9 @@ jQuery(function ($) {
             async : false,
             success: function (data) {
                 if($("#caisse").val()!=0) {
-                    if (data[0].CA_Souche != 0)
-                        ca_souche = data[0].CA_Souche;
-                    $("#journal").val(data[0].JO_Num);
+                    if (data.CA_Souche != 0)
+                        ca_souche = data.CA_Souche;
+                    $("#journal").val(data.JO_Num);
                 }
                 else
                     ca_souche = -1;
@@ -624,7 +624,7 @@ jQuery(function ($) {
         var type_regl = $_GET("typeRegl");
 
         $.ajax({
-            url: "indexServeur.php?page=addEcheance&type_regl="+type_regl+"&cr_no="+Val_RG_Piece+"&montant="+mtt_regl+"&cbMarqEntete="+cbMarqEntete,
+            url: "indexServeur.php?page=addEcheance&protNo="+$("#PROT_No").val()+"&type_regl="+type_regl+"&cr_no="+Val_RG_Piece+"&montant="+mtt_regl+"&cbMarqEntete="+cbMarqEntete,
             method: 'GET',
             dataType: 'html',
             async : false,

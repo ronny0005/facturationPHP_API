@@ -107,46 +107,13 @@ if($_GET["acte"] =="ajout_ligne"|| $_GET["acte"] =="modif") {
         $machine = "";
         if (isset($_GET["machineName"])) $machine = $_GET["machineName"];
         if (isset($_GET["PROT_No"])) {
-            $protection = new ProtectionClass("", "", $objet->db);
-            $protection->connexionProctectionByProtNo($_GET["PROT_No"]);
-            $isSecurite = $protection->IssecuriteAdmin($docEntete->DE_No);
-            $isVisu = $docEntete->isVisu($protection->PROT_Administrator, $protection->protectedType("Entree"), $protection->PROT_APRES_IMPRESSION,$isSecurite);
-            if (!$isVisu) {
-                if ($_GET["acte"] == "ajout_ligne") {
-                    $ref_article = $_GET["designation"];
-                    try {
-                        $objet->db->connexion_bdd->beginTransaction();
-                        $docligne = new DocLigneClass(0, $objet->db);
-                        echo $docligne->addDocligneEntreeMagasinProcess($ref_article, $cbMarqEntete, $qte, "1", "0", $prix, $type_fac, $machine, $_GET["PROT_No"]);
-                        $article = new ArticleClass($ref_article, $objet->db);
-                        $article->updateArtStock($docEntete->DO_Tiers, $qte, $prix * $qte, $_GET["PROT_No"], $_GET["acte"]);
-                        $article->setASQteMaxiArtStock($docEntete->DO_Tiers);
-                        $objet->db->connexion_bdd->commit();
-                    }
-                    catch(Exception $e){
-                        $objet->db->connexion_bdd->rollBack();
-                        return json_encode($e);
-                    }
-                } else {
-                    try {
-                        $objet->db->connexion_bdd->beginTransaction();
-                        $docligne = new DocLigneClass($cbMarq, $objet->db);
-                        $aprix = $docligne->DL_PrixUnitaire;
-                        $aqte = $docligne->DL_Qte;
-                        $docligne->setuserName("", "");
-                        $docligne->modifDocligneFactureMagasin($qte, $prix, $type_fac,$_GET["PROT_No"]);
-
-                        $article = new ArticleClass($docligne->AR_Ref, $objet->db);
-                        $article->updateArtStock($docEntete->DO_Tiers, -$aqte + $qte, ($prix * $qte) - ($aprix * $aqte),$_GET["PROT_No"],$_GET["acte"]);
-                        $rows = $docligne->getLigneFactureElementByCbMarq();
-                        echo json_encode($rows);
-                        $objet->db->connexion_bdd->commit();
-                    }
-                    catch(Exception $e){
-                        $objet->db->connexion_bdd->rollBack();
-                        return json_encode($e);
-                    }
-                }
+            if ($_GET["acte"] == "ajout_ligne") {
+                $ref_article = $_GET["designation"];
+                $docligne = new DocLigneClass(0, $objet->db);
+                echo $docligne->addDocligneEntreeMagasinProcess($ref_article, $cbMarqEntete, $qte, "1", "0", $prix, $type_fac, $machine,$_GET["PROT_No"]);
+            } else {
+                $docligne = new DocLigneClass($cbMarq, $objet->db);
+                echo $docligne->modifDocligneFactureMagasin($qte, $prix, $type_fac,$_GET["PROT_No"],$cbMarqEntete);
             }
         }
     }

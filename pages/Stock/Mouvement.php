@@ -24,22 +24,13 @@ $reference="";
 $dateEntete="";
 
 $do_imprim = 0;
-$result=$objet->db->requete($objet->getParametre($_SESSION["id"]));     
-$rows = $result->fetchAll(PDO::FETCH_OBJ);
-if($rows==null){
-
-}else{
-    $souche=$rows[0]->CA_Souche;
-    $co_no=$rows[0]->CO_No;
-    $depot_no=$rows[0]->DE_No;
-}   
 
 $depot_no = $_SESSION["DE_No"];
     
 // Données liées au client
 if(isset($_GET["client"])){
     $client=$_GET["client"];
-    $comptet = new ComptetClass($_GET["client"],$objet->db);
+    $comptet = new ComptetClass($_GET["client"]);
     $cat_tarif=$comptet->N_CatTarif;
     $cat_compta=$comptet->N_CatCompta;
     $libcat_tarif=$comptet->LibCatTarif;
@@ -49,12 +40,12 @@ if(isset($_GET["client"])){
 $isModif = 1;
 $isVisu = 1;
 $type = $_GET["type"];
-$docEntete = new DocEnteteClass(0,$objet->db);
+$docEntete = new DocEnteteClass(0);
 $docEntete->type_fac=$type;
 $isSecurite = 0;
-$isSecurite = $protection->IssecuriteAdmin($docEntete->DE_No);
+$isSecurite = $protection->IssecuriteAdmin(0);
 if(isset($_GET["cbMarq"])){
-    $docEntete = new DocEnteteClass($_GET["cbMarq"],$objet->db);
+    $docEntete = new DocEnteteClass($_GET["cbMarq"]);
     $docEntete->type_fac=$type;
     $reference=$docEntete->DO_Ref;
     $do_imprim = $docEntete->DO_Imprim;

@@ -8,7 +8,7 @@
     $ca_no=-1;
     $type=-1;
     $objet = new ObjetCollector();
-    $caisse = new CaisseClass(0,$objet->db);
+    $caisse = new CaisseClass(0);
     if($admin==0){
         $isPrincipal = 1;
         $rows = $caisse->getCaisseDepot($_SESSION["id"]);
@@ -22,7 +22,7 @@
     if(sizeof($rows)>0)
         $ca_no = $rows[0]->CA_No;
 
-    $creglement = new ReglementClass(0,$objet->db);
+    $creglement = new ReglementClass(0);
 $datapost = 0;
 $modif= 0;
 if(isset($_POST["RG_Modif"]))
@@ -49,49 +49,18 @@ if(isset($_POST["RG_Modif"]))
             $messageMenu = "Cette journée a déjà été cloturée !";
 
         if(isset($_POST["libelle"]) && $cloture == 0) {
-            $protection = new ProtectionClass("", "",$objet->db);
-            $protection->connexionProctectionByProtNo($_SESSION["id"]);
-            $isSecurite = $protection->IssecuriteAdminCaisse($_POST["CA_No"]);
-            if ($isSecurite == 1) {
-
-                $montant = str_replace(" ", "", $_POST["montant"]);
+                $montant = str_replace(" ","",$_POST["montant"]);
                 $login = $_SESSION["id"];
-                $CA_Num = "";
-                if (isset($_POST["CA_Num"]))
-                    $CA_Num = $_POST["CA_Num"];
+                $CA_Num="";
+                if(isset($_POST["CA_Num"]))
+                    $CA_Num=$_POST["CA_Num"];
                 $libelle = str_replace("'", "''", $_POST['libelle']);
-                $rg_typereg = 0;
-                if (isset($_POST['rg_typereg']))
+                $rg_typereg=0;
+                if(isset($_POST['rg_typereg']))
                     $rg_typereg = $_POST['rg_typereg'];
-                $user = "";
-                if (isset($_POST["user"]))
-                    $user = $_POST["user"];
-                if ($rg_typereg == 6) $libelle = $libelle;
-                $caisse = new CaisseClass($_POST["CA_No"],$objet->db);
-                $co_nocaissier = $caisse->CO_NoCaissier;
-                $ca_intitule = $caisse->CA_Intitule;
-                $jo_num = $caisse->JO_Num;
-                $collabClass = new CollaborateurClass($co_nocaissier,$objet->db);
-                if ($collabClass == null) {
-                } else {
-                    $collaborateur_caissier = $collabClass->CO_Nom;
-                }
-                $cg_num = $_POST['CG_NumBanque'];
-                $banque = 0;
-                if ($rg_typereg == 2) $cg_num = "NULL";
-                if ($rg_typereg == 6) {
-                    // Pour les vrst bancaire mettre a jour le compteur du RGPIECE
-                    $banque = 1;
-                }
-
-                if ($modif == 0)
-                    $creglement->addReglementCaisse($rg_typereg,$montant,$cg_num,$jo_num,$co_nocaissier,$libelle,$banque,$login,$_POST['date'], $_POST['CA_No'], $_POST["journalRec"],$_POST['CA_No_Dest'],$_POST["CA_Num"],$_POST["CG_Analytique"]);
-
-                if ($modif == 1)
-                     $creglement->modifReglementCaisse($_POST["rg_typeregModif"] ,$_POST["RG_NoLigne"],$_POST["date"],$_POST["CA_No"]
-                     ,$_POST["libelle"],$_POST["CG_NumBanque"],$_POST["montant"],$_POST["journalRec"],$_POST["RG_NoDestLigne"],$_POST["CA_No_Dest"]);
-                }
-            }
+                if($rg_typereg==6) $libelle=$libelle;
+                $creglement->insertMvtCaisse($montant,$login,$CA_Num,$libelle,$rg_typereg,$_POST["CA_No"],$_POST['CG_NumBanque'],$modif,$creglement->formatDateSageToDate($_POST['date']),$modif,$_POST['CA_No_Dest'],$_POST["CG_Analytique"],$_POST["rg_typeregModif"],$_POST["journalRec"],$_POST["RG_NoDestLigne"]);
+        }
 ?>
     
 <div>
@@ -123,7 +92,7 @@ if(isset($_POST["RG_Modif"]))
                                         <?php
                                             $isPrincipal = 0;
 
-                                        $caisse = new CaisseClass(0,$objet->db);
+                                        $caisse = new CaisseClass(0);
                                         if($admin==0){
                                             $isPrincipal = 1;
                                             $rows = $caisse->getCaisseDepot($_SESSION["id"]);
@@ -216,7 +185,7 @@ if(isset($_POST["RG_Modif"]))
                                 <div class="col-6 col-sm-6 col-md-6 col-lg-2">
                                     <select class="form-control" name="CA_No" id="caisseLigne" placeholder="caisse">
                                         <?php
-                                            $caisseClass = new CaisseClass(0,$objet->db);
+                                            $caisseClass = new CaisseClass(0);
                                             if($admin==0){
                                                 $isPrincipal = 1;
                                                 $rows = $caisseClass->getCaisseDepot($_SESSION["id"]);
@@ -280,7 +249,7 @@ if(isset($_POST["RG_Modif"]))
                                     <select class="form-control" id="journalRec" name="journalRec">
                                         <option value=""></option>
                                         <?php
-                                        $journalRec = new JournalClass(0,$objet->db);
+                                        $journalRec = new JournalClass(0);
                                         $rows = $journalRec->getJournauxType(2,0);
                                         foreach ($rows as $row){
                                             ?>
@@ -295,7 +264,7 @@ if(isset($_POST["RG_Modif"]))
                                     <select style="float:left" class="form-control" name="CA_No_Dest" id="CA_No_Dest" placeholder="caisse">
                                         <option value="-1">Sélectionner une caisse</option>
                                         <?php
-                                        $caisse = new CaisseClass(0,$objet->db);
+                                        $caisse = new CaisseClass(0);
                                         if($admin==0){
                                             $isPrincipal = 1;
                                             $rows = $caisse->getCaisseDepot($_SESSION["id"]);
@@ -353,7 +322,7 @@ if(isset($_POST["RG_Modif"]))
                                         if($val==2) return "Fond de caisse";
                                         if($val==6) return "Vrst bancaire";
                                     }
-                                    $reglement = new ReglementClass(0,$objet->db);
+                                    $reglement = new ReglementClass(0);
                                     $rows = $reglement->listeReglementCaisse($objet->getDate($datedeb),$objet->getDate($datefin),$ca_no,$type,$_SESSION["id"]);
                                     $reglement->afficheMvtCaisse($rows,$flagAffichageValCaisse,$flagCtrlTtCaisse);
                                 ?>

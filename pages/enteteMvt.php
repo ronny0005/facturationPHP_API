@@ -30,11 +30,11 @@
             $depotIntitule = "";
             if ($type == "Transfert" || $type == "Transfert_detail") {
                 $depotNo = $docEntete->DO_Tiers;
-                $depotIntitule = (new DepotClass($docEntete->DO_Tiers, $objet->db))->DE_Intitule;
+                $depotIntitule = (new DepotClass($docEntete->DO_Tiers))->DE_Intitule;
             }
             if ($type == "Transfert_confirmation" || $type == "Transfert_valid_confirmation") {
                 $depotNo = $docEntete->DO_Coord02;
-                $depotIntitule = (new DepotClass($docEntete->DO_Coord02, $objet->db))->DE_Intitule;
+                $depotIntitule = (new DepotClass($docEntete->DO_Coord02))->DE_Intitule;
             }
 
 
@@ -53,11 +53,10 @@
             <select class="form-control" id="affaire" name="affaire" <?php if(isset($_GET["cbMarq"]) || $isVisu) echo "disabled"; ?>>
                 <?php
                     if($admin==0){
-                            $result=$objet->db->requete($objet->getSoucheDepotGrpAffaire($_SESSION["id"],$type,-1,1));
+                           $rows = $protection->getSoucheDepotGrpAffaire($_SESSION["id"],$type,-1,1);
                     }else{
-                        $result=$objet->db->requete($objet->getAffaire());
+                        $rows = $protection->getAffaire();
                     }
-                    $rows = $result->fetchAll(PDO::FETCH_OBJ);
                     if($rows==null){
                     }else{
                         foreach($rows as $row){

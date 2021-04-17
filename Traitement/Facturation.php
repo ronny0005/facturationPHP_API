@@ -775,78 +775,10 @@ if($_GET["acte"]=="ligneFactureStock"){
 }
 //suppression d'article
 if($_GET["acte"] =="suppr"){
-    $type_fac=$_GET["type_fac"];
-    $docligne = new DocLigneClass($_GET["id"],$objet->db);
-    $docEntete = new DocEnteteClass($docligne->getcbMarqEntete(),$objet->db);
-    $isModif = 1;
-    $isVisu = 1;
-    $type=$_GET["type_fac"];
-    $prot_no = 0;
-    if(isset($_GET["PROT_No"])) {
-        $protection = new ProtectionClass("","",$objet->db);
-        $protection->connexionProctectionByProtNo($_GET["PROT_No"]);
-        $isSecurite = $protection->IssecuriteAdmin($docEntete->DE_No);
-        $isModif = $docEntete->isModif($protection->PROT_Administrator,$protection->PROT_Right,$protection->protectedType($type),$protection ->PROT_APRES_IMPRESSION,$isSecurite);
-        if($type_fac!="Devis") {
-            $isVisu = $docEntete->isVisu($protection->PROT_Administrator, $protection->protectedType($type), $protection->PROT_APRES_IMPRESSION, $isSecurite);
-        }else
-            $isVisu=0;
-        if(!$isVisu){
-            try {
-                $objet->db->connexion_bdd->beginTransaction();
-                $AR_PrixAch = $docligne->DL_CMUP;
-                $DL_Qte = $docligne->DL_Qte;
-                $AR_Ref = $docligne->AR_Ref;
-                $DE_No = $docEntete->DE_No;
-                $DO_Piece = $docligne->DO_Piece;
-                $AR_Ref = $docligne->AR_Ref;
-                $AR_Design = $docligne->DL_Design;
-                $article = new ArticleClass($AR_Ref, $objet->db);
-                $docligne->delete($_GET["PROT_No"]);
-                if ($docligne->DO_Domaine == 1) {
-                    $article->updateArtStock($DE_No, -$DL_Qte, -($AR_PrixAch * $DL_Qte), $_GET["PROT_No"], "suppr_ligne");
-                } else {
-                    if ($type_fac != "PreparationCommande" && $type_fac != "BonCommande" && $type_fac != "Devis") {
-                        $article->updateArtStock($DE_No, +$DL_Qte, +($AR_PrixAch * $DL_Qte), $_GET["PROT_No"], "suppr_ligne");
-                    }
-
-                    if (strcmp($type_fac, "PreparationCommande") == 0)
-                        $article->updateArtStockReel($DE_No,  - $DL_Qte);
-                    if (strcmp($type_fac, "BonCommande") == 0)
-                        $article->updateArtStockQteRes($DE_No, -$DL_Qte);
-                }
-                $result = $objet->db->requete($objet->getZFactReglSuppr($docEntete->DO_Domaine, $docEntete->DO_Type, $docEntete->DO_Piece));
-                $rows = $result->fetchAll(PDO::FETCH_OBJ);
-                if ($rows != null) {
-                    $result = $objet->db->requete($objet->getInfoRAFControleur());
-                    $rows = $result->fetchAll(PDO::FETCH_OBJ);
-                    if ($rows != null) {
-                        foreach ($rows as $row) {
-                            $email = $row->CO_EMail;
-                            $nom = $row->CO_Prenom . " " . $row->CO_Nom;
-                            $corpsMail = "
-            La facture $DO_Piece a été modifié par {$_SESSION["login"]}<br/>
-            La ligne concernant l'article $AR_Ref - $AR_Design de quantité {$objet->formatChiffre($DL_Qte)} a été supprimée <br/><br/>
-            Cordialement.<br/><br/>
-           ";
-
-                            if (preg_match('#^[\w.-]+@[\w.-]+\.[a-z]{2,6}$#i', $email)) {
-                                $mail = new Mail();
-                                $mail->sendMail($corpsMail . "<br/><br/><br/> {$objet->db->db}", $email, "Suppression de ligne dans la facture $DO_Piece");
-                            }
-                        }
-                    }
-                }
-                $objet->db->connexion_bdd->commit();
-            }
-            catch(Exception $e){
-                $docligne->db->connexion_bdd->rollBack();
-                return json_encode($e);
-            }
-        }
-    }
+    $docligne = new DocLigneClass(0);
+    $idSec = (isset($_GET["id_sec"])) ? $_GET["id_sec"] : 0;
+    $docligne->supprLigneFacture($_GET["id"],$idSec,$_GET["type_fac"],$_GET["PROT_No"]);
 }
-
 
 if($_GET["acte"] =="canTransform") {
     $cbMarqBL=$_GET["cbMarq"];

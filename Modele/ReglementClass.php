@@ -83,6 +83,12 @@ class ReglementClass Extends Objet{
         }
     }
 
+    public function updateImpute(){
+        $this->getApiExecute("/updateImpute&rgNo={$this->RG_No}");
+    }
+    public function addEcheance($protNo,$rgNo,$typeRegl,$cbMarqEntete,$montant){
+        $this->getApiExecute("/addEcheance&protNo=$protNo&rgNo=$rgNo&typeRegl=$typeRegl&cbMarqEntete=$cbMarqEntete&montant=$montant");
+    }
     public function getReglementByClientFacture($cbMarq) {
         return $this->getApiJson("/getReglementByClientFacture&cbMarq=$cbMarq");
     }
@@ -188,147 +194,15 @@ class ReglementClass Extends Objet{
     public function listeReglementCaisse($datedeb,$datefin,$ca_no,$type,$protNo){
         if($ca_no==-1)
             $ca_no=0;
-         $query = "BEGIN 
-                        DECLARE @ProtNo AS INT
-                        DECLARE @CA_No AS INT
-                        DECLARE @DateDeb AS VARCHAR(10)
-                        DECLARE @DateFin AS VARCHAR(10)
-                        DECLARE @Type AS INT
-                        
-                        SET @ProtNo = $protNo
-                        SET @CA_No = $ca_no
-                        SET @DateDeb = '$datedeb'
-                        SET @DateFin = '$datefin'
-                        SET @Type = $type;
-                        
-                        CREATE TABLE #TMPCAISSE (CA_No INT)
-                        SET NOCOUNT ON;
-                        
-                        IF (SELECT CASE WHEN PROT_Administrator=1 OR PROT_Right=1 THEN 1 ELSE 0 END FROM F_PROTECTIONCIAL WHERE Prot_No=@ProtNo) = 1 
-                        BEGIN 
-                            INSERT INTO #TMPCAISSE
-                            SELECT	ISNULL(CA.CA_No,0) CA_No 
-                            FROM F_CAISSE CA
-                            INNER JOIN Z_DEPOTCAISSE C 
-                                ON CA.CA_No=C.CA_No
-                            INNER JOIN F_DEPOT D 
-                                ON C.DE_No=D.DE_No
-                            INNER JOIN F_COMPTET CT 
-                                ON CT.cbCT_Num = CA.cbCT_Num
-                            WHERE (@CA_No=0 OR @CA_No=CA.CA_No)
-                            GROUP BY CA.CA_No
-                        END 
-                        ELSE 
-                        BEGIN 
-                            INSERT INTO #TMPCAISSE
-                            SELECT	ISNULL(CA.CA_No,0) CA_No
-                            FROM F_CAISSE CA
-                            LEFT JOIN Z_DEPOTCAISSE C 
-                                ON CA.CA_No=C.CA_No
-                            LEFT JOIN (	SELECT * 
-                                        FROM Z_DEPOTUSER
-                                        WHERE IsPrincipal=1) D 
-                                ON C.DE_No=D.DE_No
-                            LEFT JOIN F_COMPTET CT 
-                                ON CT.cbCT_Num = CA.cbCT_Num
-                            WHERE Prot_No=@ProtNo
-                            AND	(@CA_No=0 OR @CA_No=CA.CA_No)
-                            GROUP BY CA.CA_No
-                        END;
-
-SELECT RG_No,RG_Piece,CA_No,16 RG_TypeReg,CG_Num
-                    ,RG_Banque,RG_Type,RG_Montant,RG_Date
-                    ,RG_Impute,RG_Libelle,CO_NoCaissier
-                    ,CA_No_Dest
-                    ,RG_No_Source,RG_No_Dest
-                    ,JO_Num into #tmpTrsft
-FROM (          SELECT  count(*) nb,0 RG_No,RG_Piece
-                        ,SUM(CASE WHEN RG_TypeReg=4 THEN CA_No ELSE 0 END)CA_No,16 RG_TypeReg,CG_Num
-                        ,SUM(CASE WHEN RG_TypeReg=4 THEN RG_No ELSE 0 END)RG_No_Source
-                        ,SUM(CASE WHEN RG_TypeReg=5 THEN RG_No ELSE 0 END)RG_No_Dest
-                        ,RG_Banque,RG_Type,RG_Montant,RG_Date
-                        ,RG_Impute,RG_Libelle,CO_NoCaissier
-                        ,SUM(CASE WHEN RG_TypeReg=5 THEN CA_No ELSE 0 END)CA_No_Dest
-                        ,'' JO_Num 
-                FROM    F_CREGLEMENT 
-                WHERE   ((@Type) IN(-1,16) AND RG_TypeReg IN (5,4))
-                AND     RG_Banque = 0
-                GROUP BY RG_Piece,CG_Num
-                    ,RG_Banque,RG_Type,RG_Montant,RG_Date
-                    ,RG_Impute,RG_Libelle,CO_NoCaissier)A
-                    	WHERE nb=2
-                    	
-                    SELECT C.RG_No,RG_Piece,C.CA_No,CA_No_Dest,CO_Nom
-                          ,CA_Intitule,CO.CO_No,RG_TypeReg
-                          ,C.CG_Num,CONCAT(CONCAT(C.CG_Num,' - '),CG_Intitule) CG_Intitule
-                          ,RG_Banque,RG_Type,RG_Montant,CAST(RG_Date AS DATE) RG_Date
-                          ,RG_Impute,RG_Libelle,Lien_Fichier
-                          ,ISNULL(ZCPTEA.CA_Num,'') CA_Num
-                          ,ZCPTEA.CA_IntituleText
-                          ,RG_No_Source,RG_No_Dest 
-                          ,C.JO_Num 
-                FROM (  
-                    SELECT RG_No,RG_Piece,CA_No,RG_TypeReg,CG_Num
-                    ,RG_Banque,RG_Type,RG_Montant,RG_Date
-                    ,RG_Impute,RG_Libelle,CO_NoCaissier
-                    ,CA_No_Dest
-                    ,RG_No_Source,RG_No_Dest 
-                    ,JO_Num 
-                    FROM #tmpTrsft
-
-                    UNION
-                        SELECT  RG_No,RG_Piece,CA_No,6 RG_TypeReg,CG_Num
-                                ,RG_Banque,RG_Type,RG_Montant,RG_Date
-                                ,RG_Impute,RG_Libelle,CO_NoCaissier
-                                ,0 CA_No_Dest,RG_No RG_No_Source,0 RG_No_Dest 
-                                ,JO_Num 
-                        FROM    F_CREGLEMENT 
-                        WHERE   (('-1' IN (@Type) AND RG_TypeReg IN ('5') AND RG_Banque=1) 
-                        OR (@Type=6 AND RG_TypeReg IN (5) AND RG_Banque=1))
-                        UNION
-                        SELECT  RG_No,RG_Piece,CA_No,RG_TypeReg,CG_Num
-                                ,RG_Banque,RG_Type,RG_Montant,RG_Date
-                                ,RG_Impute,RG_Libelle,CO_NoCaissier
-                                ,0 CA_No_Dest,RG_No RG_No_Source,0 RG_No_Dest 
-                                ,JO_Num 
-                        FROM    F_CREGLEMENT 
-                        WHERE   
-                        (RG_No NOT IN (SELECT RG_No_Source FROM #tmpTrsft) AND RG_No NOT IN (SELECT RG_No_Dest FROM #tmpTrsft))
-                        AND ('-1' IN (@Type) AND (((RG_TypeReg IN ('2','4','3','5') AND RG_Banque=0) OR (RG_TypeReg=4 AND RG_Banque=1)) ) 
-                        OR (@Type NOT IN (6,4) AND RG_TypeReg =@Type) 
-                        OR (@Type=6 AND RG_TypeReg =4 AND RG_Banque=1)
-                        OR (@Type=5 AND RG_TypeReg =5 AND RG_Banque=0)
-                        OR (@Type=4 AND RG_TypeReg =4 AND RG_Banque=0))) C
-                LEFT JOIN F_CAISSE CA 
-                    ON C.CA_No=CA.CA_No
-                LEFT JOIN F_COMPTEG CptG 
-                    ON CptG.CG_Num=C.CG_Num
-                LEFT JOIN ( SELECT RG_No,A.CA_Num,CONCAT(CONCAT(A.CA_Num,' - '),CA_Intitule) CA_IntituleText
-                            FROM Z_RGLT_COMPTEA A
-                            INNER JOIN F_COMPTEA B ON A.CA_Num=B.CA_Num) ZCPTEA 
-                    ON ZCPTEA.RG_No=C.RG_No
-                LEFT JOIN Z_REGLEMENTPIECE RG
-                    ON RG.RG_No=C.RG_No
-                LEFT JOIN F_COLLABORATEUR CO 
-                    ON C.CO_NoCaissier=CO.CO_No
-                WHERE RG_Date BETWEEN @DateDeb AND @DateFin 
-                AND (C.CA_No IN (SELECT CA_No FROM #TMPCAISSE))
-                AND C.RG_No NOT IN (SELECT RG_NoCache FROM [dbo].[Z_RGLT_VRSTBANCAIRE])
-                ORDER BY C.RG_No
-END;";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/listeReglementCaisse&dateDeb=$datedeb&dateFin=$datefin&caNo=$ca_no&type=$type&protNo=$protNo");
     }
 
 
     public function journeeCloture($date,$caNo){
-        $query ="   SELECT   Nb = count(*) 
-                    FROM    F_CREGLEMENT 
-                    WHERE   RG_Cloture=1 
-                    AND     RG_Date='$date'
-                    and     CA_No=CASE WHEN '$caNo'='' THEN 0 ELSE '$caNo' END";
-        $result = $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ)[0]->Nb;
+            $valCaNo = 0;
+            if($caNo!="")
+                $valCaNo = $caNo;
+            return $this->getApiString("/journeeCloture&date=$date&caNo=$valCaNo");
     }
 
     function typeCaisse($val){
@@ -370,9 +244,9 @@ END;";
                 echo "<tr class='reglement $classe' id='reglement_{$row->RG_No}'>
                                                 <td style='color:blue;text-decoration:underline' id='RG_No'>{$row->RG_No}</a></td>
                                                 <td id='RG_Piece'>{$row->RG_Piece}</td>
-                                                <td id='RG_Date'>{$this->objetCollection->getDateDDMMYYYY($row->RG_Date)}</td>
+                                                <td id='RG_Date'>{$this->getDateDDMMYYYY($row->RG_Date)}</td>
                                                 <td id='RG_Libelle'>{$row->RG_Libelle}</td>
-                                                <td id='RG_Montant'>{$this->objetCollection->formatChiffre($montant)}</td>
+                                                <td id='RG_Montant'>{$this->formatChiffre($montant)}</td>
                                                 <td style='display:none' id='RG_MontantHide'>$montant</td>
                                                 <td style='display:none' id='CA_No'>{$row->CA_No}</td>
                                                 <td style='display:none' id='CA_No_DestLigne'>{$row->CA_No_Dest}</td>
@@ -404,7 +278,7 @@ END;";
                 $sommeMnt = $sommeMnt + $montant;
             }
             echo "<tr class='reglement' style='background-color:grey;color:white'>
-<td id='rgltTotal'><b>Total</b></td><td></td><td></td><td></td><td><b>{$this->objetCollection->formatChiffre($sommeMnt)}</b></td><td></td><td></td><td></td>";
+<td id='rgltTotal'><b>Total</b></td><td></td><td></td><td></td><td><b>{$this->formatChiffre($sommeMnt)}</b></td><td></td><td></td><td></td>";
 if($flagAffichageValCaisse==0) echo "<td></td>";
 if($flagCtrlTtCaisse==0) echo "<td></td>";
             echo "</tr>";
@@ -560,23 +434,7 @@ if($flagCtrlTtCaisse==0) echo "<td></td>";
     }
 
     public function getFactureRGNo($rg_no){
-        $query = "SELECT E.cbMarq,DE_Intitule,L.DO_Piece,L.DO_Ref,CAST(CAST(L.DO_Date AS DATE) AS VARCHAR(10)) AS DO_Date,CO.CT_Num,CT_Intitule, ROUND(SUM(L.DL_MontantTTC),0) AS ttc, 
-                ISNULL(sum(avance),0) AS avance  
-                FROM F_CREGLEMENT C
-                INNER JOIN (SELECT RG_No,DO_Piece,DO_Domaine,DO_Type, SUM(RC_MONTANT) avance FROM F_REGLECH R GROUP BY RG_No,DO_Piece,DO_Domaine,DO_Type) R ON C.RG_No=R.RG_No 
-                LEFT JOIN (SELECT cbMarq,DO_Piece,DO_Type,DO_Domaine,DE_No,DO_Ref,DO_Date,DO_Tiers FROM F_DOCENTETE  GROUP BY cbMarq,DO_Piece,DO_Type,DO_Domaine,DE_No,DO_Ref,DO_Date,DO_Tiers) E on R.DO_Piece=E.DO_Piece  AND R.DO_Domaine= E.DO_Domaine AND R.DO_Type=E.DO_Type
-                LEFT JOIN (SELECT DO_Piece,DO_Type,DO_Domaine,DE_No,DO_Ref,DO_Date,CT_Num,SUM(DL_MontantTTC) DL_MontantTTC FROM F_DOCLIGNE L GROUP BY DO_Piece,DO_Type,DO_Domaine,DE_No,DO_Ref,DO_Date,CT_Num) L on R.DO_Piece=L.DO_Piece  AND R.DO_Domaine= L.DO_Domaine AND R.DO_Type=L.DO_Type
-                LEFT JOIN F_COMPTET CO on CO.CT_Num=L.CT_Num
-                LEFT JOIN F_DEPOT D on D.DE_No=(CASE WHEN L.DE_No=0 THEN E.DE_No ELSE L.DE_No END)
-                WHERE C.RG_No=$rg_no
-                GROUP BY E.cbMarq,DE_Intitule,L.DO_Piece,L.DO_Ref,L.DO_Date,CO.CT_Num,CT_Intitule
-                UNION
-                SELECT 0 cbMarq,'' AS DE_Intitule,'' AS DO_Piece,RG_Libelle AS DO_Ref,CAST(CAST(RG_Date AS DATE) AS VARCHAR(10)) AS DO_Date,CT_NumPayeur CT_Num,'' CT_Intitule, RG_Montant AS ttc,0 AS avance 
-                FROM [dbo].[Z_RGLT_BONDECAISSE] A
-                INNER JOIN F_CREGLEMENT B ON A.RG_No=B.RG_No
-                WHERE RG_No_RGLT=$rg_no";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getFactureRGNo&rgNo=$rg_no");
     }
 
     public function insertZ_RGLT_BONDECAISSE($RG_No,$RG_NoLier){
@@ -914,6 +772,10 @@ if($flagCtrlTtCaisse==0) echo "<td></td>";
         }
     }
 
+    public function insertMvtCaisse($rgMontant,$protNo,$caNum,$libelle,$rgTypeReg,$caNo,$cgNumBanque,$isModif,$rgDate,$joNum,$caNoDest,$cgAnalytique,$rgTyperegModif,$journalRec,$rgNoDest){
+        $this->getApiExecute("/insertMvtCaisse&rgMontant=$rgMontant&protNo=$protNo&caNum=$caNum&libelle={$this->formatString($libelle)}&rgTypeReg=$rgTypeReg&caNo=$caNo&cgNumBanque=$cgNumBanque&isModif=$isModif&rgDate=$rgDate&joNum=$joNum&caNoDest=$caNoDest&cgAnalytique=$cgAnalytique&rgTyperegModif=$rgTyperegModif&journalRec=$journalRec&rgNoDest=$rgNoDest");
+    }
+
     public function modifReglementCaisse($rg_typeregModif,$RG_NoLigne,$date,$CA_No,$libelle,$CG_NumBanque,$montant,$journalRec,$RG_NoDestLigne,$CA_No_Dest){
         try {
             if ($rg_typeregModif == 4 || $rg_typeregModif == 2 || $rg_typeregModif == 5) {
@@ -1081,167 +943,10 @@ if($flagCtrlTtCaisse==0) echo "<td></td>";
                                 ,$ca_no/*$_GET["CA_No"]*/,$boncaisse /*$_GET["boncaisse"]*/,$libelle /*$_GET['libelle']*/,$caissier /*$_GET['caissier']*/
                                 ,$date/*$_GET['date']*/,$modeReglementRec /*$_GET["mode_reglementRec"]*/
                                 ,$montant /*$_GET['montant']*/,$impute/*$_GET['impute']*/,$RG_Type /*$_GET['RG_Type']*/,$afficheData=true,$typeRegl=""){
-        $admin = 0;
-        $limitmoinsDate = "";
-        $limitplusDate = "";
-        if($mobile!="")
-            if(!isset($_SESSION))
-                session_start();
-        if(isset($_SESSION)){
-            $protectionClass = new ProtectionClass($_SESSION["login"],$_SESSION["mdp"]);
-            if($protectionClass->PROT_Right!=1) {
-                $limitmoinsDate = date('d/m/Y', strtotime(date('Y-m-d'). " - ".$protectionClass->getDelai()." day"));
-                $limitplusDate = date('d/m/Y', strtotime(date('Y-m-d'). " + ".$protectionClass->getDelai()." day"));
-                $str = strtotime(date("M d Y ")) - (strtotime($date));
-                $nbDay = abs(floor($str/3600/24));
-                if($nbDay>$protectionClass->getDelai())
-                    $admin =1;
-            }
-        }
-
-        if($admin==0) {
-            $cg_num = "";
-            $ct_intitule = "";
-            $boncaisse=0;
-            $banque = 0;
-            $co_no=0;
-            if($boncaisse==1) {
-                $co_no = $ct_num;
-                $ct_num="";
-                $banque = 3;
-            }
-
-            if($typeRegl=="Collaborateur"){
-                $caissier = $ct_num;
-                $ct_num="";
-                $banque=3;
-                $rg_typeN=1;
-            }else{
-                $comptet = new ComptetClass($ct_num,"all",$this->db);
-                if($comptet->CT_Num!=""){
-                    $cg_num = $comptet->CG_NumPrinc;
-                    $ct_intitule = $comptet->CT_Intitule;
-                    $rg_typeN = $comptet->CT_Type;
-                }else{
-                    $banque = 3;
-                    $rg_typeN=2;
-
-                }
-            }
-            $email="";
-            $telephone="";
-            $collab_intitule="";
-            $caissier_intitule="";
-            if($boncaisse==1)
-                $caissier = $co_no;
-            $rg_typereg=0;
-            if($modeReglementRec=="05"){
-                $banque = 2;
-                $libelle = "Verst distant".$libelle;
-            }
-
-            if($modeReglementRec=="10"){
-                $rg_typereg = 5;
-            }
-            $caisseClass = new CaisseClass($ca_no,$this->db);
-            $result=$this->db->requete($this->objetCollection->getCaisseByCA_No($ca_no));
-            $rows = $result->fetchAll(PDO::FETCH_OBJ);
-            if($caisseClass->CA_No!=""){
-                $ca_intitule = $caisseClass->CA_Intitule;
-            }
-
-            $collaborateur_caissier ="";
-            $collaborateurClass = new CollaborateurClass($caissier,$this->db);
-            if($collaborateurClass->CO_No!=""){
-                $collaborateur_caissier = $collaborateurClass->CO_Nom;
-                $email=$collaborateurClass->CO_EMail;
-                $collab_intitule = $collaborateurClass->CO_Nom;
-                $telephone=$collaborateurClass->CO_Telephone;
-            }
-
-            $creglement = new ReglementClass(0);
-            $creglement->initVariables();
-            $creglement->RG_Date = $date;
-            $creglement->RG_DateEchCont = $date;
-            $creglement->JO_Num = $jo_num;
-            $creglement->CG_Num = $cg_num;
-            $creglement->CA_No = $ca_no;
-            $creglement->CO_NoCaissier = $caissier;
-            $creglement->RG_Libelle = substr($libelle,0,34);
-            $creglement->RG_Montant = $montant;
-            $creglement->RG_Impute = $impute;
-            $creglement->RG_Type = $rg_typeN;//$RG_Type;
-            $creglement->N_Reglement = $modeReglementRec;
-            $creglement->RG_TypeReg=$rg_typereg;
-            $creglement->RG_Ticket=0;
-            $creglement->RG_Banque=$banque;
-            $creglement->CT_NumPayeur = $ct_num;
-            $creglement->CT_NumPayeurOrig = $ct_num;
-            $creglement->setuserName("",$mobile);
-            if($rg_no_lier==0) {
-                $message = "VERSEMENT DISTANT D' UN MONTANT DE ". $this->objetCollection->formatChiffre($montant)
-                            ."AFFECTE AU COLLABORATEUR $collaborateur_caissier POUR LE CLIENT $ct_intitule A DATE DU $date saisie par {$creglement->userName}";
-                if (($email != "" || $email != null) && $modeReglementRec == "05") {
-                    $mail = new Mail();
-                    $mail->sendMail($message."<br/><br/><br/> {$this->db->db}", $email,  "Versement distant");
-                }
-            }
-
-            $RG_NoInsert = $creglement->insertF_Reglement();
-
-            if(($telephone!="" || $telephone!=null) && $modeReglementRec=="05"){
-                $contactD = new ContatDClass(1);
-                $contactD->sendSms($telephone,$message);
-            }
-
-            if($rg_no_lier==0) {
-                $message = 'VERSEMENT DISTANT D\' UN MONTANT DE ' . $this->objetCollection->formatChiffre($montant) . ' AFFECTE AU COLLABORATEUR ' . $collaborateur_caissier . ' POUR LE CLIENT ' . $ct_intitule . ' A DATE DU ' . date("d/m/Y", strtotime($date));
-                $result = $this->db->requete($this->objetCollection->getCollaborateurEnvoiMail("Versement distant"));
-                $rows = $result->fetchAll(PDO::FETCH_OBJ);
-                if ($rows != null) {
-                    foreach ($rows as $row) {
-                        $email = $row->CO_EMail;
-                        if (($email != "" || $email != null) && $modeReglementRec == "05") {
-                            $mail = new Mail();
-                            $mail->sendMail($message."<br/><br/><br/> {$this->db->db}", $email,  "Versement distant");
-                        }
-                    }
-                }
-
-                $result = $this->db->requete($this->objetCollection->getCollaborateurEnvoiSMS("Versement distant"));
-                $rows = $result->fetchAll(PDO::FETCH_OBJ);
-                if ($rows != null) {
-                    foreach ($rows as $row) {
-                        //$collab_intitule = $row->CO_Nom;
-                        $telephone = $row->CO_Telephone;
-                        if (($telephone != "" || $telephone != null) && $modeReglementRec == "05") {
-                            $contactD = new ContatDClass(1);
-                            $contactD->sendSms($telephone,$message);
-                        }
-                    }
-                }
-            }
-            $reglementClass = new ReglementClass($RG_NoInsert);
-            if($rg_no_lier!=0) {
-                $this->db->requete($this->objetCollection->insertZ_RGLT_BONDECAISSE($reglementClass->RG_No, $rg_no_lier));
-                $CA_No = 0;
-                $CO_NoCaissier = 0;
-                $reglementClassLier = new ReglementClass($rg_no_lier);
-
-                if ($reglementClassLier->RG_No != "") {
-                    $reglementClass->maj("CA_No",$CA_No);
-                    $reglementClass->maj("CO_NoCaissier",$CO_NoCaissier);
-                }
-                $reglementClassLier->maj("RG_Impute",1);
-            }
-            $this->objetCollection->incrementeCOLREGLEMENT();
-            if($afficheData)
-                echo json_encode($reglementClass);
-        }
-        else {
-            if($afficheData)
-            echo "la date doit être comprise entre $limitmoinsDate et $limitplusDate.";
-        }
+        $url = "/addReglement&protNo={$_SESSION["id"]}&joNum=$jo_num&rgNoLier=$rg_no_lier&ctNum=$ct_num&caNo=$ca_no&bonCaisse=$boncaisse&libelle=$libelle&caissier=$caissier&date=$date&modeReglementRec=$modeReglementRec&montant=$montant&impute=$impute&rgType=$RG_Type&afficheData=$afficheData&typeRegl=$typeRegl";
+        $info = $this->getApiJson($url);
+        if($afficheData)
+            echo json_encode($info);
     }
 
 

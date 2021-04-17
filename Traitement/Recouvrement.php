@@ -27,11 +27,6 @@ $mobile="";
 //}
 
 if(strcmp($_GET["acte"],"addReglement") == 0) {
-    $protection = new ProtectionClass("", "");
-    $protection->connexionProctectionByProtNo($_SESSION["id"]);
-    $isSecurite = $protection->IssecuriteAdminCaisse($_GET["caisse"]);
-    $reglementClass = new ReglementClass(0);
-    $cloture = $reglementClass->journeeCloture($objet->getDate($_GET['dateRec']),$_GET['caisse']);
     $valAction = 2;
     $typeRegl = $_GET["typeRegl"];
     if ($typeRegl == "Fournisseur")
@@ -46,7 +41,6 @@ if(strcmp($_GET["acte"],"addReglement") == 0) {
     $dateReglementEntete_fin = $_GET["dateReglementEntete_fin"];
     $ca_no = $_GET["caisse"];
     $type = $_GET["type"];
-    if ($isSecurite == 1 && $cloture == 0) {
         $reglement = new ReglementClass(0, $objet->db);
         $mobile = 0;
         if (isset($_GET["mobile"]))
@@ -63,7 +57,6 @@ if(strcmp($_GET["acte"],"addReglement") == 0) {
         $reglement->addReglement($mobile, $jo_num, $rg_no_lier, $ct_num
             , $ca_no, $boncaisse, $libelle, $caissier
             , $date, $modeReglementRec, $montant, $impute, $RG_Type, true, $typeRegl);
-    }
 //    header("Location: ../Reglement-$typeRegl-$caissier-$ct_num-$dateReglementEntete_deb-$dateReglementEntete_fin-$modeReglementRec-$jo_num-$ca_no-$type-$cloture");
         header("Location: ../indexMVC.php?module=1&action=$valAction&typeRegl=$typeRegl&caissier=$caissier&CT_Num=$ct_num&dateReglementEntete_deb=$dateReglementEntete_deb&dateReglementEntete_fin=$dateReglementEntete_fin&mode_reglement=0&journal=$jo_num&caisse=$ca_no&type=$type&cloture=$cloture");
 }

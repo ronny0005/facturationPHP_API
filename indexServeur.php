@@ -1169,7 +1169,7 @@ switch ($val) {
         break;
     case "getFactureRGNo":
         $reglement = new ReglementClass(0);
-        echo json_encode($reglement ->getFactureRGNo($_GET['RG_No']));
+        echo json_encode($reglement->getFactureRGNo($_GET['RG_No']));
         break;
     case "updateDrRegle":
         $result=$objet->db->requete($objet->updateDrRegle($_GET['RG_No']));
@@ -1195,23 +1195,19 @@ switch ($val) {
         envoiRequete($objet->getSoucheVenteByIndice($_GET["indice"]),$objet);
         break;
     case "updateDrRegleByDOPiece":
-        $docEntete = new DocEnteteClass($_GET['cbMarq']);
-        $isRegle = $docEntete-> isRegleFullDOPiece();
-        if($isRegle==1)
-            $docEntete->updateDrRegleByDOPiece();
+        $docEntete = new DocEnteteClass(0);
+        $docEntete->isRegleFullDOPiece($_GET['cbMarq']);
         break;
     case "updateImpute":
-        $reglement = new ReglementClass($_GET['RG_No']);
-        if($reglement->isRegleFull()==1) {
-            $reglement->maj("RG_Impute",1);
-            $reglement->majcbModification();
-        }
+        $reglement = new ReglementClass(0);
+        $reglement->updateImpute();
         break;
     case "getReglementByClient":
         $typeSelectRegl = 0;
-        if(isset($_GET["typeSelectRegl"]))
+        if (isset($_GET["typeSelectRegl"]))
             $typeSelectRegl = $_GET["typeSelectRegl"];
-        envoiRequete($objet->getReglementByClient($_GET['CT_Num'],$_GET['CA_No'],$_GET['type'],$_GET['treglement'],$_GET['datedeb'],$_GET['datefin'],$_GET['caissier'],$_GET['collaborateur'],$typeSelectRegl),$objet);
+        $reglement = new ReglementClass(0);
+        echo json_encode($reglement->getReglementByClient($_GET['CT_Num'], $_GET['CA_No'], $_GET['type'], $_GET['treglement'], $_GET['datedeb'], $_GET['datefin'], $_GET['caissier'], $_GET['collaborateur'], $typeSelectRegl));
         break;
     case "listeTypeReglement":
         envoiRequete($objet->listeTypeReglement(),$objet);
@@ -1598,11 +1594,13 @@ switch ($val) {
         break;
     case "addEcheance":
         $type_regl = "";
-        $reglement = new ReglementClass($_GET["cr_no"]);
-        $docEntete = new DocEnteteClass($_GET["cbMarqEntete"]);
-        $docRegl = new DocReglClass(0);
         if(isset($_GET['type_regl']))
             $type_regl = $_GET['type_regl'];
+        $reglement = new ReglementClass(0);
+        $reglement->addEcheance($_GET["protNo"], $_GET["cr_no"], $type_regl, $_GET["cbMarqEntete"], round($_GET["montant"]));
+        /*
+        $docEntete = new DocEnteteClass($_GET["cbMarqEntete"]);
+        $docRegl = new DocReglClass(0);
         $cbMarqDocRegl = $docEntete->getcbMarqDocRegl();
         if($cbMarqDocRegl!=0)
             $docRegl = new DocReglClass($cbMarqDocRegl);
@@ -1617,6 +1615,7 @@ switch ($val) {
         $reglEch = new ReglEchClass(0);
         $reglEch->addReglEch($reglement->RG_No, $docRegl->DR_No,$docEntete->DO_Domaine,$docEntete->DO_Type,$docEntete->DO_Piece, round($_GET["montant"]));
 //        echo json_encode($record);
+        */
         break;
     case "getLigneFacture":
         envoiRequete($objet->getLigneFacture($_GET['DO_Piece'],$_GET['DO_Domaine'],$_GET['DO_Type']),$objet);

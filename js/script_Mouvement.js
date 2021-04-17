@@ -433,7 +433,7 @@ jQuery(function($) {
 
         function supprElement(cbmarq_prem, cbmarq_sec) {
             $.ajax({
-                url: "traitement/" + fichierTraitement() + "?acte=suppr&PROT_No="+$("#PROT_No").val()+"&id=" + cbmarq_prem + "&id_sec=" + cbmarq_sec,
+                url: "traitement/Facturation.php?acte=suppr&type_fac="+typeDocument+"&PROT_No="+$("#PROT_No").val()+"&id=" + cbmarq_prem + "&id_sec=" + cbmarq_sec,
                 method: 'GET',
                 dataType: 'html',
                 success: function (data) {
@@ -948,8 +948,11 @@ jQuery(function($) {
                 ((typeDocument=="Transfert" || typeDocument=="Transfert_confirmation" || typeDocument=="Transfert_detail") && $("#DE_No").val()!="" && $("#CO_No").val()!="" && $("#DE_No").val()!=$("#CO_No").val())){
             if($("#affaire").val()!="null")
                 affaire = $("#affaire").val();
+            var client ="";
+            if($("#CO_No").val()!="undefined")
+                client = $("#CO_No").val();
             $.ajax({
-                url: "traitement/"+fichierTraitement()+"?type_fac="+typeDocument+"&do_piece="+$("#n_doc").val()+"&acte=ajout_entete&date="+returnDate($("#dateentete").val())+"&collaborateur="+$("#CO_No").val()+"&depot="+$("#DE_No").val()+ "&reference="+$("#ref").val()+ "&affaire="+affaire+"&userName="+$("#userName").html()+"&machineName="+$("#machineName").html()+"&PROT_No="+$("#PROT_No").val(),
+                url: "traitement/Facturation.php?acte=ajout_entete&type_fac="+typeDocument+"&do_piece="+$("#n_doc").val()+"&souche=0&de_no="+$("#DE_No").val()+"&date="+returnDate($("#dateentete").val())+"&client="+client+"&reference="+$("#ref").val()+"&co_no=0&cat_compta=0&cat_tarif=0&ca_no=0&affaire="+affaire+"&do_statut=0&userName="+$("#userName").html()+"&DO_Coord04=&machineName="+$("#machineName").html(),
                 method: 'GET',
                 async : false,
                 dataType: 'json',

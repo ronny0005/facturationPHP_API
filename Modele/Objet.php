@@ -176,12 +176,19 @@ class Objet {
 
     public function formatDateSageToDate($val){
         $date = DateTime::createFromFormat('dmy', $val);
-        return $date->format('Y-m-d ');
+        return $date->format('Y-m-d');
     }
+
+
+    public function getDateDDMMYYYY($date)
+    {
+        $date = new DateTime($date);
+        return $date->format('d-m-Y');
+    }
+
     function formatAmount($valeur){
         return str_replace(" ","",$valeur);
     }
-
 
     public function formatChiffre($chiffre){
         return number_format($chiffre, 2, '.', ' ');
