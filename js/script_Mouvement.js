@@ -943,7 +943,7 @@ jQuery(function($) {
 
     function valideEntete(){
         var affaire = "";
-        if($("#cbMarqEntete").val()=="")
+        if($("#cbMarqEntete").val()=="" || $("#cbMarqEntete").val()=="0")
         if((typeDocument!="Transfert" && typeDocument!="Transfert_confirmation" && typeDocument!="Transfert_detail" && $("#DE_No").val()!="") ||
                 ((typeDocument=="Transfert" || typeDocument=="Transfert_confirmation" || typeDocument=="Transfert_detail") && $("#DE_No").val()!="" && $("#CO_No").val()!="" && $("#DE_No").val()!=$("#CO_No").val())){
             if($("#affaire").val()!="null")

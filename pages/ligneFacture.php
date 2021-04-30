@@ -138,27 +138,55 @@ $classQte = "col-lg-2";
     <input type="hidden" value="<?php echo $qte_negative; ?>" name="qte_negative" id="qte_negative"/>
     <input type="hidden" value="<?php echo $do_imprim; ?>" name="do_imprim" id="do_imprim"/>
     <div class="form-row">
-    <div class="col-12 col-sm-3 col-md-2 col-lg-2">
+    <div class="col-12 col-sm-3 col-md-2 col-lg-2 mt-2">
         <input class="form-control" id="entete" name="entete" name="entete" type="hidden" value="<?php echo $entete; ?>"/>
         <input type="text" id="reference" name="reference" class="form-control" placeholder="Référence" <?php if(!isset($_GET["cbMarq"]) || $isVisu) echo "disabled" ?>/>
         <input type="hidden" class="form-control" id="AR_Ref" name="AR_Ref" value="" />
     </div>
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mt-2">
         <input class="form-control" id="designation" name="designation" placeholder="Désignation" <?php if(!isset($_GET["cbMarq"]) || $isVisu) echo "disabled" ?>/>
     </div>
-    <div class="<?php echo $classQte; ?> col-6 col-sm-3 col-md-2 col-lg-1" >
+    <div class="<?php echo $classQte; ?> col-6 col-sm-3 col-md-3 col-lg-1 mt-2" >
         <input type="text" class="form-control"  value="" name="quantite" id="quantite" placeholder="<?php echo $libQte; ?> " <?php if(!isset($_GET["cbMarq"]) || $isVisu) echo "disabled" ?>/>
     </div>
-    <div class="col-6 col-sm-5 col-md-4 col-lg-2" style="<?php if((($type=="Achat" || $type=="AchatC" || $type=="AchatT" ||
+    <div class="col-6 col-sm-3 col-md-3 col-lg-2 mt-2" style="<?php if((($type=="Achat" || $type=="AchatC" || $type=="AchatT" ||
             $type=="AchatPreparationCommande"|| $type=="PreparationCommande")&& $flagPxAchat!=0)) echo "display:none" ?>">
           <input type="text" class="form-control"   value="" id="prix" name="prix" placeholder="P.U" <?php if($flagPxVenteRemise!=0) echo " readonly "; ?>/>
     </div>
-    <div class="col-6 col-sm-3 col-md-2 col-lg-2">
+    <div class="col-6 col-sm-3 col-md-3 col-lg-2 mt-2">
           <input type="text" class="form-control" id="quantite_stock" value="" placeholder="Quantité en stock" disabled/>
     </div>
-        <div class="col-6 col-sm-4 col-md-4 col-lg-2">
+        <div class="col-6 col-sm-3 col-md-4 col-lg-2 mt-2">
             <input type="text" class="form-control only_remise" value="" id="remise" name="remise" placeholder="Remise"
                    disabled <?php if($flagPxVenteRemise!=0) echo " readonly "; ?>/>
+        </div>
+        <div class="col-6 col-sm-3 col-md-5 col-lg-2 mt-2">
+            <select class="form-control" name="depotLigne" id="depotLigne">
+                <?php
+                $isPrincipal = 0;
+                $depotClass = new DepotClass(0);
+                if($admin==0){
+                    $isPrincipal = 1;
+                    $rows = $depotClass->getDepotUser($_SESSION["id"]);
+                }
+                else
+                    $rows = $depotClass->alldepotShortDetail();
+                $depot="";
+                foreach($rows as $row) {
+                    if ($isPrincipal == 0) {
+                        echo "<option value='{$row->DE_No}'";
+                        if ($row->DE_No == $docEntete->DE_No) echo " selected";
+                        echo ">{$row->DE_Intitule}</option>";
+                    } else {
+                        if ($row->IsPrincipal == 1) {
+                            echo "<option value='{$row->DE_No}'";
+                            if ($row->DE_No == $docEntete->DE_No) echo " selected";
+                            echo ">{$row->DE_Intitule}</option>";
+                        }
+                    }
+                }
+                ?>
+            </select>
         </div>
     <div class="col-lg-1">
         <input type="hidden" name="taxe1" id="taxe1" value="0" />
@@ -197,6 +225,7 @@ $classQte = "col-lg-2";
             <th style="<?php
             if((($type=="Achat" || $type=="AchatC" || $type=="AchatT" || $type=="AchatPreparationCommande"|| $type=="PreparationCommande")&& $flagPxAchat!=0))
                 echo "display:none";?>">Montant TTC</th>
+            <th>Depot</th>
             <th></th>
 
 <?php
@@ -223,6 +252,7 @@ if (!$isVisu)
           } else {
               foreach ($rows as $row) {
                   $docligne = new DocLigneClass($row->cbMarq);
+                  $depotLigne = new DepotClass($docligne->DE_No);
                   $typefac = 0;
                   if($cat_tarif == null)
                       $cat_tarif =0;
@@ -268,6 +298,8 @@ if (!$isVisu)
                           if((($type=="Achat" || $type=="AchatC" || $type=="AchatT" || $type=="AchatPreparationCommande"|| $type=="PreparationCommande")&& $flagPxAchat!=0))
                               echo "display:none";?>">
                       <?= $objet->formatChiffre($montantTTCLigne); ?></td>
+                      <td id="deIntitule"><?= $depotLigne->DE_Intitule ?></td>
+                      <td style='display:none' id="depotLigne"><?= $depotLigne->DE_No ?></td>
                       <td style='display:none' id='DL_NoColis'><?= $docligne->DL_NoColis; ?></td>
                       <td style='display:none' id='cbMarq'><?= $docligne->cbMarq; ?></td>
                       <td style='display:none' id='cbMarqArticle'><?= $articleClass->cbMarq; ?></td>
@@ -277,14 +309,14 @@ if (!$isVisu)
                       <td style='display:none' id='DL_PieceBL'><?= $docligne->DL_PieceBL; ?></td>
                   <?php
                   if (!isset($_GET["visu"]) && ($_GET["type"] == "PreparationCommande" || $_GET["type"] == "AchatPreparationCommande"))
-                      echo "<td id='lignea_" . $docligne->cbMarq . "'><i class='fa fa-sticky-note fa-fw'></i></td>";
+                      echo "<td id='lignea_{$docligne->cbMarq}'><i class='fa fa-sticky-note fa-fw'></i></td>";
                   if (!$isVisu)
                       echo "<td id='modif_{$docligne->cbMarq}'>
                                 <i class='fa fa-pencil fa-fw'></i>
                             </td>
                             <td id='suppr_{$docligne->cbMarq}'><i class='fa fa-trash-o'></i></a></td>";
                   if($protection->PROT_CBCREATEUR!=2)
-                      echo "<td></td><td>{$docligne->getcbCreateurName()}</td>";
+                      echo "<td>{$docligne->getcbCreateurName()}</td>";
                   echo "</tr>";
                   $totalht = $totalht + ROUND($docligne->DL_MontantHT, 2);
                   $tva = $tva + ROUND($docligne->MT_Taxe1, 2);

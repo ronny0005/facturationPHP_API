@@ -347,92 +347,8 @@ class DocEnteteClass Extends Objet{
             return $lienfinal;
         }
 
-    public function majAnalytique(){
-        $query = "  DECLARE @cbMarq AS INT;
-                    SET @cbMarq = {$this->cbMarq};
-                    WITH _Taxe_ AS (
-                        SELECT	T.TA_Code
-                                ,T.cbTA_Code
-                                ,T.CG_Num
-                                ,C.CG_Tiers
-                                ,T.TA_Provenance
-                        FROM F_TAXE T
-                        LEFT JOIN F_COMPTEG C 
-                            ON T.cbCG_Num = C.cbCG_Num
-                    )
-                    ,_InfoTaxe_ AS (
-                        SELECT  COMPTEG_ARTICLE = ISNULL(ACP_ComptaCPT_CompteG,FCP_ComptaCPT_CompteG) 
-                            ,Cg.CG_Tiers CG_TiersArticle,CodeTaxe1 = TU.TA_Code,CG_NumTaxe1 = TU.CG_Num
-                            ,CG_Tiers1 = TU.CG_Tiers,CodeTaxe2 = TD.TA_Code,CG_NumTaxe2 = TD.CG_Num,CG_Tiers2 = TD.CG_Tiers 
-                            ,CodeTaxe3 = TT.TA_Code,CG_NumTaxe3 = TT.CG_Num,CG_Tiers3 = TT.CG_Tiers
-                            ,TA_Provenance1 = TU.TA_Provenance
-                            ,TA_Provenance2 = TD.TA_Provenance
-                            ,TA_Provenance3 = TT.TA_Provenance
-                            ,Art.AR_Ref
-                            ,FCP_Champ
-                            ,FCP_Type
-                        FROM    F_ARTICLE Art 
-                        LEFT JOIN F_FAMCOMPTA F 
-                            ON  Art.cbFA_CodeFamille = F.cbFA_CodeFamille  
-                        LEFT JOIN F_ARTCOMPTA A 
-                            ON  A.cbAR_Ref = Art.cbAR_Ref 
-                            AND ISNULL(ACP_Champ,FCP_Champ) =FCP_Champ 
-                            AND ISNULL(ACP_Type,FCP_Type)=FCP_Type 
-                        LEFT JOIN F_COMPTEG Cg 
-                            ON  Cg.CG_Num = ISNULL(ACP_ComptaCPT_CompteG,FCP_ComptaCPT_CompteG)
-                        LEFT JOIN _Taxe_ TU 
-                            ON TU.cbTA_Code = (CASE WHEN ISNULL(FCP_ComptaCPT_Taxe1,'')  <> ISNULL(ACP_ComptaCPT_Taxe1,'')AND ACP_ComptaCPT_Taxe1 IS NOT NULL THEN
-                                                ACP_ComptaCPT_Taxe1 ELSE FCP_ComptaCPT_Taxe1 END)
-                        LEFT JOIN _Taxe_ TD 
-                            ON TD.cbTA_Code = (CASE WHEN ISNULL(FCP_ComptaCPT_Taxe2,'')  <> ISNULL(ACP_ComptaCPT_Taxe2,'')  AND ACP_ComptaCPT_Taxe2 IS NOT NULL THEN 
-                                                    ACP_ComptaCPT_Taxe2 ELSE FCP_ComptaCPT_Taxe2 END) 
-                        LEFT JOIN _Taxe_ TT 
-                            ON TT.cbTA_Code = (CASE WHEN ISNULL(FCP_ComptaCPT_Taxe3,'')  <> ISNULL(ACP_ComptaCPT_Taxe3,'')  AND ACP_ComptaCPT_Taxe3 IS NOT NULL THEN 
-                                        ACP_ComptaCPT_Taxe3 ELSE FCP_ComptaCPT_Taxe3 END) 
-                    )
-                    ,_Analytique_ AS (
-                        SELECT	A.CbMarq_Ligne,A_Intitule,A.N_Analytique
-                                ,EA_Ligne,A.CA_Num,CA_Intitule,EA_Montant
-                                ,EA_Quantite,A.cbMarq
-                        FROM	Z_LIGNE_COMPTEA A
-                        LEFT JOIN F_COMPTEA B 
-                            ON	A.CA_Num = B.CA_Num 
-                        LEFT JOIN P_Analytique PA 
-                            ON	PA.cbIndice = A.N_Analytique
-                    )
-                    
-                    SELECT	nomFichier =''
-                            ,JO_Num =  (SELECT JO_Num  
-                                        FROM P_SOUCHEACHAT 
-                                        WHERE S_Intitule<>'' AND S_Valide=1 AND cbIndice-1 = docE.DO_Souche)
-                            ,Annee_Exercice = CAST(YEAR(docE.DO_Date) AS NVARCHAR(10)) + RIGHT('0'+ CAST(MONTH(docE.DO_Date) AS NVARCHAR(10)),2)
-                            ,CA_Num = ana.CA_Num
-                            ,CG_Num = ISNULL(infT.COMPTEG_ARTICLE,'')
-                            ,A_Intitule = ana.A_Intitule
-                            ,A_Qte = ana.EA_Quantite
-                            ,A_Montant = ana.EA_Montant
-                            ,EC_No = ISNULL(docL.cbMarq,'')
-                            ,N_Analytique = ana.N_Analytique                            
-                    FROM	F_DOCENTETE docE
-                    LEFT JOIN F_DOCLIGNE docL
-                        ON	docL.DO_Domaine = docE.DO_Domaine
-                        AND	docL.DO_Type = docE.DO_Type
-                        AND	docL.DO_Piece = docE.DO_Piece
-                    LEFT JOIN F_DOCREGL docR
-                        ON	docR.DO_Domaine = docE.DO_Domaine
-                        AND	docR.DO_Type = docE.DO_Type
-                        AND	docR.DO_Piece = docE.DO_Piece
-                    LEFT JOIN F_COMPTET cptT
-                        ON	docE.DO_Tiers = cptT.CT_Num
-                    LEFT JOIN _InfoTaxe_ infT
-                        ON	infT.FCP_Champ=docE.N_CatCompta 
-                        AND infT.FCP_Type=docE.DO_Domaine
-                        AND infT.AR_Ref=docL.AR_Ref
-                    LEFT JOIN _Analytique_ ana
-                        ON	ana.CbMarq_Ligne = docL.cbMarq
-                    WHERE	docE.cbMarq = @cbMarq";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+    public function getLigneMajAnalytique(){
+        return $this->getApiJson("/getLigneMajAnalytique&cbMarq={$this->cbMarq}");
     }
 
     public function getLigneFacture() {
@@ -440,7 +356,7 @@ class DocEnteteClass Extends Objet{
     }
 
     public function saisie_comptable(){
-        $this->getApiJson("/saisie_comptable&cbMarq={$this->cbMarq}");
+        return $this->getApiJson("/saisie_comptable&cbMarq={$this->cbMarq}");
     }
 
     public function journeeCloture($date,$caNo){

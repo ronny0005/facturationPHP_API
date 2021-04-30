@@ -756,6 +756,10 @@ class DocLigneClass Extends Objet
 			SET @valRemise = @prix * @remise /100;
 		";
     }
+    public function verifSupprAjout()
+    {
+        return $this->getApiJson("/verifSupprAjout&cbMarq={$this->cbMarq}");
+    }
 
     public function verifbornePrix($rows, $type,$protNo,$catTarif,$arRef)
     {
@@ -1251,9 +1255,9 @@ INSERT INTO [dbo].[F_DOCLIGNE]
         return json_encode($row);
     }
 
-    public function ajout_ligneFacturation($qteG, $ARRefG, $cbMarqEntete, $typeFacG, $cattarifG, $prixG, $remiseG, $machinepcG, $acte,$protNo)
+    public function ajout_ligneFacturation($qteG, $ARRefG, $cbMarqEntete, $typeFacG, $cattarifG, $prixG, $remiseG, $machinepcG, $acte,$protNo,$depotLigne=0)
     {
-        return $this->getApiString("/ajoutLigne&cbMarq={$this->cbMarq}&protNo=$protNo&dlQte={$this->formatAmount($qteG)}&arRef={$this->formatString($ARRefG)}&cbMarqEntete=$cbMarqEntete&typeFacture=$typeFacG&catTarif=$cattarifG&dlPrix={$this->formatAmount($prixG)}&dlRemise={$this->formatString($remiseG)}&machineName={$this->formatString($machinepcG)}&acte=$acte&entete_prev=");
+        return $this->getApiString("/ajoutLigne&cbMarq={$this->cbMarq}&protNo=$protNo&dlQte={$this->formatAmount($qteG)}&arRef={$this->formatString($ARRefG)}&cbMarqEntete=$cbMarqEntete&typeFacture=$typeFacG&catTarif=$cattarifG&dlPrix={$this->formatAmount($prixG)}&dlRemise={$this->formatString($remiseG)}&machineName={$this->formatString($machinepcG)}&acte=$acte&entete_prev=&depotLigne=$depotLigne");
     }
 
     public function logMvt($action, $DE_No, $AR_Ref, $Qte, $Prix, $Remise, $Montant,$cbCreateur,$cbMarq,$doDate)
@@ -2150,7 +2154,7 @@ INSERT INTO [dbo].[F_DOCLIGNE]
     }
 
     public function supprLigneFacture($cbMarq,$cbMarqSec,$typeFacture,$protNo){
-        $this->getApiExecute("/supprLigneFacture&cbMarq=$cbMarq&cbMarqSec=$cbMarqSec&typeFacture=$typeFacture&protNo=$protNo");
+        return $this->getApiJson("/supprLigneFacture&cbMarq=$cbMarq&cbMarqSec=$cbMarqSec&typeFacture=$typeFacture&protNo=$protNo");
     }
 
     public function __toString() {

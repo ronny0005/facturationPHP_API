@@ -11,6 +11,7 @@ include("../Modele/ObjetCollector.php");
 include("../Modele/Objet.php");
 include("../Modele/LogFile.php");
 include("../Modele/ContatDClass.php");
+include("../Modele/DepotClass.php");
 include("../Modele/DocEnteteClass.php");
 include("../Modele/DocLigneClass.php");
 include("../Modele/ComptetClass.php");
@@ -133,7 +134,7 @@ if($_GET["acte"] =="ajout_entete"){
 // mise à jour de la référence
 if( $_GET["acte"] =="ajout_reference"){
     $docEntete = new DocEnteteClass(0);
-    $docEntete->majLigneByCbMarq("DO_Ref",str_replace("'","''",$_GET["reference"]),$_GET["cbMarq"],$_GET["protNo"]);
+    $docEntete->majLigneByCbMarq("DO_Ref",$docEntete->formatString(str_replace("'","''",$_GET["reference"])),$_GET["cbMarq"],$_GET["protNo"]);
 }
 
 // mise à jour de la référence
@@ -409,12 +410,12 @@ function getItemCompta($table,$val){
 }
 
 if($_GET["acte"] =="saisie_comptableAnal") {
-    echo json_encode(saisie_comptableAnal($_GET["cbMarq"],$objet->db));
+    return saisie_comptableAnal($_GET["cbMarq"]);
 }
 
-function saisie_comptableAnal($cbMarq,$objet){
-    $docEntete = new DocEnteteClass($cbMarq,$objet);
-    return $docEntete->majAnalytique();
+function saisie_comptableAnal($cbMarq){
+    $docEntete = new DocEnteteClass($cbMarq);
+    echo json_encode($docEntete->getLigneMajAnalytique());
 }
 
 if($_GET["acte"] =="clotureVente") {
@@ -480,7 +481,7 @@ if($_GET["acte"] =="ajout_ligne"|| $_GET["acte"] =="modif"){
                 isset($_GET["designation"])? $_GET["designation"]:""
                 ,$_GET["cbMarqEntete"],$_GET["type_fac"],
                 $_GET["cat_tarif"],$_GET["prix"],$_GET["remise"],
-                $_GET["machineName"], $_GET["acte"],$_GET["PROT_No"]);
+                $_GET["machineName"], $_GET["acte"],$_GET["PROT_No"],$_GET["depotLigne"]);
     }
 }
 
@@ -500,7 +501,8 @@ if($_GET["acte"]=="ligneFacture"){
         $fournisseur = 1;
     if ($rows != null) {
         foreach ($rows as $row) {
-            $docligne = new DocLigneClass($row->cbMarq,$objet->db);
+            $docligne = new DocLigneClass($row->cbMarq);
+            $depotLigne = new DepotClass($docligne->DE_No);
             $typefac = 0;
             $rows = $docligne->getPrixClientHT($docligne->AR_Ref, $docEntete->N_CatCompta, $cat_tarif, 0, 0, $docligne->DL_Qte, $fournisseur);
             if (sizeof($rows)>0) {
@@ -542,6 +544,8 @@ $isVisu = $docEntete->isVisu($protectionClass->PROT_Administrator,$protectionCla
                 <td id='DL_MontantTTC' style="<?php
                 if((($typeDocument =="Achat" || $typeDocument =="AchatC" || $typeDocument =="AchatT" || $typeDocument =="AchatPreparationCommande"|| $typeDocument =="PreparationCommande")&& $flagPxAchat!=0))
                     echo "display:none";?>"> <?= $objet->formatChiffre($montantTTCLigne); ?> </td>
+                <td id="deIntitule"><?= $depotLigne->DE_Intitule ?></td>
+                <td style='display:none' id="depotLigne"><?= $depotLigne->DE_No ?></td>
                 <td style='display:none' id='DL_PieceBL'><?= $docligne->DL_PieceBL; ?></td>
 
                 <td style='display:none' id='DL_NoColis'><?= $docligne->DL_NoColis; ?></td>
@@ -776,7 +780,7 @@ if($_GET["acte"]=="ligneFactureStock"){
 if($_GET["acte"] =="suppr"){
     $docligne = new DocLigneClass(0);
     $idSec = (isset($_GET["id_sec"])) ? $_GET["id_sec"] : 0;
-    $docligne->supprLigneFacture($_GET["id"],$idSec,$_GET["type_fac"],$_GET["PROT_No"]);
+    echo json_encode($docligne->supprLigneFacture($_GET["id"],$idSec,$_GET["type_fac"],$_GET["PROT_No"]));
 }
 
 if($_GET["acte"] =="canTransform") {

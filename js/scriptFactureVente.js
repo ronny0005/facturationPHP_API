@@ -226,6 +226,8 @@ jQuery(function($) {
     $("#depot").change(function() {
 
         setArticle();
+        $("#depotLigne").val($(this).val())
+
         getDepotSoucheCaisse(0, $("#depot").val(), -1, "");
         if ($("#cbMarqEntete").val()==0 && ($("#typeDocument").val() == "BonLivraison" || $("#typeDocument").val() == "Vente")) {
             $("#reference").html("");
@@ -921,7 +923,7 @@ jQuery(function($) {
                         method: 'GET',
                         async: false,
                         dataType: 'json',
-                        data : "cbMarqEntete="+$("#cbMarqEntete").val()+ajoutParam+"&PROT_No="+$("#PROT_No").val(),
+                        data : "cbMarqEntete="+$("#cbMarqEntete").val()+ajoutParam+"&PROT_No="+$("#PROT_No").val()+"&depotLigne="+$("#depotLigne").val(),
                         success: function (data) {
                             $("#ADL_Qte").val(0);
                             if(typeFacture=="Vente") {
@@ -975,7 +977,7 @@ jQuery(function($) {
                         method: 'GET',
                         async: false,
                         dataType: 'json',
-                        data : "cbMarqEntete="+$("#cbMarqEntete").val()+ajoutParam+"&PROT_No="+$("#PROT_No").val(),
+                        data : "cbMarqEntete="+$("#cbMarqEntete").val()+ajoutParam+"&PROT_No="+$("#PROT_No").val()+"&depotLigne="+$("#depotLigne").val(),
                         success: function (data) {
                             $("#ADL_Qte").val(0);
                             if(typeFacture=="Vente") {
@@ -1054,6 +1056,7 @@ jQuery(function($) {
 
             typeArticle(AR_Ref, $("#cat_tarif").val(), $("#cat_compta").val(), pu, ttc, $("#prix"), DL_Qte);
             $('#reference').val(AR_Ref);
+            $("#depotLigne").val(elem.find("#depotLigne").html());
             $('#AR_Ref').val(AR_Ref);
             $('#designation').val(DL_Design);
             $('#remise').val(DL_Remise);
