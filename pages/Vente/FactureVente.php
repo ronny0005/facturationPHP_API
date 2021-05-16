@@ -64,7 +64,7 @@ $isVisu = 1;
 $isLigne = 0;
 $isSecurite = 0;
 $isSecurite = $protection->IssecuriteAdmin(0);
-    $docEntete = new DocEnteteClass(0,$objet->db);
+    $docEntete = new DocEnteteClass(0);
     $docEntete->setTypeFac($_GET["type"]);
     if(isset($_GET["cbMarq"])){
         $docEntete = new DocEnteteClass($_GET["cbMarq"]);
@@ -79,13 +79,8 @@ $isSecurite = $protection->IssecuriteAdmin(0);
             $isLigne=1;
     }
     $type=$_GET["type"];
-    if($type!="Devis") {
-        $isModif = $docEntete->isModif();
-        $isVisu = $docEntete->isVisu();
-    }else{
-        $isModif =1;
-        $isVisu = 0;
-    }
+    $isModif = $docEntete->isModif();
+    $isVisu = $docEntete->isVisu();
     if($protection->ProtectAdmin==1)
         $admin=0;
     $protected = $protection->PROT_Right;
