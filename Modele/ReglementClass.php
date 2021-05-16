@@ -205,6 +205,10 @@ class ReglementClass Extends Objet{
             return $this->getApiString("/journeeCloture&date=$date&caNo=$valCaNo");
     }
 
+    public function majReglement($protNo,$bonCaisse,$rgNo,$rgLibelle,$montant,$rgDate,$joNum,$ctNum,$coNo){
+        $this->getApiExecute("/modifReglementTiers&protNo=$protNo&coNo=$coNo&bonCaisse=$bonCaisse&rgNo=$rgNo&rgLibelle={$this->formatString($rgLibelle)}&montant=$montant&rgDate=$rgDate&joNum={$this->formatString($joNum)}&ctNum={$this->formatString($ctNum)}");
+    }
+
     function typeCaisse($val){
         if($val==5) return "Entrée";
         if($val==4) return "Sortie";

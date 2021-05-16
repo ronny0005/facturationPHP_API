@@ -1318,33 +1318,13 @@ switch ($val) {
         envoiRequete($objet->createClientMin($_GET["CT_Num"],$_GET["CT_Intitule"],$_GET["CG_Num"],$_GET["adresse"],$_GET["cp"],$_GET["ville"],$_GET["coderegion"],$_GET["siret"],$_GET["ape"],$_GET["numpayeur"],$_GET["co_no"],$_GET["cattarif"],$_GET["catcompta"],$_GET["de_no"],$_GET["tel"],$_GET["anal"]).";".$objet->getLastClient(),$objet);
         break;
     case "modifReglement":
-        session_start();
-        $co_no=$_GET["CO_No"];
-        if(isset($_GET["boncaisse"]) && $_GET["boncaisse"]==1) {
-            $boncaisse = $_GET["boncaisse"];
-            $co_no = $_GET["CT_Num"];
+        $fcreglement = new ReglementClass(0);
+        $boncaisse = 0;
+        if (isset($_GET["boncaisse"]) && $_GET["boncaisse"] == 1) {
+            $boncaisse = 1;
         }
-        $creglement = new ReglementClass($_GET["rg_no"],$objet->db);
-        $protection = new ProtectionClass("", "",$objet->db);
-        $protection->connexionProctectionByProtNo($_SESSION["id"]);
-        $isSecurite = $protection->IssecuriteAdminCaisse($creglement->CA_No);
-        if ($isSecurite == 1) {
-            try {
-                $objet->db->connexion_bdd->beginTransaction();
-                $creglement->RG_Libelle = $_GET["rg_libelle"];
-                $creglement->RG_Montant = $_GET["rg_montant"];
-                $creglement->RG_Date = $_GET["rg_date"];
-                $creglement->CO_NoCaissier = $co_no;
-                $creglement->JO_Num = $_GET["JO_Num"];
-                $creglement->setuserName("", "");
-                $creglement->maj_reglement();
-                $objet->db->connexion_bdd->commit();
-            }
-            catch(Exception $e){
-                $objet->db->connexion_bdd->rollBack();
-                return json_encode($e);
-            }
-        }
+        $fcreglement->majReglement($_GET["protNo"], $boncaisse, $_GET["rg_no"], $_GET["rg_libelle"], $_GET["rg_montant"], $_GET["rg_date"], $_GET["JO_Num"], $_GET["CT_Num"], $_GET["CO_No"]);
+
         break;
     case "removeFacRglt":
         session_start();

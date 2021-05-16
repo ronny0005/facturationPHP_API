@@ -206,7 +206,7 @@ jQuery(function($) {
 
     function setArticle(){
         $("#reference").autocomplete({
-            source: "indexServeur.php?page=getArticleByRefDesignation&type=" + typeFacture+"&DE_No="+$("#depot").val(),
+            source: "indexServeur.php?page=getArticleByRefDesignation&type=" + typeFacture + "&DE_No=" + $("#depotLigne").val(),
             autoFocus: true,
             closeOnSelect: true,
             select: function (event, ui) {
@@ -222,6 +222,14 @@ jQuery(function($) {
         })
     }
     setArticle()
+
+    $("#reference").focusin(function(){
+        setArticle()
+    })
+
+    $("#depotLigne").change(function(){
+        alimente_qteStock($("#AR_Ref").val());
+    })
 
     $("#depot").change(function() {
 
@@ -498,11 +506,12 @@ jQuery(function($) {
 
     function alimente_qteStock(reference){
         $.ajax({
-            url: 'indexServeur.php?page=isStock&AR_Ref='+reference+'&DE_No='+$("#depot").val(),
+            url: 'indexServeur.php?page=isStock&AR_Ref='+reference+'&DE_No='+$("#depotLigne").val(),
             method: 'GET',
             dataType: 'json',
             async: false,
             success: function(data) {
+                $("#quantite_stock").val("")
                 $(data).each(function () {
                     $("#quantite_stock").val(Math.round(this.AS_QteSto * 100) / 100);
                 })
@@ -586,7 +595,10 @@ jQuery(function($) {
     }
 
     $("#date_rglt").datepicker({dateFormat: "ddmmy"}).datepicker("setDate", new Date());
-    $("#date_rglt").unbind();
+
+    $("#date_ech").datepicker({dateFormat: "ddmmy"}).datepicker("setDate", new Date());
+
+    //$("#date_rglt").unbind();
 
     function valider(imprime){
         $("#valideRegle").val(1);
@@ -803,94 +815,176 @@ jQuery(function($) {
             }
 
         }else{
+
             var words = societe.split(' ');
             if(societe=="BOUM CONSTRUCTION SARL"){
-                $("<div></div>").dialog({
-                    resizable: false,
-                    height: "auto",
-                    width: "100",
-                    modal: true,
-                    title: "Choix du format",
-                    buttons: {
-                        "A4": {
-                            class: 'btn btn-primary',
-                            text: 'A4',
-                            click: function () {
-                                if (societe != "CMI CAMEROUN SARL")
-                                    window.open("export/exportSSRS.php?facture=0&cbMarq=" + $("#cbMarqEntete").val() + "&format=A4&societe=" + words[0] + "&type=A4", '_blank');
-                                else
-                                    window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val()+ "&format=A4", '_blank');
-                                $("#redirectFacture").submit();
-                            }
-                        },
-                        "A5": {
-                            class: 'btn btn-primary',
-                            text: 'A5',
-                            click: function() {
-                                if (societe != "CMI CAMEROUN SARL")
-                                    window.open("export/exportSSRS.php?facture=0&cbMarq=" + $("#cbMarqEntete").val() + "&format=A5&societe=" + words[0] + "&type=A5", '_blank');
-                                else
-                                    window.open(impressionFacture+ "&cbMarq=" + $("#cbMarqEntete").val()+ "&format=A5", '_blank');
-                                $("#redirectFacture").submit();
-                            }
-                        },
-                        "A4 Facture": {
-                            class: 'btn btn-primary',
-                            text: 'A4 Facture',
-                            click: function () {
-                                if (societe != "CMI CAMEROUN SARL")
-                                    window.open("export/exportSSRS.php?facture=1&cbMarq=" + $("#cbMarqEntete").val() + "&format=A4&societe=" + words[0] + "&type=A4", '_blank');
-                                else
-                                    window.open(impressionFacture+ "&cbMarq=" + $("#cbMarqEntete").val()+ "&format=A4", '_blank');
-                                $("#redirectFacture").submit();
-                            }
-                        },
-                        "A5 Facture": {
-                            class: 'btn btn-primary',
-                            text: 'A5 Facture',
-                            click: function() {
-                                if (societe != "CMI CAMEROUN SARL")
-                                    window.open("export/exportSSRS.php?facture=1&cbMarq=" + $("#cbMarqEntete").val() + "&format=A5&societe=" + words[0] + "&type=A5", '_blank');
-                                else
-                                    window.open(impressionFacture+ "&cbMarq=" + $("#cbMarqEntete").val()+ "&format=A5", '_blank');
-                                $("#redirectFacture").submit();
+                if($("#cat_tarif").val()!=3){
+                    $("<div></div>").dialog({
+                        resizable: false,
+                        height: "auto",
+                        width: "100",
+                        modal: true,
+                        title: "Choix du format",
+                        buttons: {
+                            "A4": {
+                                class: 'btn btn-primary',
+                                text: 'A4',
+                                click: function () {
+                                    if (societe != "CMI CAMEROUN SARL")
+                                        window.open("export/exportSSRS.php?facture=0&cbMarq=" + $("#cbMarqEntete").val() + "&format=A4&societe=" + words[0] + "&type=A4", '_blank');
+                                    else
+                                        window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val() + "&format=A4", '_blank');
+                                    $("#redirectFacture").submit();
+                                }
+                            },
+                            "A5": {
+                                class: 'btn btn-primary',
+                                text: 'A5',
+                                click: function () {
+                                    if (societe != "CMI CAMEROUN SARL")
+                                        window.open("export/exportSSRS.php?facture=0&cbMarq=" + $("#cbMarqEntete").val() + "&format=A5&societe=" + words[0] + "&type=A5", '_blank');
+                                    else
+                                        window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val() + "&format=A5", '_blank');
+                                    $("#redirectFacture").submit();
+                                }
+                            },
+                            "A4 Facture": {
+                                class: 'btn btn-primary',
+                                text: 'A4 Facture',
+                                click: function () {
+                                    if (societe != "CMI CAMEROUN SARL")
+                                        window.open("export/exportSSRS.php?facture=1&cbMarq=" + $("#cbMarqEntete").val() + "&format=A4&societe=" + words[0] + "&type=A4", '_blank');
+                                    else
+                                        window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val() + "&format=A4", '_blank');
+                                    $("#redirectFacture").submit();
+                                }
+                            },
+                            "A5 Facture": {
+                                class: 'btn btn-primary',
+                                text: 'A5 Facture',
+                                click: function () {
+                                    if (societe != "CMI CAMEROUN SARL")
+                                        window.open("export/exportSSRS.php?facture=1&cbMarq=" + $("#cbMarqEntete").val() + "&format=A5&societe=" + words[0] + "&type=A5", '_blank');
+                                    else
+                                        window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val() + "&format=A5", '_blank');
+                                    $("#redirectFacture").submit();
+                                }
+                            },
+                            "Bon livraison": {
+                                class: 'btn btn-primary',
+                                text: 'BON LIVRAISON',
+                                click: function () {
+                                    if (societe != "CMI CAMEROUN SARL")
+                                        window.open("export/exportSSRS.php?facture=1&cbMarq=" + $("#cbMarqEntete").val() + "&format=LIVRAISON&societe=" + words[0] + "&type=BON", '_blank');
+                                    else
+                                        window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val() + "&format=A5", '_blank');
+                                    $("#redirectFacture").submit();
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }else{
+                    $("<div></div>").dialog({
+                        resizable: false,
+                        height: "auto",
+                        width: "100",
+                        modal: true,
+                        title: "Choix du format",
+                        buttons: {
+                            "Bon livraison": {
+                                class: 'btn btn-primary',
+                                text: 'BON LIVRAISON',
+                                click: function () {
+                                    if (societe != "CMI CAMEROUN SARL")
+                                        window.open("export/exportSSRS.php?facture=1&cbMarq=" + $("#cbMarqEntete").val() + "&format=LIVRAISON&societe=" + words[0] + "&type=BON", '_blank');
+                                    else
+                                        window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val() + "&format=A5", '_blank');
+                                    $("#redirectFacture").submit();
+                                }
+                            }
+                        }
 
+                    });
+
+                }
             }else {
-                $("<div></div>").dialog({
-                    resizable: false,
-                    height: "auto",
-                    width: "100",
-                    modal: true,
-                    title: "Choix du format",
-                    buttons: {
-                        "A4": {
-                            class: 'btn btn-primary',
-                            text: 'A4',
-                            click: function () {
-                                if (societe != "CMI CAMEROUN SARL")
-                                    window.open("export/exportSSRS.php?cbMarq=" + $("#cbMarqEntete").val() + "&format=A4&societe=" + words[0] + "&type=A4", '_blank');
-                                else
-                                    window.open(impressionFacture+ "&cbMarq=" + $("#cbMarqEntete").val()+  "&format=A4", '_blank');
-                                $("#redirectFacture").submit();
-                            }
-                        },
-                        "A5": {
-                            class: 'btn btn-primary',
-                            text: 'A5',
-                            click: function () {
-                                if (societe != "CMI CAMEROUN SARL")
-                                    window.open("export/exportSSRS.php?cbMarq=" + $("#cbMarqEntete").val() + "&format=A5&societe=" + words[0] + "&type=A5", '_blank');
-                                else
-                                    window.open(impressionFacture+ "&cbMarq=" + $("#cbMarqEntete").val()  + "&format=A5", '_blank');
-                                $("#redirectFacture").submit();
+                if (societe=="LIDEL SARL") {
+                    $("<div></div>").dialog({
+                        resizable: false,
+                        height: "auto",
+                        width: "100",
+                        modal: true,
+                        title: "Choix du format",
+                        buttons: {
+                            "A4": {
+                                class: 'btn btn-primary',
+                                text: 'A4',
+                                click: function () {
+                                    if (societe != "CMI CAMEROUN SARL")
+                                        window.open("export/exportSSRS.php?cbMarq=" + $("#cbMarqEntete").val() + "&format=A4&societe=" + words[0] + "&type=A4", '_blank');
+                                    else
+                                        window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val() + "&format=A4", '_blank');
+                                    $("#redirectFacture").submit();
+                                }
+                            },
+                            "A5": {
+                                class: 'btn btn-primary',
+                                text: 'A5',
+                                click: function () {
+                                    if (societe != "CMI CAMEROUN SARL")
+                                        window.open("export/exportSSRS.php?cbMarq=" + $("#cbMarqEntete").val() + "&format=A5&societe=" + words[0] + "&type=A5", '_blank');
+                                    else
+                                        window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val() + "&format=A5", '_blank');
+                                    $("#redirectFacture").submit();
+                                }
+                            },
+                            "Ticket": {
+                                class: 'btn btn-primary',
+                                text: 'Ticket',
+                                click: function () {
+                                    if (societe != "CMI CAMEROUN SARL")
+                                        window.open("export/exportSSRS.php?cbMarq=" + $("#cbMarqEntete").val() + "&format=Ticket&societe=" + words[0] + "&type=A5", '_blank');
+                                    else
+                                        window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val() + "&format=A5", '_blank');
+                                    $("#redirectFacture").submit();
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                } else {
+                    $("<div></div>").dialog({
+                        resizable: false,
+                        height: "auto",
+                        width: "100",
+                        modal: true,
+                        title: "Choix du format",
+                        buttons: {
+                            "A4": {
+                                class: 'btn btn-primary',
+                                text: 'A4',
+                                click: function () {
+                                    if (societe != "CMI CAMEROUN SARL")
+                                        window.open("export/exportSSRS.php?cbMarq=" + $("#cbMarqEntete").val() + "&format=A4&societe=" + words[0] + "&type=A4", '_blank');
+                                    else
+                                        window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val() + "&format=A4", '_blank');
+                                    $("#redirectFacture").submit();
+                                }
+                            },
+                            "A5": {
+                                class: 'btn btn-primary',
+                                text: 'A5',
+                                click: function () {
+                                    if (societe != "CMI CAMEROUN SARL")
+                                        window.open("export/exportSSRS.php?cbMarq=" + $("#cbMarqEntete").val() + "&format=A5&societe=" + words[0] + "&type=A5", '_blank');
+                                    else
+                                        window.open(impressionFacture + "&cbMarq=" + $("#cbMarqEntete").val() + "&format=A5", '_blank');
+                                    $("#redirectFacture").submit();
+                                }
+                            }
+                        }
+
+                    });
+                }
             }
         }
     }
@@ -1104,6 +1198,7 @@ jQuery(function($) {
             var DL_PrixUnitaire = $(this).find("#DL_PrixUnitaire").html();
             var DL_CMUP = $(this).find("#DL_CMUP").html();
             var DL_PieceBL = $(this).find("#DL_PieceBL").html();
+            var depotLigne = $(this).find("#depotLigne").html();
             $(this).dblclick(function () {
                 modifarticle($(this));
             });

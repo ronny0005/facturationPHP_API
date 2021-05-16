@@ -233,6 +233,10 @@ jQuery(function ($) {
         return str.substring(8,10)+str.substring(5,7)+str.substring(2,4);
     }
 
+    function reverseDate(str){
+        return newdate = str.split("-").reverse().join("-");
+    }
+
     $("#client").focusout(function(){
         if($("#CT_Num").val()==-1 && $("#client").val()!="")
             $.ajax({
@@ -364,7 +368,7 @@ jQuery(function ($) {
                                                 method: 'GET',
                                                 dataType: 'html',
                                                 async: false,
-                                                data: "JO_Num=" + $("#journal_choix").val() + "&CO_No=" + $("#caissier_choix").val(),
+                                                data: "JO_Num=" + $("#journal_choix").val() + "&CO_No=" + $("#caissier_choix").val()+"&protNo="+$("#PROT_No").val(),
                                                 success: function (data) {
                                                     if (data == "") {
                                                         ligneReglement.find("#RG_Date").html(returnDate($("#dateRec").val()));
@@ -942,7 +946,8 @@ jQuery(function ($) {
                     var caisse = $(this).parent("tr").find("#CA_NoTable").html();
                     if (rc_montant == 0) {
                         if($(this).parent("tr").find("#DO_Modif").html()==0) {
-                            $("#dateRec").val(returnDateReverse(rg_date));
+                            var rgDate = new Date(reverseDate(rg_date));
+                            $("#dateRec").val($.format.date(rgDate,"ddMMyy"));
                             $("#libelleRec").val(rg_libelle);
                             $("#montantRec").val(rg_montant);
                             $("#mode_reglementRec").val(mode_reglementRec);
