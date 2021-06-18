@@ -160,6 +160,7 @@ jQuery(function($) {
                     $(data).each(function () {
                         if (this.DE_No != null) {
                             $("#depot").val(this.DE_No);
+                            $("#depotLigne").val(this.DE_No);
                             $("#reference").html("");
                             $("#designation").html("");
                         }

@@ -58,7 +58,6 @@ else {
     $flagNouveau = $protection->NouveauType("ReglementFournisseur");
 }
 
-
 ?>
 
 <div id="protectionPage" style="visibility: hidden;"><?php echo $flagProtected;?></div>
@@ -308,10 +307,10 @@ else {
                         if($typeRegl!="Client") $typeSelectRegl = 1;
                         $reglementClass = new ReglementClass(0);
                         if($profil_daf==1){
-                            $rows = $reglementClass->getReglementByClient($client,0,$type,$treglement,$datedebval,$datefinval,$caissier,$collab,$typeSelectRegl);
+                            $rows = $reglementClass->getReglementByClient($client,0,$type,$treglement,$datedebval,$datefinval,$caissier,$collab,$protection->Prot_No,$typeSelectRegl);
                         }
                         else {
-                            $rows = $reglementClass->getReglementByClient($client, $caisse, $type, $treglement, $datedebval, $datefinval, $caissier, $collab, $typeSelectRegl);
+                            $rows = $reglementClass->getReglementByClient($client, $caisse, $type, $treglement, $datedebval, $datefinval, $caissier, $collab,$protection->Prot_No, $typeSelectRegl);
                         }
                         $i=0;
                         $classe="";

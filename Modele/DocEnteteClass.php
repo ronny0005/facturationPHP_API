@@ -149,6 +149,9 @@ class DocEnteteClass Extends Objet{
         $this->DO_Modif=$this->getApiString("/setDoModif&cbMarq={$this->cbMarq}");
     }
 
+    public function removeFacRglt($rgNo){
+        $this->getApiExecute("/removeFacRglt&cbMarqEntete={$this->cbMarq}&rgNo=$rgNo");
+    }
     public function maj_docEntete(){
         parent::maj("DO_Domaine" ,$this->DO_Domaine);
         parent::maj("DO_Type" ,$this->DO_Type);
@@ -1180,7 +1183,7 @@ class DocEnteteClass Extends Objet{
             $DO_Type = 1617;
         if($this->type_fac =="RetourT")
             $DO_Type = 67;
-        return $this->getApiJson( "/getListeFacture&doProvenance={$this->DO_Provenance}&doType=$DO_Type&doDomaine={$this->DO_Domaine}&deNo=$de_no&dateDeb=$datedeb&dateFin=$datefin&client=$client&protNo=$protNo");
+        return $this->getApiJson( "/getListeFacture&doProvenance={$this->DO_Provenance}&doType=$DO_Type&doDomaine={$this->DO_Domaine}&deNo=$de_no&dateDeb=$datedeb&dateFin=$datefin&client=$client&protNo=$protNo&doPiece=");
     }
 
 public function setValueMvt(){

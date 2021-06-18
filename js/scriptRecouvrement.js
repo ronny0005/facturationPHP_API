@@ -666,7 +666,7 @@ jQuery(function ($) {
         if($_GET("typeRegl")=="Collaborateur") collab = 1;
         if($_GET("typeRegl")!="Client") typeSelectType = 1;
         $.ajax({
-            url: 'indexServeur.php?page=getReglementByClient&collaborateur='+collab+'&caissier='+$("#caissier").val()+'&CT_Num=' + $("#CT_Num").val()+'&datedeb=' + returnDate($("#dateReglementEntete_deb").val())+'&datefin=' + returnDate($("#dateReglementEntete_fin").val())+'&CA_No=' + $("#caisse").val()+'&type='+$("#type").val()+'&treglement='+$("#mode_reglement").val(),
+            url: 'indexServeur.php?page=getReglementByClient&collaborateur='+collab+'&caissier='+$("#caissier").val()+'&CT_Num=' + $("#CT_Num").val()+'&datedeb=' + returnDate($("#dateReglementEntete_deb").val())+'&datefin=' + returnDate($("#dateReglementEntete_fin").val())+'&CA_No=' + $("#caisse").val()+'&type='+$("#type").val()+'&treglement='+$("#mode_reglement").val()+"&PROT_No="+$("#PROT_No").val(),
             method: 'GET',
             dataType: 'json',
             data : "typeSelectRegl="+typeSelectType,
@@ -981,7 +981,7 @@ jQuery(function ($) {
                                     text: 'Oui',
                                     click: function () {
                                         $.ajax({
-                                            url: "indexServeur.php?page=supprReglement&RG_No=" + rgNo,
+                                            url: "indexServeur.php?page=supprReglement&RG_No=" + rgNo+"&PROT_No="+$("#PROT_No").val(),
                                             method: 'GET',
                                             async: false,
                                             dataType: 'html',

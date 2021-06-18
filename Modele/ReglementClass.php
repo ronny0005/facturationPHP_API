@@ -31,45 +31,36 @@ class ReglementClass Extends Objet{
         if (sizeof($this->data) > 0) {
             $this->RG_No = $this->data[0]->RG_No;
             $this->CT_NumPayeur = $this->data[0]->CT_NumPayeur;
-            $this->cbCT_NumPayeur = $this->data[0]->cbCT_NumPayeur;
-            $this->RG_Date = $this->formatDate($this->data[0]->RG_Date);
+            $this->RG_Date = substr($this->data[0]->RG_Date,0,10);
             $this->RG_Reference = $this->data[0]->RG_Reference;
             $this->RG_Libelle = $this->data[0]->RG_Libelle;
-            $this->RG_DateSage = $this->formatDateSage($this->data[0]->RG_Date);
+            $this->RG_DateSage = $this->formatDateSage(str_replace("T"," ",substr($this->data[0]->RG_Date,0,19)));
             $this->RG_Montant = $this->data[0]->RG_Montant;
             $this->RG_MontantDev = $this->data[0]->RG_MontantDev;
             $this->N_Reglement = $this->data[0]->N_Reglement;
             $this->RG_Impute = $this->data[0]->RG_Impute;
             $this->RG_Compta = $this->data[0]->RG_Compta;
             $this->EC_No = $this->data[0]->EC_No;
-            $this->cbEC_No = $this->data[0]->cbEC_No;
             $this->RG_Type = $this->data[0]->RG_Type;
             $this->RG_Cours = $this->data[0]->RG_Cours;
             $this->N_Devise = $this->data[0]->N_Devise;
             $this->JO_Num = $this->data[0]->JO_Num;
             $this->CG_NumCont = $this->data[0]->CG_NumCont;
-            $this->cbCG_NumCont = $this->data[0]->cbCG_NumCont;
             $this->RG_Impaye = $this->data[0]->RG_Impaye;
             $this->CG_Num = $this->data[0]->CG_Num;
-            $this->cbCG_Num = $this->data[0]->cbCG_Num;
             $this->RG_TypeReg = $this->data[0]->RG_TypeReg;
             $this->RG_Heure = $this->data[0]->RG_Heure;
             $this->RG_Piece = $this->data[0]->RG_Piece;
-            $this->cbRG_Piece = $this->data[0]->cbRG_Piece;
             $this->CA_No = $this->data[0]->CA_No;
-            $this->cbCA_No = $this->data[0]->cbCA_No;
             $this->CO_NoCaissier = $this->data[0]->CO_NoCaissier;
-            $this->cbCO_NoCaissier = $this->data[0]->cbCO_NoCaissier;
             $this->RG_Banque = $this->data[0]->RG_Banque;
             $this->RG_Transfere = $this->data[0]->RG_Transfere;
             $this->RG_Cloture = $this->data[0]->RG_Cloture;
             $this->RG_Ticket = $this->data[0]->RG_Ticket;
             $this->RG_Souche = $this->data[0]->RG_Souche;
             $this->CT_NumPayeurOrig = $this->data[0]->CT_NumPayeurOrig;
-            $this->cbCT_NumPayeurOrig = $this->data[0]->cbCT_NumPayeurOrig;
             $this->RG_DateEchCont = $this->data[0]->RG_DateEchCont;
             $this->CG_NumEcart = $this->data[0]->CG_NumEcart;
-            $this->cbCG_NumEcart = $this->data[0]->cbCG_NumEcart;
             $this->JO_NumEcart = $this->data[0]->JO_NumEcart;
             $this->RG_MontantEcart = $this->data[0]->RG_MontantEcart;
             $this->RG_NoBonAchat = $this->data[0]->RG_NoBonAchat;
@@ -399,42 +390,11 @@ if($flagCtrlTtCaisse==0) echo "<td></td>";
 
     public function supprReglement($protNo=0)
     {
-        $requete = "DELETE FROM F_REGLECH WHERE RG_No = {$this->RG_No} AND RC_Montant=0;
-                    DELETE FROM F_CREGLEMENT WHERE RG_No = {$this->RG_No};
-                    DELETE FROM Z_RGLT_BONDECAISSE WHERE RG_No = {$this->RG_No};
-                    DELETE FROM Z_RGLT_BONDECAISSE WHERE RG_No_RGLT = {$this->RG_No};";
-        $log = new LogFile();
-        $log->writeReglement("Suppr Reglement",$this->RG_Montant,$this->RG_No,$this->CT_NumPayeur,$this->cbMarq,"F_CREGLEMENT",$protNo,$this->cbCreateur,$this->RG_Date);
-        $this->db->query($requete);
+        $this->getApiExecute("/supprReglement&rgNo={$this->RG_No}&protNo=$protNo");
     }
 
-    public function remboursementRglt($date,$montant,$mobile){
-        // création du remboursement
-        $creglement = new ReglementClass(0,$this->db);
-        $creglement->initVariables();
-        $creglement->RG_Date = $date;
-        $creglement->RG_DateEchCont = $date;
-        $creglement->JO_Num = $this->JO_Num;
-        $creglement->CG_Num = $this->CG_Num;
-        $creglement->CA_No = $this->CA_No;
-        $creglement->CO_NoCaissier = $this->CO_NoCaissier;
-        $creglement->RG_Libelle = "Remboursement N° ".$this->RG_Piece;
-        $creglement->RG_Montant = -$montant;
-        $creglement->RG_Impute = 1;
-        $creglement->RG_Type = $this->RG_Type;
-        $creglement->N_Reglement = "01";
-        $creglement->RG_TypeReg=4;
-        if($this->RG_Type==1)
-            $creglement->RG_TypeReg=5;
-        $creglement->RG_Ticket=0;
-        $creglement->RG_Banque=$this->RG_Banque;
-        $creglement->CT_NumPayeur = $this->CT_NumPayeur;
-        $creglement->setuserName("",$mobile);
-        $rg_noRembours = $creglement->insertF_Reglement();
-        //liaison du remboursement et reglement
-        $this->insertZ_RGLT_BONDECAISSE($rg_noRembours,$this->RG_No);
-        $this->RG_Impute = $this->isImpute()[0]->isImpute;
-        $this->maj_reglement();
+    public function remboursementRglt($date,$montant){
+        return $this->getApiExecute("/remboursementRglt/rgNo={$this->RG_No}&date=$date&montant=$montant");
     }
 
     public function getFactureRGNo($rg_no){
@@ -596,36 +556,8 @@ if($flagCtrlTtCaisse==0) echo "<td></td>";
 
     }
 
-    public function removeFacRglt($do_piece,$do_type,$do_domaine){
-        $requete="  DECLARE @RG_No INT = {$this->RG_No}
-                            ,@DO_Piece NVARCHAR(50) = '$do_piece'
-                            ,@DO_Type INT = $do_type
-                            ,@DO_Domaine INT = $do_domaine
-                    UPDATE F_DOCREGL SET DR_Regle = 
-                     (  SELECT  CASE WHEN DR_Regle= 1 THEN 0 ELSE DR_Regle END
-                        FROM    F_DOCREGL A
-                        INNER JOIN F_REGLECH B 
-                            ON  A.DR_No=B.DR_No
-                        WHERE   RG_No=@RG_No 
-                        AND     A.DO_Piece=@DO_Piece 
-                        AND     A.DO_Domaine=@DO_Domaine 
-                        AND     A.DO_Type=@DO_Type)
-                    FROM    F_REGLECH 
-                    WHERE   F_DOCREGL.DR_No=F_REGLECH.DR_No 
-                    AND     RG_No=@RG_No 
-                    AND     F_DOCREGL.DO_Piece=@DO_Piece 
-                    AND     F_DOCREGL.DO_Domaine=@DO_Domaine 
-                    AND     F_DOCREGL.DO_Type=@DO_Type;
-                    DELETE FROM F_REGLECH
-                    WHERE   RG_No=@RG_No 
-                    AND     DO_Piece=@DO_Piece 
-                    AND     DO_Domaine=@DO_Domaine 
-                    AND     DO_Type=@DO_Type;
-                    UPDATE F_CREGLEMENT SET RG_Impute = 
-                     (SELECT CASE WHEN RG_Impute = 1 THEN 0 ELSE RG_Impute END
-                    FROM F_CREGLEMENT
-                    WHERE RG_No=@RG_No) WHERE RG_No=@RG_No";
-        $this->db->query($requete);
+    public function removeFacRglt($cbMarqEntete,$rgNo){
+        $this->getApiExecute("/removeFacRglt&cbMarqEntete=$cbMarqEntete&rgNo=$rgNo");
     }
 
     public function majZ_REGLEMENT_ANALYTIQUE($RG_No, $CA_Num){
@@ -668,11 +600,11 @@ if($flagCtrlTtCaisse==0) echo "<td></td>";
         return $result->fetchAll(PDO::FETCH_OBJ);
     }
 
-    public function getReglementByClient($ct_num,$ca_no,$type,$treglement,$datedeb,$datefin,$caissier,$collab,$typeSelectRegl=0) {
+    public function getReglementByClient($ct_num,$ca_no,$type,$treglement,$datedeb,$datefin,$caissier,$collab,$protNo,$typeSelectRegl=0) {
         $treglementParam = 0;
         if($treglement!="")
             $treglementParam = $treglement;
-        return $this->getApiJson("/getReglementByClient&dateDeb={$datedeb}&dateFin={$datefin}&rgImpute={$type}&ctNum={$ct_num}&collab={$collab}&nReglement={$treglementParam}&caNo={$ca_no}&coNoCaissier={$caissier}&rgType={$typeSelectRegl}&protNo={$_SESSION["id"]}");
+        return $this->getApiJson("/getReglementByClient&dateDeb=$datedeb&dateFin=$datefin&rgImpute=$type&ctNum=$ct_num&collab=$collab&nReglement=$treglementParam&caNo=$ca_no&coNoCaissier=$caissier&rgType=$typeSelectRegl&protNo=$protNo");
     }
 
     public function addReglementCaisse($rg_typereg,$montant,$cg_num,$jo_num,$co_nocaissier,$libelle,$banque,$login,$date,$caNo,$journalRec,$caNoDest,$CA_Num,$CG_Analytique){
@@ -947,7 +879,7 @@ if($flagCtrlTtCaisse==0) echo "<td></td>";
                                 ,$ca_no/*$_GET["CA_No"]*/,$boncaisse /*$_GET["boncaisse"]*/,$libelle /*$_GET['libelle']*/,$caissier /*$_GET['caissier']*/
                                 ,$date/*$_GET['date']*/,$modeReglementRec /*$_GET["mode_reglementRec"]*/
                                 ,$montant /*$_GET['montant']*/,$impute/*$_GET['impute']*/,$RG_Type /*$_GET['RG_Type']*/,$afficheData=true,$typeRegl=""){
-        $url = "/addReglement&protNo={$_SESSION["id"]}&joNum=$jo_num&rgNoLier=$rg_no_lier&ctNum=$ct_num&caNo=$ca_no&bonCaisse=$boncaisse&libelle=$libelle&caissier=$caissier&date=$date&modeReglementRec=$modeReglementRec&montant=$montant&impute=$impute&rgType=$RG_Type&afficheData=$afficheData&typeRegl=$typeRegl";
+        $url = "/addReglement&protNo={$_SESSION["id"]}&joNum=$jo_num&rgNoLier=$rg_no_lier&ctNum=$ct_num&caNo=$ca_no&bonCaisse=$boncaisse&libelle={$this->formatString($libelle)}&caissier=$caissier&date=$date&modeReglementRec=$modeReglementRec&montant=$montant&impute=$impute&rgType=$RG_Type&afficheData=$afficheData&typeRegl=$typeRegl";
         $info = $this->getApiJson($url);
         if($afficheData)
             echo json_encode($info);

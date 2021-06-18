@@ -662,47 +662,8 @@ switch ($val) {
         envoiRequete($objet->supprDepotClient($_GET['DE_No']),$objet);
         break;
     case "supprReglement":
-        session_start();
-        $mobile ="";
-        $typemvt = "Suppression règlement";
-        if(isset($_GET["MvtCaisse"]))
-            $typemvt ="Suppression mouvement de caisse";
-        if(isset($_GET["mobile"]))
-            $mobile = $_GET["mobile"];
-        $protection = new ProtectionClass("","");
-        $protection->connexionProctectionByProtNo($_SESSION["id"]);
         $reglement = new ReglementClass($_GET["RG_No"]);
-
-        $isSecurite = $protection->IssecuriteAdminCaisse($reglement->CA_No);
-        if($isSecurite==1) {
-            $reglement->setuserName("", $mobile);
-            $collaborateur = new CollaborateurClass($reglement->userName);
-            $objet = new ObjetCollector();
-
-            $reglement->supprReglement($_SESSION["id"]);
-            $result = $objet->db->requete($objet->getCollaborateurEnvoiMail($typemvt));
-            $rows = $result->fetchAll(PDO::FETCH_OBJ);
-            if ($rows != null) {
-                foreach ($rows as $row) {
-                    $email = $row->CO_EMail;
-                    $nom = $row->CO_Prenom . " " . $row->CO_Nom;
-                    $tiers = new ComptetClass($reglement->CT_NumPayeur);
-                    $corpsMail = "
-                Le règlement {$reglement->RG_Piece} a été supprimé par {$_SESSION["login"]}<br/>
-                    Le règlement concerne le client {$tiers->CT_Intitule}<br/> 
-                    Libellé :{$reglement->RG_Libelle}<br/> 
-                    Montant du règlement : {$objet->formatChiffre(ROUND($reglement->RG_Montant,2))}<br/> 
-                    Date du règlement : {$objet->getDateDDMMYYYY($reglement->RG_Date)}<br/><br/>
-                Cordialement.<br/><br/>
-                
-                ";
-                    if (preg_match('#^[\w.-]+@[\w.-]+\.[a-z]{2,6}$#i', $email)) {
-                        $mail = new Mail();
-                        $mail->sendMail($corpsMail."<br/><br/><br/> {$objet->db->db}", $email, "Suppression du règlement {$reglement->RG_Piece}");
-                    }
-                }
-            }
-        }
+        $reglement->supprReglement($_GET["PROT_No"]);
         break;
     //test sms
     case "envoiSMSTest":
@@ -1205,7 +1166,7 @@ switch ($val) {
         if (isset($_GET["typeSelectRegl"]))
             $typeSelectRegl = $_GET["typeSelectRegl"];
         $reglement = new ReglementClass(0);
-        echo json_encode($reglement->getReglementByClient($_GET['CT_Num'], $_GET['CA_No'], $_GET['type'], $_GET['treglement'], $_GET['datedeb'], $_GET['datefin'], $_GET['caissier'], $_GET['collaborateur'], $typeSelectRegl));
+        echo json_encode($reglement->getReglementByClient($_GET['CT_Num'], $_GET['CA_No'], $_GET['type'], $_GET['treglement'], $_GET['datedeb'], $_GET['datefin'], $_GET['caissier'], $_GET['collaborateur'], $_GET['PROT_No'], $typeSelectRegl));
         break;
     case "listeTypeReglement":
         envoiRequete($objet->listeTypeReglement(),$objet);
@@ -1327,17 +1288,8 @@ switch ($val) {
 
         break;
     case "removeFacRglt":
-        session_start();
-        $docEntete = new DocEnteteClass($_GET["cbMarqEntete"],$objet->db);
-        $reglement = new ReglementClass($_GET["RG_No"],$objet->db);
-        if($docEntete->DO_Domaine != null) {
-            $reglement->insertFactReglSuppr($docEntete->DO_Domaine, $docEntete->DO_Type, $docEntete->DO_Piece, $docEntete->cbMarq);
-            $reglement->removeFacRglt($docEntete->DO_Piece, $docEntete->DO_Type, $docEntete->DO_Domaine);
-            //$reglement->delete($_SESSION["id"]);
-        }
-        if($reglement->RG_No!=null){
-            $reglement->supprRgltAssocie();
-        }
+        $docEntete = new DocEnteteClass($_GET["cbMarqEntete"]);
+        $docEntete->removeFacRglt($_GET["RG_No"]);
         break;
     case "supprRglt":
         $creglement = new ReglementClass($_GET["RG_No"],$objet->db);
@@ -1361,16 +1313,8 @@ switch ($val) {
         }
         break;
     case "remboursementRglt":
-        $reglement = new ReglementClass($_GET["RG_No"],$objet->db);
-        try {
-            $objet->db->connexion_bdd->beginTransaction();
-            $reglement->remboursementRglt($_GET["RG_Date"],$_GET["RG_Montant"],"");
-            $objet->db->connexion_bdd->commit();
-        }
-        catch(Exception $e){
-            $objet->db->connexion_bdd->rollBack();
-            return json_encode($e);
-        }
+        $reglement = new ReglementClass($_GET["RG_No"]);
+        $reglement->remboursementRglt($_GET["RG_Date"],$_GET["RG_Montant"]);
         break;
     case "addReglement":
 
