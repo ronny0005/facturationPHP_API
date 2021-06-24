@@ -18,6 +18,7 @@ class P_CommunicationClass Extends Objet{
 
     function __construct($db=null) {
         parent::__construct($this->table, 1,'cbMarq',$db);
+        $this->db = new DB();
         if(sizeof($this->data)>0) {
             $this->N_CatCompta = $this->data[0]->N_CatCompta;
             $this->N_CatTarif = $this->data[0]->N_CatTarif;

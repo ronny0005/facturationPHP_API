@@ -104,7 +104,7 @@ class ArticleClass Extends Objet{
 
     function __construct($id,$db=null)
     {
-
+        $this->db = new DB();
         parent::__construct($this->table, $id, 'AR_Ref',$db);
         if (sizeof($this->data) > 0) {
             $this->AR_Ref = $this->data[0]->AR_Ref;
@@ -232,11 +232,11 @@ class ArticleClass Extends Objet{
         parent::maj("AR_Gamme2" , $this->AR_Gamme2);
         //    parent::maj("AR_SuiviStock" , $this->AR_SuiviStock);
         parent::maj("AR_Nomencl" , $this->AR_Nomencl);
-        parent::maj("AR_Stat01" , $this->AR_Stat01);
+        /*parent::maj("AR_Stat01" , $this->AR_Stat01);
         parent::maj("AR_Stat02" , $this->AR_Stat02);
         parent::maj("AR_Stat03" , $this->AR_Stat03);
         parent::maj("AR_Stat04" , $this->AR_Stat04);
-        parent::maj("AR_Stat05" , $this->AR_Stat05);
+        parent::maj("AR_Stat05" , $this->AR_Stat05);*/
         parent::maj("AR_Escompte" , $this->AR_Escompte);
         parent::maj("AR_Delai" , $this->AR_Delai);
         parent::maj("AR_HorsStat" , $this->AR_HorsStat);
@@ -252,7 +252,7 @@ class ArticleClass Extends Objet{
         parent::maj("AR_CodeBarre" , $this->AR_CodeBarre);
         parent::maj("AR_CodeFiscal" , $this->AR_CodeFiscal);
         parent::maj("AR_Pays" , $this->AR_Pays);
-        parent::maj("AR_Frais01FR_Denomination" , $this->AR_Frais01FR_Denomination);
+        /*parent::maj("AR_Frais01FR_Denomination" , $this->AR_Frais01FR_Denomination);
         parent::maj("AR_Frais01FR_Rem01REM_Valeur" , $this->AR_Frais01FR_Rem01REM_Valeur);
         parent::maj("AR_Frais01FR_Rem01REM_Type" , $this->AR_Frais01FR_Rem01REM_Type);
         parent::maj("AR_Frais01FR_Rem02REM_Valeur" , $this->AR_Frais01FR_Rem02REM_Valeur);
@@ -272,17 +272,17 @@ class ArticleClass Extends Objet{
         parent::maj("AR_Frais03FR_Rem02REM_Valeur" , $this->AR_Frais03FR_Rem02REM_Valeur);
         parent::maj("AR_Frais03FR_Rem02REM_Type" , $this->AR_Frais03FR_Rem02REM_Type);
         parent::maj("AR_Frais03FR_Rem03REM_Valeur" , $this->AR_Frais03FR_Rem03REM_Valeur);
-        parent::maj("AR_Frais03FR_Rem03REM_Type" , $this->AR_Frais03FR_Rem03REM_Type);
+        parent::maj("AR_Frais03FR_Rem03REM_Type" , $this->AR_Frais03FR_Rem03REM_Type);*/
         parent::maj("AR_Condition" , $this->AR_Condition);
         parent::maj("AR_PUNet" , $this->AR_PUNet);
         parent::maj("AR_Contremarque" , $this->AR_Contremarque);
         parent::maj("AR_FactPoids" , $this->AR_FactPoids);
         parent::maj("AR_FactForfait" , $this->AR_FactForfait);
-        parent::maj("AR_DateCreation" , $this->AR_DateCreation);
+        //parent::maj("AR_DateCreation" , $this->AR_DateCreation);
         parent::maj("AR_SaisieVar" , $this->AR_SaisieVar);
         parent::maj("AR_Transfere" , $this->AR_Transfere);
         parent::maj("AR_Publie" , $this->AR_Publie);
-        parent::maj("AR_DateModif" , $this->AR_DateModif);
+        //parent::maj("AR_DateModif" , $this->AR_DateModif);
         parent::maj("AR_Photo" , $this->AR_Photo);
         parent::maj("AR_PrixAchNouv" , $this->AR_PrixAchNouv);
         parent::maj("AR_CoefNouv" , $this->AR_CoefNouv);
@@ -300,21 +300,11 @@ class ArticleClass Extends Objet{
         parent::maj("CO_No" , $this->CO_No);
         parent::maj("cbCO_No" , $this->cbCO_No);
         parent::maj("AR_Prevision" , $this->AR_Prevision);
-        parent::maj("cbCreateur" , $this->userName);
-        parent::maj("cbModification" , $this->cbModification);
+        //parent::maj("cbModification" , $this->cbModification);
         parent::maj("Prix_Min" , $this->Prix_Min);
         parent::maj("Prix_Max" , $this->Prix_Max);
         parent::maj("Qte_Gros" , $this->Qte_Gros);
-        $query= "UPDATE F_ARTICLE SET  
-                CL_No1=".$this->CL_No1.",cbCL_No1=(SELECT CASE WHEN ".$this->CL_No1."=0 THEN NULL ELSE ".$this->CL_No1." END),
-                CL_No2=".$this->CL_No1.",cbCL_No2=(SELECT CASE WHEN ".$this->CL_No2."=0 THEN NULL ELSE ".$this->CL_No2." END),
-                CL_No3=".$this->CL_No1.",cbCL_No3=(SELECT CASE WHEN ".$this->CL_No3."=0 THEN NULL ELSE ".$this->CL_No3." END),
-                CL_No4=".$this->CL_No1.",cbCL_No4=(SELECT CASE WHEN ".$this->CL_No4."=0 THEN NULL ELSE ".$this->CL_No4." END),
-                AR_Substitut=(SELECT CASE WHEN '".$this->AR_Substitut."'='' THEN NULL ELSE '".$this->AR_Substitut."' END)
-                WHERE cbMarq=".$this->cbMarq;
-        $this->db->query($query);
-        $this->majcbModification();
-        parent::maj("cbCreateur" , $this->cbCreateur);
+        //parent::maj("cbCreateur" , $this->cbCreateur);
     }
 
     public function insertArticle() {
@@ -959,6 +949,10 @@ class ArticleClass Extends Objet{
     public function getAllArticleDispoByArRef($de_no,$codeFamille=0,$intitule = "",$rechEtat="")
     {
         return $this->getApiJson("/getAllArticleDispoByArRef&deNo=$de_no&codeFamille=$codeFamille&valeur=$intitule&rechEtat=$rechEtat");
+    }
+
+    public function insertF_ArtCompta($ar_ref,$acp_type,$acp_champ,$cg_num,$cg_numA,$ta_code1,$ta_code2,$ta_code3,$protNo){
+        $this->getApiExecute("/insertF_ArtCompta&arRef={$ar_ref}&acpChamp={$acp_champ}&acpType={$acp_type}&cgNum={$cg_num}&cgNumA={$cg_numA}&taCode1={$ta_code1}&taCode2={$ta_code2}&taCode3={$ta_code3}&protNo={$protNo}");
     }
 
     public function all($sommeil=-1,$intitule="",$top=0,$arPublie=-1,$rechEtat=""){

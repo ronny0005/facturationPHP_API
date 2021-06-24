@@ -14,6 +14,7 @@ class CaisseClass Extends Objet{
 
     function __construct($id,$db=null)
     {
+        $this->db = new DB();
         $this->data = $this->getApiJson("/$id");
         if($id!=0)
         if (sizeof($this->data) > 0) {

@@ -16,6 +16,7 @@ class DocReglClass Extends Objet{
 
     function __construct($id,$db=null)
     {
+        $this->db = new DB();
         parent::__construct($this->table, $id, 'cbMarq',$db);
         $this->setValue();
         if (sizeof($this->data) > 0) {

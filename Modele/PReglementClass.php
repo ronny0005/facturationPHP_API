@@ -21,7 +21,7 @@ class PReglementClass Extends Objet{
     public $table = 'P_REGLEMENT';
 
     function __construct($id,$db=null) {
-        parent::__construct($this->table, $id,'cbMarq',$db);
+        $this->db = new DB();
         $this->data = $this->getApiJson("/cbMarq=$id");
         if(sizeof($this->data)>0) {
             $this->R_Intitule = $this->data[0]->R_Intitule;

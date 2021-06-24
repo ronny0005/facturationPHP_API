@@ -27,6 +27,7 @@ class ReglementClass Extends Objet{
     function __construct($id,$db=null)
     {
         $this->data = $this->getApiJson("/rgNo=$id");
+        $this->db = new DB();
         if($id!=0)
         if (sizeof($this->data) > 0) {
             $this->RG_No = $this->data[0]->RG_No;
@@ -172,6 +173,7 @@ class ReglementClass Extends Objet{
         $this->lien ="fmodeler";
         return $this->getApiJson("/all");
     }
+
     public function getDateEcgetTiersheanceSelectSage($MR_No,$N_Reglement,$date){
         $this->lien ="fmodeler";
         return $this->getApiJson("/getDateEcgetTiersheanceSelectSage&mrNo=$MR_No&nReglement=$N_Reglement&date=$date");

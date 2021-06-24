@@ -16,6 +16,7 @@ class ContatDClass Extends Objet{
     public $table = 'F_CONTACTD';
 
     function __construct($id,$db=null) {
+        $this->db = new DB();
             parent::__construct($this->table, $id, 'CD_No',$db);
         if (sizeof($this->data) > 0) {
             $this->CD_Nom = $this->data[0]->CD_Nom;

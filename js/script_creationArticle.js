@@ -632,7 +632,7 @@ jQuery(function($) {
                 $("#titre_cond").val("");
                 $("#qte_cond").val("");
                 $('#panel_cond').dialog('close');
-                window.location.replace("indexMVC.php?module=3&action=1&AR_Ref="+reference);
+                window.location.replace("ficheArticle-"+$("#cbMarqArticle").val());
             }
         });
     }
@@ -906,7 +906,7 @@ jQuery(function($) {
             method: 'GET',
             dataType: 'html',
             async: false,
-            data : 'AR_Ref='+$("#reference").val()+'&ACP_Champ='+acp_champ+'&ACP_Type='+acp_type+'&CG_Num='+cg_num+'&CG_NumA='+cg_numa+'&TA_Code1='+ta_code1+'&TA_Code2='+ta_code2+'&TA_Code3='+ta_code3,
+            data : 'AR_Ref='+$("#reference").val()+'&ACP_Champ='+acp_champ+'&ACP_Type='+acp_type+'&CG_Num='+cg_num+'&CG_NumA='+cg_numa+'&TA_Code1='+ta_code1+'&TA_Code2='+ta_code2+'&TA_Code3='+ta_code3+"&PROT_No="+$("#PROT_No").val(),
             success: function (data) {
                 if(data=="") {
                     alert("la modification a bien été pris en compte !");

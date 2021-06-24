@@ -15,6 +15,7 @@ class ReglEchClass Extends Objet{
     function __construct($id,$db=null)
     {
         parent::__construct($this->table, $id, 'cbMarq',$db);
+        $this->db = new DB();
         $this->setValue();
         if (sizeof($this->data) > 0) {
             $this->RG_No = $this->data[0]->RG_No;

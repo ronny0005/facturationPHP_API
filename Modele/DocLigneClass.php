@@ -27,6 +27,7 @@ class DocLigneClass Extends Objet
 
     function __construct($id, $db = null)
     {
+        $this->db = new DB();
         $this->data = $this->getApiJson("/cbMarq=$id");
         $this->cbMarq = 0;
         if ($this->data!=NULL && sizeof($this->data) > 0) {

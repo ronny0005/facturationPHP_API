@@ -13,6 +13,7 @@ class DepotUserClass Extends Objet{
     public $lien ="zdepotuser";
 
     function __construct($id,$db=null) {
+        $this->db = new DB();
         parent::__construct($this->table, $id,'Prot_No',$db);
 
     }

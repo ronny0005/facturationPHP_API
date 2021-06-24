@@ -621,11 +621,8 @@ if(strcmp($_GET["acte"],"modif_client") == 0){
 
     if($_GET["CA_Num"]=="selected")
         $CA_Num= "";
-        $comptetClass->setuserName("","");
-        $comptetClass->maj("cbCreateur",$comptetClass->userName);
         $comptetClass->maj_client();
 
-//        $result=$objet->db->requete($objet->modifClient($ncompte,$intitule,$compteg,$adresse,$codePostal,$ville,$region,$nsiret,'',$ncompte,$CO_No,$cattarif,$catcompta,$depot,$tel,'0',$identifiant,$mode_reglement,$CA_Num));
         $result=$objet->db->requete($objet->modifClientUpdateCANum($ncompte,$comptetClass ->CA_Num));
             if($comptetClass ->MR_No!=0 && $comptetClass ->MR_No!=""){
                 $result =  $objet->db->requete( $objet->getOptionModeleReglementByMRNo($comptetClass ->MR_No));

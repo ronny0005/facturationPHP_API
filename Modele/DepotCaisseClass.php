@@ -12,6 +12,7 @@ class DepotCaisseClass Extends Objet{
     public $table = 'Z_DEPOTCAISSE';
 
     function __construct($id,$db=null) {
+        $this->db = new DB();
         parent::__construct($this->table, $id,'DE_No',$db);
         if(sizeof($this->data)>0) {
             $this->list = $this->data;

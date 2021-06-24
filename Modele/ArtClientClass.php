@@ -38,7 +38,7 @@ class ArtClientClass Extends Objet{
 
     function __construct($arRef,$acCategorie,$db=null)
     {
-        $this->db =$db;
+        $this->db = new DB();
         $query = "SELECT cbMarq 
                   FROM F_ARTCLIENT
                   WHERE AR_Ref = '$arRef' AND AC_Categorie = $acCategorie";

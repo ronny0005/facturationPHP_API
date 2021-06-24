@@ -13,6 +13,7 @@ class LiaisonEnvoiMailUser Extends Objet{
 
     function __construct($db=null) {
         parent::__construct($this->table, "", 'TE_No',$db);
+        $this->db = new DB();
     }
 
     public function __toString() {

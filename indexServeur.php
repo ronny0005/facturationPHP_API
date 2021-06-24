@@ -367,16 +367,8 @@ switch ($val) {
         envoiRequete($objet->getPlanComptableByCGNum($_GET["CG_Num"]),$objet);
         break;
     case "insertF_ArtCompta":
-        $result=$objet->db->requete("SELECT *
-                                            FROM F_ARTCOMPTA
-                                            WHERE ACP_Type=".$_GET["ACP_Type"]." AND ACP_Champ=".$_GET["ACP_Champ"]." AND AR_Ref='".$_GET["AR_Ref"]."'");
-        $rows = $result->fetchAll(PDO::FETCH_OBJ);
-        if ($rows != null) {
-            execRequete($objet->modifF_ArtCompta($_GET["AR_Ref"],$_GET["ACP_Type"],$_GET["ACP_Champ"],str_replace(" - ","",$_GET["CG_Num"]),str_replace(" - ","",$_GET["CG_NumA"]),str_replace(" - ","",$_GET["TA_Code1"]),str_replace(" - ","",$_GET["TA_Code2"]),str_replace(" -","",$_GET["TA_Code3"])),$objet);
-        }
-        else{
-            execRequete($objet->insertF_ArtCompta($_GET["AR_Ref"],$_GET["ACP_Type"],$_GET["ACP_Champ"],str_replace(" - ","",$_GET["CG_Num"]),str_replace(" - ","",$_GET["CG_NumA"]),str_replace(" - ","",$_GET["TA_Code1"]),str_replace(" - ","",$_GET["TA_Code2"]),str_replace(" -","",$_GET["TA_Code3"])),$objet);
-        }
+        $article = new ArticleClass(0);
+        $article->insertF_ArtCompta($_GET["AR_Ref"],$_GET["ACP_Type"],$_GET["ACP_Champ"],str_replace(" - ","",$_GET["CG_Num"]),str_replace(" - ","",$_GET["CG_NumA"]),str_replace(" - ","",$_GET["TA_Code1"]),str_replace(" - ","",$_GET["TA_Code2"]),str_replace(" - ","",$_GET["TA_Code3"]),$_GET["PROT_No"]);
         break;
     case "insertF_FamCompta":
         $result=$objet->db->requete("SELECT *

@@ -198,9 +198,9 @@ $ctSommeil=0;
                 if($rows==null){
                 }else{
                     foreach($rows as $row){
-                        echo "<option value=".$row->idcompta."";
+                        echo "<option value={$row->idcompta}";
                         if($row->idcompta==$catcompta) echo " selected";
-                        echo ">".$row->marks."</option>";
+                        echo ">{$row->marks}</option>";
                     }
                 }
                 ?>
@@ -211,17 +211,15 @@ $ctSommeil=0;
         <select style="" name="mode_reglement" class="form-control" name="mode_reglement" id="mode_reglement" <?php if(!$flagProtected) echo "disabled"; ?>>
             <option value="0"></option>
             <?php
-                $objet = new ObjetCollector();   
-                $result = $objet->db->requete($objet->getModeleReglement());
-                $rows = $result->fetchAll(PDO::FETCH_OBJ);
-                $i=0;
-                $classe="";
+                $creglement= new ReglementClass(0);
+                $rows = $creglement->getModeleReglement();
+
                 if($rows==null){
                 }else{
                     foreach ($rows as $row){
-                        echo "<option value=".$row->MR_No."";
+                        echo "<option value={$row->MR_No}";
                         if($row->MR_No==$MR_No) echo " selected";
-                        echo ">".$row->MR_Intitule."</option>";
+                        echo ">{$row->MR_Intitule}</option>";
                     }
                 }
         ?>
@@ -232,15 +230,15 @@ $ctSommeil=0;
             <select style="" name="CA_Num" class="form-control" name="CA_Num" id="CA_Num" <?php if(!$flagProtected) echo "disabled"; ?>>
                 <option value=""></option>
                 <?php
-                $result=$objet->db->requete($objet->getAffaire());
-                $rows = $result->fetchAll(PDO::FETCH_OBJ);
+                $protection = new ProtectionClass("","");
+                $rows = $protection->getAffaire();
                 if($rows==null){
                 }else{
                     foreach($rows as $row){
                         if($row->CA_Num!=""){
-                            echo "<option value='".$row->CA_Num."'";
+                            echo "<option value='{$row->CA_Num}'";
                             if($row->CA_Num!="" && $row->CA_Num==$affaire) echo " selected ";
-                            echo ">".$row->CA_Intitule."</option>";
+                            echo ">{$row->CA_Intitule}</option>";
                         }
                     }
                 }

@@ -69,6 +69,7 @@ class FamilleClass Extends Objet{
     function __construct($id,$db=null)
     {
         parent::__construct($this->table, $id, 'FA_CodeFamille',$db);
+        $this->db = new DB();
         if (sizeof($this->data) > 0) {
             $this->FA_CodeFamille = $this->data[0]->FA_CodeFamille;
             $this->FA_Type = $this->data[0]->FA_Type;

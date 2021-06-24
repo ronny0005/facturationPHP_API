@@ -21,6 +21,7 @@ class CompteGClass Extends Objet{
 
     function __construct($id,$mode="all",$db=null)
     {
+        $this->db = new DB();
         parent::__construct($this->table, $id, 'CG_Num',$db);
         if (sizeof($this->data) > 0) {
             $this->CG_Num = $this->data[0]->CG_Num;

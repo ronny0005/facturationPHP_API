@@ -18,6 +18,7 @@ class CollaborateurClass Extends Objet{
 
     function __construct($id,$db=null)
     {
+        $this->db = new DB();
         $this->data = $this->getApiJson("/$id");
         if (sizeof($this->data)>0) {
 

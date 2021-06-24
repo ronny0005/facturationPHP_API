@@ -29,6 +29,7 @@ class ComptetClass Extends Objet{
 
     function __construct($id,$mode="all",$type="ctNum")
     {
+        $this->db = new DB();
         $this->CT_Num = "";
         $this->CT_Intitule = "";
         $this->CT_Type = "";
@@ -146,7 +147,6 @@ class ComptetClass Extends Objet{
     }
 
     public function maj_client(){
-
         parent::maj("CT_Intitule" , $this->CT_Intitule);
         parent::maj("CG_NumPrinc" , $this->CG_NumPrinc);
         parent::maj("CT_Contact" , $this->CT_Contact);
@@ -221,23 +221,7 @@ class ComptetClass Extends Objet{
 					";
     }
     public function allClients($sommeil=-1) {
-        $query = "SELECT CT_Sommeil,C.CT_Intitule,CT_Num,CG_NumPrinc,N_CatTarif,N_CatCompta,P.CT_Intitule AS LibCatTarif,LibCatCompta,
-                CT_Adresse,CG_NumPrinc,CT_Telephone,CT_CodeRegion,CT_Ville,CT_Siret,CT_Identifiant,MR_No,DE_No,CA_Num
-                FROM F_COMPTET C 
-                LEFT JOIN P_CATTARIF P ON P.cbIndice = C.N_CatTarif 
-                 LEFT JOIN (select  row_number() over (order by u.subject) as idcompta, u.LibCatCompta 
-                 from P_CATCOMPTA 
-                 unpivot 
-                       ( 
-                        LibCatCompta 
-                 for subject in (CA_ComptaVen01, CA_ComptaVen02, CA_ComptaVen03, CA_ComptaVen04, CA_ComptaVen05, CA_ComptaVen06, CA_ComptaVen07, CA_ComptaVen08, CA_ComptaVen09, CA_ComptaVen10, CA_ComptaVen11, CA_ComptaVen12, CA_ComptaVen13, CA_ComptaVen14, CA_ComptaVen15, CA_ComptaVen16, CA_ComptaVen17, CA_ComptaVen18, CA_ComptaVen19, CA_ComptaVen20, CA_ComptaVen21, CA_ComptaVen22)
-                 ) u) M ON M.idcompta = C.N_CatCompta 
-                 WHERE CT_Type=0 
-                 AND (-1=$sommeil OR CT_Sommeil=$sommeil)
-                 ORDER BY CT_Num";
-        $result= $this->db->query($query);
-        $this->list = array();
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/allClientShort&sommeil=$sommeil");
     }
 
     public function allClientsSelect() {
@@ -260,22 +244,8 @@ class ComptetClass Extends Objet{
         return $result->fetchAll(PDO::FETCH_OBJ);
     }
 
-    public function allFournisseur() {
-        $query = "SELECT CT_Sommeil,C.CT_Intitule,CT_Num,CG_NumPrinc,N_CatTarif,N_CatCompta,P.CT_Intitule AS LibCatTarif,LibCatCompta,
-                CT_Adresse,CG_NumPrinc,CT_Telephone,CT_CodeRegion,CT_Ville,CT_Siret,CT_Identifiant,MR_No,DE_No,CA_Num
-                FROM ".$this->db->baseCompta.".dbo.F_COMPTET C
-                LEFT JOIN P_CATTARIF P ON P.cbIndice = C.N_CatTarif 
-                 LEFT JOIN (select  row_number() over (order by u.subject) as idcompta, u.LibCatCompta 
-                 from P_CATCOMPTA 
-                 unpivot 
-                      ( 
-                        LibCatCompta 
-                        for subject in (CA_ComptaAch01, CA_ComptaAch02, CA_ComptaAch03, CA_ComptaAch04, CA_ComptaAch05, CA_ComptaAch06, CA_ComptaAch07, CA_ComptaAch08, CA_ComptaAch09, CA_ComptaAch10, CA_ComptaAch11, CA_ComptaAch12, CA_ComptaAch13, CA_ComptaAch14, CA_ComptaAch15, CA_ComptaAch16, CA_ComptaAch17, CA_ComptaAch18, CA_ComptaAch19, CA_ComptaAch20, CA_ComptaAch21, CA_ComptaAch22) 
-                 ) u) M ON M.idcompta = C.N_CatCompta WHERE CT_Type=1
-                 ORDER BY CT_Intitule";
-        $result= $this->db->query($query);
-        $this->list = array();
-        return $result->fetchAll(PDO::FETCH_OBJ);
+    public function allFournisseur($sommeil=-1) {
+        return $this->getApiJson("/allFournisseurShort&sommeil=$sommeil");
     }
 
     public function createClientMin(){

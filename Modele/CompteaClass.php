@@ -12,10 +12,13 @@ class CompteaClass Extends Objet{
                 ,$cbMarq,$cbCreateur,$cbModification;
 
     public $table = 'dbo.F_COMPTEA';
+    public $lien = 'fcomptea';
 
     function __construct($id,$mode="all",$db=null)
     {
-        parent::__construct($this->table, $id, 'CA_Num', $db);
+
+        $this->db = new DB();
+        $this->data = $this->getApiJson("/caNum=$id");
         if ($id == NULL) {
             $this->CA_Num = "";
             $this->CA_Intitule = "";
@@ -44,23 +47,7 @@ class CompteaClass Extends Objet{
     }
 
     public function allSearch($intitule="",$top=0){
-        $valeurSaisie =str_replace(" ","%",$intitule);
-        $value = "";
-        if($top!=0)
-            $value = "TOP $top";
-        $query = "SELECT  $value CA_Num
-                          ,CA_Intitule
-                          ,CA_type as id
-                          ,N_Analytique
-                          ,CONCAT(CONCAT(CA_Num,' - '),CA_Intitule) as text
-                          ,CONCAT(CONCAT(CA_Num,' - '),CA_Intitule) as value
-                  FROM $this->table
-                  WHERE CA_Type=0
-                  AND CONCAT(CONCAT(CA_Num,' - '),CA_Intitule) LIKE '%{$valeurSaisie}%'";
-        $result= $this->db->query($query);
-        $this->list = Array();
-        $this->list = $result->fetchAll(PDO::FETCH_OBJ);
-        return $this->list;
+        return $this->getApiJson("/allSeach/intitule={$this->formatString($intitule)}&top=$top");
     }
 
 

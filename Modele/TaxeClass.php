@@ -31,6 +31,7 @@ class TaxeClass Extends Objet{
     function __construct($id,$db=null)
     {
         parent::__construct($this->table, $id, 'TA_No',$db);
+        $this->db = new DB();
         if (sizeof($this->data) > 0) {
             $this->TA_Intitule = $this->data[0]->TA_Intitule;
             $this->TA_TTaux = $this->data[0]->TA_TTaux;

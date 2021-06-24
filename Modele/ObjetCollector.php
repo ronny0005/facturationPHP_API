@@ -1986,22 +1986,48 @@ FROM P_PARAMETRECIAL
             FROM F_ARTCLIENT";
     }
 
-    public function insertF_ArtCompta($ar_ref,$acp_type,$acp_champ,$cg_num,$cg_numA,$ta_code1,$ta_code2,$ta_code3){
-        return "INSERT INTO [dbo].[F_ARTCOMPTA]
-           ([AR_Ref],[ACP_Type],[ACP_Champ],[ACP_ComptaCPT_CompteG]
-           ,[ACP_ComptaCPT_CompteA],[ACP_ComptaCPT_Taxe1]
-           ,[ACP_ComptaCPT_Taxe2],[ACP_ComptaCPT_Taxe3]
-           ,[ACP_TypeFacture],[cbProt],[cbCreateur],[cbModification]
-           ,[cbReplication],[cbFlag])
-     VALUES
-           (/*AR_Ref*/'$ar_ref',/*ACP_Type*/$acp_type
-           ,/*ACP_Champ*/$acp_champ,/*ACP_ComptaCPT_CompteG*/'$cg_num'
-           ,/*ACP_ComptaCPT_CompteA*/'$cg_numA'
-           ,/*ACP_ComptaCPT_Taxe1*/(CASE WHEN '$ta_code1' ='' THEN NULL ELSE '$ta_code1' END)
-           ,/*ACP_ComptaCPT_Taxe2*/(CASE WHEN '$ta_code2' ='' THEN NULL ELSE '$ta_code2' END)
-           ,/*ACP_ComptaCPT_Taxe3*/(CASE WHEN '$ta_code3' ='' THEN NULL ELSE '$ta_code3' END)
-           ,/*ACP_TypeFacture*/0,/*cbProt*/0,/*cbCreateur*/'AND',/*cbModification*/GETDATE()
-           ,/*cbReplication*/0,/*cbFlag*/0)";
+    public function insertF_ArtCompta($ar_ref,$acp_type,$acp_champ,$cg_num,$cg_numA,$ta_code1,$ta_code2,$ta_code3,$protNo){
+        return "
+            DECLARE @arRef NVARCHAR(50) = $ar_ref
+            DECLARE @acpType INT = $acp_type
+            DECLARE @acpChamp INT = $acp_champ
+            DECLARE @cgNum NVARCHAR(50) = '$cg_num'
+            DECLARE @cgNumA NVARCHAR(50) = '$cg_numA'
+            DECLARE @taCode1 NVARCHAR(50) = '$ta_code1'
+            DECLARE @taCode2 NVARCHAR(50) = '$ta_code2'
+            DECLARE @taCode3 NVARCHAR(50) = '$ta_code3'
+            DECLARE @protNo NVARCHAR(50) = '$protNo'
+            
+            IF (SELECT TOP 1 1
+                FROM F_ARTCOMPTA
+                WHERE ACP_Type=@acpType AND ACP_Champ=@acpChamp AND AR_Ref=@arRef) = 1
+            BEGIN 
+                    INSERT INTO [dbo].[F_ARTCOMPTA]
+                   ([AR_Ref],[ACP_Type],[ACP_Champ],[ACP_ComptaCPT_CompteG]
+                   ,[ACP_ComptaCPT_CompteA],[ACP_ComptaCPT_Taxe1]
+                   ,[ACP_ComptaCPT_Taxe2],[ACP_ComptaCPT_Taxe3]
+                   ,[ACP_TypeFacture],[cbProt],[cbCreateur],[cbModification]
+                   ,[cbReplication],[cbFlag])
+                    VALUES
+                   (/*AR_Ref*/@arRef,/*ACP_Type*/@acpType
+                   ,/*ACP_Champ*/@acpChamp,/*ACP_ComptaCPT_CompteG*/@cgNum
+                   ,/*ACP_ComptaCPT_CompteA*/@cgNumA
+                   ,/*ACP_ComptaCPT_Taxe1*/(CASE WHEN @taCode1 ='' THEN NULL ELSE @taCode1 END)
+                   ,/*ACP_ComptaCPT_Taxe2*/(CASE WHEN @taCode2 ='' THEN NULL ELSE @taCode2 END)
+                   ,/*ACP_ComptaCPT_Taxe3*/(CASE WHEN @taCode3 ='' THEN NULL ELSE @taCode3 END)
+                   ,/*ACP_TypeFacture*/0,/*cbProt*/0,/*cbCreateur*/@protNo,/*cbModification*/GETDATE()
+                   ,/*cbReplication*/0,/*cbFlag*/0)
+           END
+           ELSE
+           BEGIN 
+               UPDATE [dbo].[F_ARTCOMPTA] SET ACP_ComptaCPT_CompteG=@cgNum,ACP_ComptaCPT_CompteA=@cgNumA
+                    ,ACP_ComptaCPT_Taxe1=(CASE WHEN @taCode1 ='' THEN NULL ELSE @taCode1 END)
+                    ,ACP_ComptaCPT_Taxe2=(CASE WHEN @taCode2 ='' THEN NULL ELSE @taCode2 END)
+                    ,ACP_ComptaCPT_Taxe3=(CASE WHEN @taCode3 ='' THEN NULL ELSE @taCode3 END)
+                    ,cbCreateur = @protNo
+                WHERE AR_Ref=@arRef AND ACP_Type=@acpType AND ACP_Champ=@acpChamp
+           END
+           ";
     }
 
     public function insertF_FamCompta($fa_codeFamille,$acp_type,$acp_champ,$cg_num,$cg_numA,$ta_code1,$ta_code2,$ta_code3){
@@ -2745,10 +2771,14 @@ LEFT JOIN (SELECT cbMarq,DO_Piece AS DO_Piece_Dest,DL_PrixUnitaire AS DL_PrixUni
     }
 
     public function modifClientUpdateCANum($ct_num,$CA_Num) {
-        $requete = "UPDATE [F_COMPTET] SET CA_Num=(CASE WHEN '$CA_Num'='' THEN NULL ELSE '$CA_Num' END),cbModification=GETDATE(),
-            N_Analytique=(CASE WHEN '$CA_Num'='' THEN NULL ELSE (SELECT N_Analytique FROM F_COMPTEA WHERE CA_Num='$CA_Num') END),
-            cbN_Analytique=(CASE WHEN '$CA_Num'='' THEN NULL ELSE (SELECT N_Analytique FROM F_COMPTEA WHERE CA_Num='$CA_Num') END)
-            WHERE CT_Num='$ct_num'";
+        $requete = "
+            DECLARE @caNum NVARCHAR(50) = '$CA_Num'
+            DECLARE @ctNum NVARCHAR(50) = '$ct_num'
+            
+            UPDATE [F_COMPTET] SET CA_Num=(CASE WHEN @caNum='' THEN NULL ELSE @caNum END),cbModification=GETDATE(),
+            N_Analytique=(CASE WHEN @caNum='' THEN NULL ELSE (SELECT N_Analytique FROM F_COMPTEA WHERE CA_Num=@caNum) END),
+            cbN_Analytique=(CASE WHEN @caNum='' THEN NULL ELSE (SELECT N_Analytique FROM F_COMPTEA WHERE CA_Num=@caNum) END)
+            WHERE CT_Num=@ctNum;";
         return $requete;
     }
 
@@ -2785,19 +2815,26 @@ LEFT JOIN (SELECT cbMarq,DO_Piece AS DO_Piece_Dest,DL_PrixUnitaire AS DL_PrixUni
 
     public function insertFReglementT($CT_Num,$Condition,$nbJour,$jour,$trepart,$vrepart){
         return "
-            DELETE FROM [dbo].[F_REGLEMENTT] WHERE CT_Num ='$CT_Num';
+            DECLARE @ctNum NVARCHAR(50) = '$CT_Num'
+            DECLARE @rtCondition INT = $Condition
+            DECLARE @rtNbJour INT = $nbJour
+            DECLARE @jour INT = $jour
+            DECLARE @tRepart INT = $trepart
+            DECLARE @vRepart INT = $vrepart
+            
+            DELETE FROM [dbo].[F_REGLEMENTT] WHERE CT_Num = @ctNum;
             INSERT INTO [dbo].[F_REGLEMENTT]
            ([CT_Num],[N_Reglement],[RT_Condition],[RT_NbJour]
            ,[RT_JourTb01],[RT_JourTb02],[RT_JourTb03],[RT_JourTb04]
            ,[RT_JourTb05],[RT_JourTb06],[RT_TRepart],[RT_VRepart]
            ,[cbProt],[cbCreateur],[cbModification],[cbReplication],[cbFlag])
      VALUES
-           (/*CT_Num*/'$CT_Num',/*N_Reglement*/1
-           ,/*RT_Condition*/$Condition,/*RT_NbJour*/$nbJour
-           ,/*RT_JourTb01*/$jour,/*RT_JourTb02*/0
+           (/*CT_Num*/@ctNum,/*N_Reglement*/1
+           ,/*RT_Condition*/@rtCondition,/*RT_NbJour*/@rtNbJour
+           ,/*RT_JourTb01*/@jour,/*RT_JourTb02*/0
            ,/*RT_JourTb03*/0,/*RT_JourTb04*/0
            ,/*RT_JourTb05*/0,/*RT_JourTb06*/0
-           ,/*RT_TRepart*/$trepart,/*RT_VRepart*/$vrepart
+           ,/*RT_TRepart*/@tRepart,/*RT_VRepart*/@vRepart
            ,/*cbProt*/0,/*cbCreateur*/'AND'
            ,/*cbModification*/CAST(GETDATE() AS DATE),/*cbReplication*/0,/*cbFlag*/0)";
     }
@@ -3792,16 +3829,18 @@ GROUP BY A.CA_No,A.CA_Intitule,B.NB
     }
 
     function getModeleReglementByMRNo($mr_no) {
-        return "SELECT MR_No,MR_Intitule
+        return "DECLARE @mrNo AS INT = '$mr_no'
+                SELECT MR_No,MR_Intitule
                 FROM F_MODELER
-                WHERE MR_No = $mr_no";
+                WHERE MR_No = @mrNo";
     }
 
     function getOptionModeleReglementByMRNo($mr_no) {
-        return "SELECT E.*,R_Intitule
+        return "DECLARE @mrNo AS INT = '$mr_no'
+                SELECT E.*,R_Intitule
                 FROM F_EMODELER E
                 INNER JOIN P_REGLEMENT P ON E.N_Reglement = P.R_Code
-                WHERE MR_No = $mr_no";
+                WHERE MR_No = @mrNo";
     }
 
     public function getSaisieAnal($EC_No,$N_Analytique){

@@ -13,6 +13,7 @@ class EtatClass extends Objet {
 
     function __construct()
     {
+        $this->db = new DB();
     }
 
 

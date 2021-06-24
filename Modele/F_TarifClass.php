@@ -36,6 +36,7 @@ class F_TarifClass Extends Objet{
 
     function __construct($id,$db=null) {
         parent::__construct($this->table, $id,'cbMarq',$db);
+        $this->db = new DB();
         if(sizeof($this->data)>0) {
             $this->TF_No = $this->data[0]->TF_No;
             $this->TF_Intitule = $this->data[0]->TF_Intitule;

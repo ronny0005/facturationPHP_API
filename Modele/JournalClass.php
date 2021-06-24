@@ -17,6 +17,7 @@ class JournalClass Extends Objet{
 
     function __construct($id,$db=null) {
         $this->data = $this->getApiJson("/$id");
+        $this->db = new DB();
         if(sizeof($this->data)>0) {
             $this->JO_Num = $this->data[0]->JO_Num;
             $this->JO_Intitule = stripslashes($this->data[0]->JO_Intitule);

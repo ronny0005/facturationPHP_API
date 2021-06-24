@@ -17,6 +17,7 @@ class DepotClass Extends Objet{
     function __construct($id,$db=null) {
         if($id =="")
             $id = 0;
+        $this->db = new DB();
         $this->data = $this->getApiJson("/deNo=$id");
         if(sizeof($this->data) > 0) {
             $this->DE_No = $this->data[0]->DE_No;

@@ -23,6 +23,7 @@ class P_ParametreLivrClass Extends Objet{
 
     function __construct($id,$db=null) {
         parent::__construct($this->table, $id,'cbMarq',$db);
+        $this->db = new DB();
         if(sizeof($this->data)>0) {
             $this->PL_Priorite1 = $this->data[0]->PL_Priorite1;
             $this->PL_Priorite2 = $this->data[0]->PL_Priorite2;

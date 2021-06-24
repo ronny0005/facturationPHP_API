@@ -39,6 +39,7 @@ class ProtectionClass extends Objet
 
     function __construct($nom, $mdp)
     {
+        $this->db = new DB();
         $objhigher = $this->getApiJson("/user={$this->formatString($nom)}&mdp={$this->formatString($mdp)}");
         if (isset($objhigher))
             $this->initParam($objhigher);

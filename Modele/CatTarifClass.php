@@ -17,7 +17,7 @@ class CatTarifClass Extends Objet{
 
     function __construct($id,$db=null)
     {
-
+        $this->db = new DB();
     }
 
     public function maj_cattarif(){
