@@ -70,9 +70,9 @@
         if(isset($_GET["CA_No"]))
             $caisseVal=$caisse->CA_No;
         foreach($depotCaisse->getDepotCaisseSelect($caisseVal) as $row){
-            echo "<option value=".$row->DE_No."";
+            echo "<option value={$row->DE_No}";
             if($row->Valide_Caisse==1) echo " selected";
-            echo ">".$row->DE_Intitule."</option>";
+            echo ">{$row->DE_Intitule}</option>";
         }
         ?>
 </select>

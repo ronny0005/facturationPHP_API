@@ -21,7 +21,6 @@ class CompteGClass Extends Objet{
 
     function __construct($id,$mode="all",$db=null)
     {
-        $this->db = new DB();
         parent::__construct($this->table, $id, 'CG_Num',$db);
         if (sizeof($this->data) > 0) {
             $this->CG_Num = $this->data[0]->CG_Num;
@@ -83,56 +82,18 @@ class CompteGClass Extends Objet{
     }
 
     public function allSearch($intitule="",$top=0){
-        $valeurSaisie =str_replace(" ","%",$intitule);
-        $value = "";
-        if($top!=0)
-            $value = "TOP $top";
-        $query = "SELECT  $value CG_Num
-                          ,CG_Intitule
-                           ,id=CG_Num
-                          ,text = CONCAT(CONCAT(CG_Num,' - '),CG_Intitule) 
-                          ,label = CONCAT(CONCAT(CG_Num,' - '),CG_Intitule) 
-                          ,CG_Analytique
-                          ,CG_Tiers
-                          ,CG_Echeance
-                          ,N_Nature
-                          ,CONCAT(CONCAT(CG_Num,' - '),CG_Intitule) as text
-                          ,CG_Num as value
-                  FROM $this->table
-                  WHERE CG_Type=0
-                  AND CONCAT(CONCAT(CG_Num,' - '),CG_Intitule) LIKE '%{$valeurSaisie}%'";
-        $result= $this->db->query($query);
-        $this->list = Array();
-        $this->list = $result->fetchAll(PDO::FETCH_OBJ);
-        return $this->list;
+        $this->getApiJson("/allSearch&intitule={$this->formatString($intitule)}&top={$top}");
     }
 
     public function allShort(){
-        $query = "SELECT  CG_Num
-                          ,CG_Intitule
-                          ,CG_Type
-                  FROM    F_COMPTEG  ";
-        $result= $this->db->query($query);
-        $this->list = Array();
-        $this->list = $result->fetchAll(PDO::FETCH_OBJ);
-        return $this->list;
+        return $this->getApiJson("/allShort");
     }
 
     function getComtpetg(){
-        $query = "  SELECT  cg.CT_Num,ct.CT_Intitule,numLib = ct.CT_Intitule
-                    FROM    F_COMPTETG cg
-                    LEFT JOIN F_COMPTET ct
-                        ON  cg.CT_Num = ct.CT_Num
-                    WHERE   CG_Num='{$this->CG_Num}'
-                    ORDER BY CT_Num";
-        $result= $this->db->query($query);
-        $this->list = Array();
-        $this->list = $result->fetchAll(PDO::FETCH_OBJ);
-        return $this->list;
+        return $this->getApiJson("/getComtpetg&cgNum={$this->CG_Num}");
     }
     function getComptegCount() {
-        $query = "SELECT COUNT(*) Nb,MAX(cbModification) cbModification FROM F_COMPTEG WHERE CG_Type=0 ORDER BY cbModification DESC";
-        $this->db->query($query);
+        return $this->getApiJson("/getComptegCount");
     }
 
     public function __toString() {

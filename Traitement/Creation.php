@@ -237,7 +237,7 @@ if(strcmp($_GET["acte"],"ListeClientRemise") == 0){
 }
 
 if(strcmp($_GET["acte"],"articleByDesign") == 0){
-    $article = new ArticleClass(0,$objet->db);
+    $article = new ArticleClass(0);
     $rows = $article->getArticleByIntitule($_POST["AR_Design"]);
     if (sizeof($rows)>1){
         echo "Ce nom est déjà utilisé pour un article !";
@@ -245,7 +245,7 @@ if(strcmp($_GET["acte"],"articleByDesign") == 0){
 }
 
 if(strcmp($_GET["acte"],"clientByIntitule") == 0){
-    $client = new ComptetClass(0,$objet->db);
+    $client = new ComptetClass(0);
     $rows = $client->getTiersByIntitule($_POST["CT_Intitule"]);
     if (sizeof($rows)>1){
         echo "Ce nom est déjà utilisé pour un tier !";
@@ -279,36 +279,8 @@ if(strcmp($_GET["acte"],"listeArticle")==0){
 if(strcmp($_GET["acte"],"artStock")==0){
     $AR_Ref = $_GET["AR_Ref"];
     $DE_No = $_GET["DE_No"];
-    $article = new ArticleClass(0,$objet->db);
+    $article = new ArticleClass(0);
     echo json_encode($article->getStockDepot($AR_Ref,$DE_No));
-}
-
-if(strcmp($_GET["acte"],"updateF_ArtStockBorne")==0){
-    $AR_Ref = $_GET["AR_Ref"];
-    $DE_No = $_GET["DE_No"];
-    $QteMin = $_GET["QteMin"];
-    if($QteMin =="") $QteMin = 0;
-    $QteMax = $_GET["QteMax"];
-    if($QteMax =="") $QteMax = 0;
-    $article = new ArticleClass(0,$objet->db);
-    $article ->setuserName("","");
-    $article->updateF_ArtStockBorne($AR_Ref,$DE_No,$QteMin,$QteMax);
-}
-
-
-
-if(strcmp($_GET["acte"],"creation_conditionnement") == 0){
-    $article = new ArticleClass($_GET["AR_Ref"]);
-    $result=$objet->db->requete($objet->selectFCondition($_GET["enumere"],$_GET["AR_Ref"]));
-    $rows = $result->fetchAll(PDO::FETCH_OBJ);
-    if ($rows == null) {
-        $result=$objet->db->requete($objet->insertFCondition($_GET["AR_Ref"],$_GET["enumere"],$_GET["qte"]));
-        $artClient = new ArtClientClass($_GET["AR_Ref"],$_GET["nbCat"]);
-        if ($artClient->cbMarq== "") {
-            $article->insertFArtClient($_GET["nbCat"]);
-        }
-        $result=$objet->db->requete($objet->insertFTarifCond($_GET["AR_Ref"],$_GET["nbCat"],$_GET["prix"]));
-    }else echo "0";
 }
 
 if(strcmp($_GET["acte"],"suppr_conditionnement") == 0){
@@ -321,12 +293,12 @@ if(strcmp($_GET["acte"],"suppr_conditionnement") == 0){
 }
 
 if(strcmp($_GET["acte"],"suppr_article") == 0){
-    $article= new ArticleClass($_GET["AR_Ref"],$objet->db);
-    $rows = $article->isArticleLigne();
-    if($rows==null){
-        $article->supprArticle($_GET["AR_Ref"]);
-        header('Location: ../indexMVC.php?module=3&action=3&acte=supprOK&AR_Ref='.$_GET["AR_Ref"]);
-    }else header('Location: ../indexMVC.php?module=3&action=3&acte=supprKO&AR_Ref='.$_GET["AR_Ref"]);
+    $article = new ArticleClass($_GET["AR_Ref"]);
+    $rows = $article->delete();
+    if($rows==1){
+        header('Location: ../listeArticle-3-'.$_GET["AR_Ref"]);
+    }else
+        header('Location: ../listeArticle-4-'.$_GET["AR_Ref"]);
 }
 if(strcmp($_GET["acte"],"liste_article_design") == 0){
     $result=$objet->db->requete($objet->getAllArticleByDesign($_GET["AR_Design"],$_SESSION["DE_No"]));     
@@ -532,7 +504,7 @@ if(strcmp($_GET["acte"],"ajout_client") == 0){
         $ncompte = strtoupper($_GET["CT_Num"]);
     if(isset($_GET["CT_NumAjout"]))
         $ncompte = strtoupper($_GET["CT_NumAjout"]);
-    $comptetClass = new ComptetClass($ncompte,$objet->db);
+    $comptetClass = new ComptetClass($ncompte);
     if($comptetClass->CT_Num==NULL) {
         $comptetClass->CT_Num = $ncompte;
         $comptetClass->CT_Type = $_GET["type"];
@@ -555,50 +527,20 @@ if(strcmp($_GET["acte"],"ajout_client") == 0){
         $comptetClass->CO_No = $_GET["CO_No"];
         $comptetClass->CT_Sommeil = $_GET["CT_Sommeil"];
         $ct_numP = "";
-        $comptetClass->setuserName("", "");
+        $comptetClass->userName = $_GET["PROT_No"];
+        $comptetClass->cbCreateur = $_GET["PROT_No"];
         $comptetClass->createClientMin();
-    $comptetClass = new ComptetClass($ncompte,"all",$objet->db);
-        $ct_numP=$comptetClass->CT_Num;
-            if($comptetClass->CT_Type!=1)
-                $result=$objet->db->requete($objet->createFLivraison($comptetClass->CT_Num
-                ,str_replace("'", "''", $comptetClass->CT_Intitule)
-                ,str_replace("'", "''", $comptetClass->CT_Adresse)
-                ,str_replace("'", "''", $comptetClass->CT_Complement)
-                ,str_replace("'", "''", $comptetClass->CT_CodePostal)
-                ,str_replace("'", "''", $comptetClass->CT_Ville)
-                ,str_replace("'", "''", $comptetClass->CT_CodeRegion)
-                ,$comptetClass->N_Expedition,$comptetClass->N_Condition,$comptetClass->CT_Telecopie
-                ,str_replace("'", "''", $comptetClass->CT_EMail)
-                ,str_replace("'", "''", $comptetClass->CT_Pays)
-                ,str_replace("'", "''", $comptetClass->CT_Contact)
-                ,$comptetClass->CT_Telephone));
-                $result=$objet->db->requete($objet->creationComptetg($comptetClass->CT_Num,$comptetClass->CG_NumPrinc));
-
-            if($comptetClass->MR_No!=0 && $comptetClass->MR_No!=""){
-                $result =  $objet->db->requete( $objet->getOptionModeleReglementByMRNo($mode_reglement));
-                $rows = $result->fetchAll(PDO::FETCH_OBJ);
-                if($rows !=null){
-                    foreach ($rows as $row){
-                        $Condition = $row->ER_Condition;
-                        $jour = $row->ER_JourTb01;
-                        $nbjour = $row->ER_NbJour;
-                        $trepart = $row->ER_TRepart;
-                        $vrepart = $row->ER_VRepart;
-                    }
-                    $objet->db->requete($objet->insertFReglementT($comptetClass->CT_Num,$Condition,$nbjour,$jour,$trepart,$vrepart));
-                }
-            }
-            $data = array('CT_Num' => $comptetClass->CT_Num);
-            echo json_encode($data);
+        $data = array('CT_Num' => $comptetClass->CT_Num);
+        echo json_encode($data);
     }else {
-        echo $ncompte." existe déjà !";
+        echo "$ncompte existe déjà !";
     }
     }
 
 if(strcmp($_GET["acte"],"modif_client") == 0){
         $ncompte = $_GET["CT_Num"];
         //$type = $_GET["type"];
-        $comptetClass = new ComptetClass($ncompte,$objet->db);
+        $comptetClass = new ComptetClass($ncompte);
 
         $comptetClass->CT_Intitule= str_replace("'", "''", $_GET["CT_Intitule"]);
     $comptetClass->CT_Adresse= str_replace("'", "''", $_GET["CT_Adresse"]);
@@ -621,39 +563,24 @@ if(strcmp($_GET["acte"],"modif_client") == 0){
 
     if($_GET["CA_Num"]=="selected")
         $CA_Num= "";
-        $comptetClass->maj_client();
-
-        $result=$objet->db->requete($objet->modifClientUpdateCANum($ncompte,$comptetClass ->CA_Num));
-            if($comptetClass ->MR_No!=0 && $comptetClass ->MR_No!=""){
-                $result =  $objet->db->requete( $objet->getOptionModeleReglementByMRNo($comptetClass ->MR_No));
-                $rows = $result->fetchAll(PDO::FETCH_OBJ);
-                if($rows !=null){
-                    foreach ($rows as $row){
-                        $Condition = $row->ER_Condition;
-                        $jour = $row->ER_JourTb01;
-                        $nbjour = $row->ER_NbJour;
-                        $trepart = $row->ER_TRepart;
-                        $vrepart = $row->ER_VRepart;
-                    }
-                    $objet->db->requete($objet->insertFReglementT($ncompte,$Condition,$nbjour,$jour,$trepart,$vrepart));  
-                }
-            }
-        $data = array('CT_Num' => $ncompte);
+    $comptetClass->maj_client();
+    $comptetClass->modifClientUpdateCANum();
+    if($comptetClass ->MR_No!=0 && $comptetClass ->MR_No!=""){
+        $comptetClass ->majMrNo();
+    }
+    $data = array('CT_Num' => $ncompte);
     echo json_encode($data);
 }
 
 if(strcmp($_GET["acte"],"cond_detail") == 0){
-    $result=$objet->db->requete($objet->detailConditionnement($_GET["reference"],$_GET["value_cond"]));
-    $rows = $result->fetchAll(PDO::FETCH_OBJ);
-    echo json_encode($rows);
-}
-
-if(strcmp($_GET["acte"],"cond_detail_pxMinMax") == 0){
-    $article = new ArticleClass($_GET["reference"],$objet->db);
-    echo $article->getPxMinMaxCatCompta($_GET["value_cond"]);
+    $article = new ArticleClass($_GET["reference"]);
+    echo json_encode($article->detailConditionnement($_GET["value_cond"]));
 }
 
 if(strcmp($_GET["acte"],"maj_cond_detail") == 0){
+
+  //  $article = new ArticleClass($_GET["ref"]);
+  //  echo json_encode($article->detailConditionnement($_GET["val"]));
     $result=$objet->db->requete($objet->majDetailConditionnement($_GET["prix"],$_GET["ref"],$_GET["val"],$_GET["enum"],$_GET["qte"],$_GET["AEnum"]));
 }
 
@@ -662,35 +589,17 @@ if(strcmp($_GET["acte"],"maj_prix_detail") == 0){
     $ncat = $_GET["val"];
     $pxTTC = $_GET["Prix_TTC"];
     $ac_prixVen = 0;
-    $ac_remise = 0;
-    if(isset($_GET["prix"]) && $_GET["AC_Coef"]!="")
+    if(isset($_GET["prix"]))
         $ac_prixVen = str_replace(" ","",$_GET["prix"]);
-    if($ac_prixVen=="")
-        $ac_prixVen = 0;
-    if(isset($_GET["AC_Remise"]) && $_GET["AC_Coef"]!="")
-        $ac_remise = str_replace(" ","",$_GET["AC_Remise"]);
-    if($ac_remise=="")
-        $ac_remise = 0;
     $ac_coef = 0;
-    if(isset($_GET["AC_Coef"]) && $_GET["AC_Coef"]!="")
+    if(isset($_GET["AC_Coef"]))
         $ac_coef= str_replace(" ","",$_GET["AC_Coef"]);
-    if($ac_coef=="")
-        $ac_coef = 0;
-    $article = new ArticleClass(0,$objet->db);
-    $artClient = new ArtClientClass($AR_Ref,$ncat,$objet->db);
-    $artClient->AC_PrixVen = $ac_prixVen;
-    $artClient->AC_Coef = $ac_coef;
-    $artClient->AR_Ref = $AR_Ref;
-    $artClient->AC_PrixTTC = $pxTTC;
-    $artClient->AC_Remise = $ac_remise;
-    $artClient->AC_Categorie = $ncat;
-    $artClient->insertIntoFArtClient();
+    $fartclientClass = new F_ArtClientClass(0);
+    $fartclientClass->updateFArtClient($ac_prixVen,$ac_coef,$AR_Ref,$ncat,$pxTTC);
 }
 
 if(strcmp($_GET["acte"],"ajout_article") == 0){
-    $objet->db->connexion_bdd->beginTransaction();
-    try {
-        $article = new ArticleClass(0, $objet->db);
+        $article = new ArticleClass(0);
         if (isset($_GET["reference"]))
             $article->AR_Ref = strtoupper($_GET["reference"]);
         if (isset($_GET["referenceAjout"]))
@@ -699,7 +608,7 @@ if(strcmp($_GET["acte"],"ajout_article") == 0){
             $article->AR_Design = str_replace("'", "''", $_GET["designation"]);
         if (isset($_GET["designationAjout"]))
             $article->AR_Design = str_replace("'", "''", $_GET["designationAjout"]);
-        $articleClass = new ArticleClass($article->AR_Ref, $objet->db);
+        $articleClass = new ArticleClass($article->AR_Ref);
         if ($articleClass->cbMarq == "") {
             if (isset($_GET["pxAchat"]))
                 $article->AR_PrixAch = str_replace(" ", "", str_replace(",", ".", $_GET["pxAchat"]));
@@ -756,33 +665,13 @@ if(strcmp($_GET["acte"],"ajout_article") == 0){
             $article->AR_SaisieVar = 0;
             $article->AR_PUNet = 0;
             $article->AR_Sommeil = $_GET["AR_Sommeil"];
-            $article->setuserName("", "");
+            $article->userName = $_GET["PROT_No"];
             $article->insertArticle();
-            $article->insertFArtClient(1);
-            $article->insertFArtClient(2);
-            $article->insertFArtModele();
-            $article->majQteGros();
-            /*
-            $artClient = new ArtClientClass($AR_Ref,2,$objet->db);
-            $artClient->AC_PrixVen = $ac_prixVen;
-            $artClient->AC_Coef = $article->Prix_Min;
-            $artClient->AR_Ref = $AR_Ref;
-            $artClient->AC_PrixTTC = 0; //Prix max
-            $artClient->AC_Remise = 0;
-            $artClient->AC_Categorie = 2;
-            $artClient->insertFArtClient($AR_Ref,$ncat,$pxTTC);
-            */
             $data = array('AR_Ref' => $article->AR_Ref);
             echo json_encode($data);
         } else {
             echo "{$article->AR_Ref} existe déjà !";
         }
-        $objet->db->connexion_bdd->commit();
-    }
-    catch(Exception $e){
-        $objet->db->connexion_bdd->rollBack();
-        return json_encode($e);
-    }
 }
 
 
@@ -803,58 +692,42 @@ if(strcmp($_GET["acte"],"catalog_article") == 0){
     $cl3 = $rows[0]->CL_No3;
     $cl4 = $rows[0]->CL_No4;
     if($cl1!=0){
-        $result=$objet->db->requete($objet->getCatalogueByCL($cl1));     
-        $rows = $result->fetchAll(PDO::FETCH_OBJ);
-        $cl_int1 = $rows[0]->CL_Intitule;
+        $fcatalogue = new F_CatalogueClass($cl1);
+        $cl_int1 = $fcatalogue->CL_Intitule;
     }
     if($cl2!=0){
-        $result=$objet->db->requete($objet->getCatalogueByCL($cl2));     
-        $rows = $result->fetchAll(PDO::FETCH_OBJ);
-        $cl_int2 = $rows[0]->CL_Intitule;
+        $fcatalogue = new F_CatalogueClass($cl2);
+        $cl_int2 = $fcatalogue->CL_Intitule;
     }
     if($cl3!=0){
-        $result=$objet->db->requete($objet->getCatalogueByCL($cl3));     
-        $rows = $result->fetchAll(PDO::FETCH_OBJ);
-        $cl_int3 = $rows[0]->CL_Intitule;
+        $fcatalogue = new F_CatalogueClass($cl3);
+        $cl_int3 = $fcatalogue->CL_Intitule;
     }
     if($cl4!=0){
-        $result=$objet->db->requete($objet->getCatalogueByCL($cl4));     
-        $rows = $result->fetchAll(PDO::FETCH_OBJ);
-        $cl_int4 = $rows[0]->CL_Intitule;
+        $fcatalogue = new F_CatalogueClass($cl4);
+        $cl_int4 = $fcatalogue->CL_Intitule;
     }
     echo '{"CL_No1" : '.$cl1.',"CL_Intitule1" : "'.$cl_int1.'","CL_No2" : '.$cl2.',"CL_Intitule2" : "'.$cl_int2.'","CL_No3" : '.$cl3.',"CL_Intitule3" : "'.$cl_int3.'","CL_No4" : '.$cl4.',"CL_Intitule4" : "'.$cl_int4.'"}';
 }
 
 if(strcmp($_GET["acte"],"ajout_user") == 0){
-    $username =$_GET["username"];
-    $description = $_GET["description"];
-    $password = $_GET["password"];
-    $email = $_GET["email"];
-    $groupeid = $_GET["groupeid"];
-    $changepass = $_GET["changepass"];
+    $protection = new ProtectionClass("","");
+    $protection->PROT_User = $_GET["username"];
+    $protection->PROT_Description = $_GET["description"];
+    $protection->PROT_Pwd = $_GET["password"];
+    $protection->PROT_Email = $_GET["email"];
+    $protection->PROT_Right = $_GET["groupeid"];
+    $protection->PROT_PwdStatus = $_GET["changepass"];
+    $profiluser = 0;
     if(isset($_GET["profiluser"])){
         $profiluser = $_GET["profiluser"];
     }
-    $result = $objet->db->requete($objet->createUser($username,$description,$password,$groupeid,$email,$profiluser,$changepass));
-    $protection = new ProtectionClass($username, $password);
-    $protection->setSecuriteAdmin($_GET["securiteAdmin"]);
-    if($protection->cbMarq!=""){
-        if(isset($_GET["depot"])){
-            $depot = $_GET["depot"];
-            $depotClass = new DepotClass(0);
-            $depotClass->supprDepotUser($id);
-            foreach($depot as $dep) {
-                $depotClass = new DepotClass($dep);
-                $depotClass->insertDepotUser($id);
-            }
-        }
-    }
-    $data = array('Prot_No' => $username);
-    echo json_encode($data);
+    $protection->PROT_UserProfil = $profiluser;
+    $protection->ajoutUser($_GET["securiteAdmin"]);
 }
 
 if(strcmp($_GET["acte"],"ajout_depot") == 0){
-    $depot = new DepotClass(0,$objet->db);
+    $depot = new DepotClass(0);
     $depot->DE_Intitule = str_replace("'","''", $_GET["intitule"]);
     $depot->DE_Adresse = str_replace("'","''", $_GET["adresse"]);
     $depot->DE_Complement = str_replace("'","''", $_GET["complement"]);
@@ -888,21 +761,14 @@ if(strcmp($_GET["acte"],"ajout_depot") == 0){
     $affaire= str_replace("'","''", $_GET["affaire"]);
     $depot->DE_Telephone = $_GET["tel"];
     $depot->CA_CatTarif=$_GET["CA_CatTarif"];
-    $depot->insertFDepot();
-    $depot->insertFDepotTempl();
-    $depot->insertDepotSouche($CA_SoucheVente,$CA_SoucheAchat,$CA_SoucheInterne,$affaire);
-    $depot->insertDepotCaisse($caisse);
-    if(isset($_GET["code_client"]))
-        foreach($codeClient as $code)
-            $depot->insertDepotClient($code);
-
-    $data = array('DE_No' => $depot->DE_Intitule);
+    $info = $depot->insertFDepot($CA_SoucheVente,$CA_SoucheAchat,$CA_SoucheInterne,$caisse,$codeClient);
+    $data = array('DE_No' => $info->de_No);
     echo json_encode($data);
 }  
 
 
 if(strcmp($_GET["acte"],"ajout_caisse") == 0){
-    $caisse = new CaisseClass(0,$objet->db);
+    $caisse = new CaisseClass(0);
     $caisse->CA_Intitule = str_replace("'","''", $_GET["intitule"]);
     $caisse->CO_NoCaissier = $_GET["caissier"];
     $caisse->JO_Num = $_GET["journal"];
@@ -910,12 +776,9 @@ if(strcmp($_GET["acte"],"ajout_caisse") == 0){
         $codeDepot=$_GET["depot"];
     else
         $codeDepot="";
-    $caisseVal = $caisse->insertCaisse();
-    $caisse = new CaisseClass($caisseVal->CA_No,$objet->db);
-    $caisse->supprDepotCaisse();
-    if(isset($_GET["depot"]))
-        foreach($codeDepot as $code)
-            $caisse->insertDepotCaisse($code);
+    $caisseVal = $caisse->insertCaisse($codeDepot,$_GET["PROT_No"]);
+    var_dump($caisseVal);
+    $caisse = new CaisseClass($caisseVal->CA_No);
     $data = array('CA_No' => $caisse->CA_Intitule);
     echo json_encode($data);
 }
@@ -932,11 +795,8 @@ if(strcmp($_GET["acte"],"modif_caisse") == 0){
         $codeDepot=$_GET["depot"];
     else
         $codeDepot="";
-    $caisse->maj_caisse();
-    $caisse->supprDepotCaisse();
-    if(isset($_GET["depot"]))
-        foreach($codeDepot as $code)
-            $caisse->insertDepotCaisse($code);
+    $caisse->maj_caisse($codeDepot);
+
     $data = array('CA_No' => $caisse->CA_Intitule);
     echo json_encode($data);
 }

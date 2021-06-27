@@ -120,10 +120,6 @@ switch ($val) {
         envoiRequete($objet->getF_TaxeCount(),$objet);
         break;
 
-    case "connect":
-        $protection = new ProtectionClass($_GET["NomUser"],$_GET["Password"]);
-        echo json_encode($protection->connectSage2());
-        break;
     case "getDateEcheance":
         echo $objet->getDateEcgetTiersheance($_GET["CT_Num"],$_GET["Date"]);
         break;
@@ -813,11 +809,6 @@ switch ($val) {
     case "addDocenteteFacture":
         $mobile="android";
         include("Traitement/Facturation.php");
-        break;
-    case "addCReglementFacture":
-        $creglement = new ReglementClass(0);
-        $creglement->addCReglementFacture("",$_GET['montant'],1, $_GET['mode_reglement']
-            ,"","","","","");
         break;
     case "getFacture":
         envoiRequete($objet->getFacture($_GET['DO_Tiers'], $_GET['datedeb'], $_GET['datefin']),$objet);

@@ -241,20 +241,6 @@ class DocEnteteClass Extends Objet{
         parent::majcbModification();
     }
 
-    public function GetMontantFacture(){
-        $query = "  SELECT ISNULL(SUM(DL_MontantTTC),0) MontantTTC
-                    FROM F_DOCENTETE E
-                    LEFT JOIN F_DOCLIGNE D 
-                        ON  E.cbDO_Piece = D.cbDO_Piece 
-                        AND E.DO_Domaine = D.DO_Domaine 
-                        AND E.DO_Type = D.DO_Type
-                    WHERE E.cbMarq = {$this->cbMarq}
-                    ";
-        $result= $this->db->query($query);
-        $rows = $result->fetchAll(PDO::FETCH_OBJ);
-        return $rows[0]->MontantTTC;
-    }
-
     public function getReglementByFacture($cbMarq){
         return $this->getApiJson("/getReglementByFacture&cbMarq=$cbMarq");
     }
@@ -363,32 +349,10 @@ class DocEnteteClass Extends Objet{
         return $this->getApiJson("/saisie_comptable&cbMarq={$this->cbMarq}");
     }
 
-    public function journeeCloture($date,$caNo){
-        $query ="   SELECT  Nb = count(*) 
-                    FROM    F_DOCENTETE 
-                    WHERE   DO_Cloture=1 
-                    AND     DO_Date='$date'
-                    AND     CA_No = CASE WHEN '$caNo'='' THEN 0 ELSE '$caNo' END";
-        $result = $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ)[0]->Nb;
-    }
-
     public function testCorrectLigneA()
     {
         return $this->getApiJson("/testCorrectLigneA&cbMarq={$this->cbMarq}");
     }
-
-    public function GetMontantReglee(){
-        $query = "  SELECT ISNULL(SUM(DL_MontantTTC),0) MontantTTC
-                    FROM F_DOCENTETE E                    
-                    LEFT JOIN F_DOCREGL D ON E.cbDO_Piece = D.cbDO_Piece AND E.DO_Domaine = D.DO_Domaine AND E.DO_Type = D.DO_Type
-                    WHERE E.cbMarq = {$this->cbMarq}
-                    ";
-        $result= $this->db->query($query);
-        $rows = $result->fetchAll(PDO::FETCH_OBJ);
-        return $rows[0]->MontantTTC;
-    }
-
 
     public function getFLivraisonByCTNum($ct_num) {
         return "SELECT ISNULL((SELECT Max(LI_No) FROM ".$this->db->baseCompta.".dbo.F_LIVRAISON WHERE CT_Num ='$ct_num'),0) AS LI_No";
@@ -3118,143 +3082,6 @@ public function setValueMvtEntree (){
             DELETE FROM F_DOCREGL WHERE DO_Piece='{$this->DO_Piece}' AND DO_Domaine={$this->DO_Domaine} 
             AND DO_Type={$this->DO_Type};");
         $this->delete();
-    }
-
-    public function addDocenteteFactureProcess($CT_Num, $CO_No, $ref, $date, $N_Reglement,$de_no,$cat_tarif,$cat_compta,$souche,$ca_no,$affaire,$type_fac,$do_statut,$latitude,$longitude,$date_ech,$do_piece,$DO_Cood2,$DO_Coord03,$DO_Coord04,$mobile,$user,$transform=0) {
-        $this->setTypeFac($type_fac);
-        $tmpDoPiece = $do_piece;
-        $do_piece=$this->getEnteteDocument($souche);
-        if($transform==1)
-            $do_piece = $tmpDoPiece;
-        $client = new ComptetClass($CT_Num,"all",$this->db);
-        $ct_type= 1;
-        if($this->DO_Domaine==0) $ct_type= 0;
-        $rows = $this->ajoutEnteteTransaction($CT_Num,$ct_type,$ca_no,$date_ech,$type_fac);
-        $date_ech = $rows[0]->dateEchCalcule;
-        $li_no = $rows[0]->li_no;
-        $co_nocaissier = $rows[0]->coNoCaissier;
-        $vehicule = "";
-        $ca_num = $affaire;
-        $this->defaultValue();
-        $this->setDefaultValueVente($client);
-        $this->setDefaultValueAchat($client);
-        $this->setInfoAjoutEntete();
-        $this->DO_Date = $date;
-        $this->DO_Ref = $ref;
-        $this->CO_No = $CO_No;
-        $this->DE_No = $de_no;
-        $this->LI_No = $li_no;
-        $this->CA_Num = $ca_num;
-        $this->DO_Souche = $souche;
-        $this->N_CatCompta = $cat_compta;
-        $this->DO_Tarif = $cat_tarif;
-        $this->CA_No = $ca_no;
-        $this->CO_NoCaissier = $co_nocaissier;
-        $this->VEHICULE = $vehicule;
-        $this->longitude = $longitude;
-        $this->latitude = $latitude;
-        $this->DO_Piece = $do_piece;
-        $this->DO_Statut = $do_statut;
-        $this->DO_Coord02 = $DO_Cood2;
-        $this->DO_Coord03 = $DO_Coord03;
-        $this->DO_Coord04 = $DO_Coord04;
-        $this->setuserName($user,$mobile);
-        $this->cbMarq = $this->insert_docEntete();
-
-        $protectionClass = new ProtectionClass("","",$this->db);
-        $html = $protectionClass->alerteDocumentCatComptaTaxe();
-
-        if($html !="" && $this->db->user!="sa") {
-            $mail = new Mail();
-            $mail->sendMail($html."<br/><br/><br/> {$this->db->db}","info@it-solution-sarl.com","Liste des document Cat Compta HT avec taxe");
-        }
-
-        $nextDO_Piece = $this->getEnteteDispo();
-        $this->updateEnteteTable($nextDO_Piece);
-
-        //$type_fac=="Vente" || $type_fac=="Ticket"  || $type_fac=="AchatRetour" || $type_fac=="Achat" || $type_fac=="PreparationCommande" || $type_fac=="AchatPreparationCommande"
-        if($this->DO_Domaine==0 ||$this->DO_Domaine==1 || $this->DO_Domaine ==3)
-            $this->addDocRegl(0, $N_Reglement,$date_ech);
-
-        return $this->cbMarq;
-    }
-
-    public function addDocRegl($dr_regle, $n_reglement,$date_ech) {
-        $requete = "
-                BEGIN
-                    SET NOCOUNT ON;
-                    INSERT INTO [dbo].[F_DOCREGL] 
-                    ([DR_No],[DO_Domaine],[DO_Type],[DO_Piece],[DR_TypeRegl],[DR_Date],[DR_Libelle],[DR_Pourcent] 
-                    ,[DR_Montant],[DR_MontantDev],[DR_Equil],[EC_No],[cbEC_No],[DR_Regle] 
-                    ,[N_Reglement],[cbProt],[cbCreateur],[cbModification],[cbReplication],[cbFlag]) 
-                    VALUES 
-                    (/*DR_No*/ISNULL((SELECT MAX(DR_No) FROM F_DOCREGL),0)+1,/*DO_Domaine*/{$this->DO_Domaine}
-                    ,/*DO_Type*/{$this->DO_Type},/*DO_Piece*/'{$this->DO_Piece}',/*DR_TypeRegl*/2,/*DR_Date*/'$date_ech'  
-                    ,/*DR_Libelle*/'',/*DR_Pourcent*/0,/*DR_Montant*/0,/*DR_MontantDev*/0 
-                    ,/*DR_Equil*/1,/*EC_No, */0,/*cbEC_No, */0,/*DR_Regle*/$dr_regle
-                    ,/*N_Reglement*/$n_reglement,/*cbProt*/0,/*cbCreateur*/'AND',/*cbModification*/GETDATE() 
-                    ,/*cbReplication*/0,/*cbFlag*/0);
-                    select @@IDENTITY as cbMarq;
-                END;
-                ";
-        $result = $this->db->query($requete);
-        return $result->fetchAll(PDO::FETCH_OBJ)[0]->cbMarq;
-    }
-
-    public function ajoutEnteteTransaction($ct_num,$ct_type,$CA_No,$dateEch,$type_fac){
-        $query="DECLARE @ctNum AS VARCHAR(35) = '{$ct_num}'
-                DECLARE @ctType AS INT = {$ct_type}
-                DECLARE @coNoCaissier AS INT
-                DECLARE @CA_No AS INT = {$CA_No}
-                declare @dateEchCalcule as VARCHAR(10)
-                declare @type_fac as VARCHAR(50) = '{$type_fac}'
-                declare @date_ech as date
-                declare @nbjour as int
-                declare @datecivil as date
-                declare @date as date
-                declare @day as int
-                declare @val as int
-                declare @condition as int 
-                declare @li_no as int 
-                set @date_ech = '{$dateEch}' 
-                
-                SELECT  @condition = ER_Condition,@nbjour = ER_NbJour, @val = ER_JourTb01
-                FROM    F_EMODELER E
-                INNER JOIN P_REGLEMENT P 
-                    ON  E.N_Reglement = P.R_Code
-                WHERE   MR_No = (SELECT MR_No
-                                FROM    F_COMPTET
-                                WHERE   CT_Type = @ctType 
-                                AND     cbCT_Num=@ctNum)
-                
-                set @date = (select dateadd(day,@nbjour,@date_ech))
-                set @datecivil = (select dateadd(month,(@nbjour/30),@date_ech))
-                set @day = CASE WHEN @val=0 THEN 1 ELSE @val END
-                
-                SELECT @dateEchCalcule = (CASE WHEN @condition = 0 THEN JourNet WHEN @condition = 1 THEN FinMoisCivil WHEN @condition = 2 THEN FinMois END)
-                FROM (
-                SELECT
-                (SELECT CAST(CASE WHEN @val=0 THEN @date ELSE DATEADD(day,@day-1,CAST(YEAR(@date) AS VARCHAR(4))+'-'+RIGHT(CAST(MONTH(@date)+1 AS VARCHAR(2)),2)+'-01') END AS DATE)AS DATE) AS JourNet,
-                (SELECT CASE WHEN @val = 0 THEN EOMONTH(DATEADD(day,@day,EOMONTH(@datecivil)))
-                ELSE DATEADD(day,@day,EOMONTH(@datecivil)) END) FinMoisCivil,
-                (SELECT CASE WHEN @val = 0 THEN CAST(EOMONTH(@date) AS VARCHAR(10))
-                ELSE DATEADD(day,@day,EOMONTH(@date)) END) FinMois)A
-                
-                SELECT @coNoCaissier = CO_NoCaissier 
-                FROM F_CAISSE
-                WHERE CA_No=@CA_No
-                    
-                SELECT @li_no = LI_No
-                FROM F_LIVRAISON
-                WHERE cbCT_Num=@ctNum AND @type_fac<>'Achat'
-                
-                SELECT ISNULL(@dateEchCalcule,@date_ech) dateEchCalcule,ISNULL(@li_no,0) li_no,ISNULL(@coNoCaissier,0) coNoCaissier
-";
-        $result = $this->db->requete($query);
-        $rowsTour = $result->fetchAll(PDO::FETCH_OBJ);
-        if($rowsTour!=null)
-            return $rowsTour;
-        return null;
     }
 
     public function updateEnteteTable($nextDO_Piece)

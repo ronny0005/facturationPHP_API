@@ -112,7 +112,7 @@ class PlanComptable {
         if(isset($_GET["type"]))
             $typeInterrogation=$_GET["type"];
         $protection = new ProtectionClass($_SESSION["login"], $_SESSION["mdp"]);
-        $compteg = new CompteGClass(0,$objet->db);
+        $compteg = new CompteGClass(0);
         $journal = new JournalClass("");
         $listItem = $journal->getSaisieJournalExercice("",0,$annee,"-1","","",0,"-1");
         include("pages/Structure/PlanComptable/InterrogationTiers.php");

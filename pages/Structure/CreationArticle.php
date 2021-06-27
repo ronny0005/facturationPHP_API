@@ -3,7 +3,7 @@
     <script src="js/script_creationArticle.js?d=<?php echo time(); ?>"></script>
 
     <form action="#" method="GET" id="formArticle">
-        <input type="hidden" name="cbMarqArticle" id="cbMarqArticle" value="<?= $_GET["AR_Ref"] ?>"/>
+        <input type="hidden" name="cbMarqArticle" id="cbMarqArticle" value="<?= isset($_GET["AR_Ref"]) ? $_GET["AR_Ref"] : 0 ?>"/>
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item">
                 <a class="nav-link" id="home-tab" data-toggle="tab" href="#FichePrincipale" role="tab" aria-controls="FichePrincipale" aria-selected="true">Fiche principale</a>

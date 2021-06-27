@@ -16,8 +16,6 @@ class CompteaClass Extends Objet{
 
     function __construct($id,$mode="all",$db=null)
     {
-
-        $this->db = new DB();
         $this->data = $this->getApiJson("/caNum=$id");
         if ($id == NULL) {
             $this->CA_Num = "";

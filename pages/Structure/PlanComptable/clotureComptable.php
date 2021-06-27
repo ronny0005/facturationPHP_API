@@ -1,8 +1,8 @@
 <?php
     $objet = new ObjetCollector();
-    $result = $objet->db->requete($objet->getSoucheVente());
-    $soucheClass = $result->fetchAll(PDO::FETCH_OBJ);
-    $reglement = new ReglementClass(0,$objet->db);
+    $protection = new ProtectionClass("","");
+    $soucheClass = $protection->getSoucheVente();
+    $reglement = new ReglementClass(0);
     $message=0;
     if(isset($_POST["dateCloture"])){
         $reglement->clotureComptable($objet->getDate($_POST["dateCloture"]),$_POST["journalDebut"],$_POST["journalFin"],$_SESSION["id"],$_POST["type"]);
@@ -41,7 +41,7 @@ if($message!=0)
                 <option value='0'></option>
                 <?php
                 $isPrincipal = 0;
-                $journal = new JournalClass(0,$objet->db);
+                $journal = new JournalClass(0);
                 $rows = $journal->getJournaux(1);
                 foreach($rows as $row) {
                     echo "<option value='{$row->JO_Num}'>{$row->JO_Intitule}</option>";
@@ -54,7 +54,7 @@ if($message!=0)
             <select id="journalFin" name="journalFin" class="form-control">
                 <option value='0'></option>
                 <?php
-                $journal = new JournalClass(0,$objet->db);
+                $journal = new JournalClass(0);
                $rows = $journal->getJournaux(1);
                 foreach($rows as $row) {
                     echo "<option value='{$row->JO_Num}'>{$row->JO_Intitule}</option>";

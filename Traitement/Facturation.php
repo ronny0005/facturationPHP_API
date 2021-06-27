@@ -430,18 +430,18 @@ if($_GET["acte"] =="stockMinDepasse") {
 
 if($_GET["acte"] =="saisie_comptableCaisse") {
     $trans = 0;
-    $docEntete = new DocEnteteClass($_GET["cbMarq"],$objet->db);
+    $docEntete = new DocEnteteClass($_GET["cbMarq"]);
     if(isset($_GET["TransDoc"]))
         $trans = $_GET["TransDoc"];
-    echo json_encode(saisieComptableCaisse($_GET["cbMarq"],$objet->db));
+    echo json_encode(saisieComptableCaisse($_GET["cbMarq"]));
 }
 
-function saisieComptableCaisse($cbMarq,$objet){
+function saisieComptableCaisse($cbMarq){
     $docEntete = new DocEnteteClass($cbMarq);
     $listReglt = $docEntete->getReglementByFacture($docEntete->cbMarq);
     $result = array();
     foreach ($listReglt as $rglt){
-        foreach (saisieComptableCaisseReglement($rglt->RG_No,$objet) as $elem)
+        foreach (saisieComptableCaisseReglement($rglt->RG_No) as $elem)
         array_push($result, $elem);
     }
     return $result;
@@ -449,8 +449,8 @@ function saisieComptableCaisse($cbMarq,$objet){
 
 
 
-    function saisieComptableCaisseReglement($RG_No,$objet){
-        $reglement = new ReglementClass($RG_No,$objet);
+    function saisieComptableCaisseReglement($RG_No){
+        $reglement = new ReglementClass($RG_No);
         return $reglement->getMajComptaListe();
     }
 

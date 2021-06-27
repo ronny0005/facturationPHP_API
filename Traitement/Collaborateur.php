@@ -42,7 +42,7 @@ if($_GET["acte"]=="ajout"){
 		if(isset($_GET["recouvrement"]))$btnRecouv=1;
 		else $btnRecouv=0;
 		$collaborateurClass = new CollaborateurClass(0,$objet->db);
-		$coNo = $collaborateurClass->insertCollaborateur($nom,$prenom,$adresse,$complement,$codePostal,$fonction,$ville,$region,$pays,$service,$btnVendeur,$btnCaissier,$btnAcheteur,$telephone,$telecopie,$email,$btnControleur,$btnRecouv);
+		$coNo = $collaborateurClass->insertCollaborateur($nom,$prenom,$adresse,$complement,$codePostal,$fonction,$ville,$region,$pays,$service,$btnVendeur,$btnCaissier,$btnAcheteur,$telephone,$telecopie,$email,$btnControleur,$btnRecouv,$_GET["PROT_No"]);
 		$data = array('CO_No' => $coNo);
 		echo json_encode($data);
     }else {
@@ -76,7 +76,7 @@ if($_GET["acte"]=="modif"){
     if(isset($_GET["recouvrement"]))$btnRecouv=1;
     else $btnRecouv=0;
     $collaborateurClass = new CollaborateurClass($co_no,$objet->db);
-    $collaborateurClass->modifCollaborateur($nom,$prenom,$adresse,$complement,$codePostal,$fonction,$ville,$region,$pays,$service,$btnVendeur,$btnCaissier,$btnAcheteur,$telephone,$telecopie,$email,$btnControleur,$btnRecouv,$co_no);
+    $collaborateurClass->modifCollaborateur($nom,$prenom,$adresse,$complement,$codePostal,$fonction,$ville,$region,$pays,$service,$btnVendeur,$btnCaissier,$btnAcheteur,$telephone,$telecopie,$email,$btnControleur,$btnRecouv,$co_no,$_GET["PROT_No"]);
     $data = array('CO_No' => $co_no);
     echo json_encode($data);
 }

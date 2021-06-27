@@ -16,8 +16,6 @@ class DocReglClass Extends Objet{
 
     function __construct($id,$db=null)
     {
-        $this->db = new DB();
-        parent::__construct($this->table, $id, 'cbMarq',$db);
         $this->setValue();
         if (sizeof($this->data) > 0) {
             $this->DR_No = $this->data[0]->DR_No;
@@ -54,49 +52,5 @@ class DocReglClass Extends Objet{
         $this->cbProt = 0;
         $this->cbReplication = 0;
         $this->cbFlag = 0;
-    }
-
-    public function addDocRegl($doDomaine,$doType,$doPiece,$dr_regle, $n_reglement,$date_ech){
-        $this->DO_Domaine = $doDomaine;
-        $this->DO_Piece = $doPiece;
-        $this->DO_Type = $doType;
-        $this->DR_Regle = $dr_regle;
-        $this->N_Reglement = $n_reglement;
-        $this->DR_Date = $date_ech;
-        return $this->insertDocRegl();
-    }
-
-    public function setDocReglByEntete($cbMarqEntete){
-        $requete = "SELECT ISNULL(rgl.cbMarq,0) cbMarq
-                FROM    F_DOCENTETE doe
-                LEFT JOIN F_DOCREGL rgl
-                    ON doe.DO_Domaine = rgl.DO_Domaine
-                    AND doe.DO_Type = rgl.DO_Type
-                    AND doe.DO_Piece = rgl.DO_Piece
-                WHERE doe.cbMarq = $cbMarqEntete";
-        $result = $this->db->query($requete);
-        return new DocReglClass($result->fetchAll(PDO::FETCH_OBJ)[0]->cbMarq);
-    }
-
-    public function insertDocRegl() {
-        $requete = "
-                BEGIN
-                    SET NOCOUNT ON;
-                    INSERT INTO [dbo].[F_DOCREGL] 
-                    ([DR_No],[DO_Domaine],[DO_Type],[DO_Piece],[DR_TypeRegl],[DR_Date],[DR_Libelle],[DR_Pourcent] 
-                    ,[DR_Montant],[DR_MontantDev],[DR_Equil],[EC_No],[DR_Regle] 
-                    ,[N_Reglement],[cbProt],[cbCreateur],[cbModification],[cbReplication],[cbFlag]) 
-                    VALUES 
-                    (/*DR_No*/ISNULL((SELECT MAX(DR_No) FROM F_DOCREGL),0)+1,/*DO_Domaine*/{$this->DO_Domaine}
-                    ,/*DO_Type*/{$this->DO_Type},/*DO_Piece*/'{$this->DO_Piece}',/*DR_TypeRegl*/{$this->DR_TypeRegl},/*DR_Date*/'{$this->DR_Date}'  
-                    ,/*DR_Libelle*/'{$this->DR_Libelle}',/*DR_Pourcent*/{$this->DR_Pourcent},/*DR_Montant*/{$this->DR_Montant},/*DR_MontantDev*/{$this->DR_MontantDev} 
-                    ,/*DR_Equil*/{$this->DR_Equil},/*EC_No, */{$this->EC_No},/*DR_Regle*/{$this->DR_Regle}
-                    ,/*N_Reglement*/{$this->N_Reglement},/*cbProt*/{$this->cbProt},/*cbCreateur*/'AND',/*cbModification*/GETDATE() 
-                    ,/*cbReplication*/{$this->cbReplication},/*cbFlag*/{$this->cbFlag});
-                    select @@IDENTITY as cbMarq;
-                END;
-                ";
-        $result = $this->db->query($requete);
-        return $result->fetchAll(PDO::FETCH_OBJ)[0]->cbMarq;
     }
 }

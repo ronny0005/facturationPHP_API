@@ -81,62 +81,28 @@ if( $_GET["acte"] =="liste_article_source"){
 
 //ajout article 
 if($_GET["acte"] =="ajout_ligne"|| $_GET["acte"] =="modif"){
-    if($_GET["quantite"]!=""){
-        $qte=$_GET["quantite"];
+    if($_GET["quantite"]!="") {
+        $qte = $_GET["quantite"];
         $prix = $_GET["prix"];
         $remise = $_GET["remise"];
-        $cbMarq =  $_GET["cbMarq"];
+        $cbMarq = $_GET["cbMarq"];
         $typefac = $_GET["type_fac"];
         $cbMarqEntete = $_GET["cbMarqEntete"];
-        $type_rem="P";
+        $type_rem = "P";
         $type_remise = 0;
-        $login ="";
-        if(isset($_GET["userName"]))
+        $login = "";
+        if (isset($_GET["userName"]))
             $login = $_GET["userName"];
-        $machine ="";
-        if(isset($_GET["machineName"]))
+        $machine = "";
+        if (isset($_GET["machineName"]))
             $machine = $_GET["machineName"];
-        $docEntete = new DocEnteteClass($cbMarqEntete,$objet->db);
-        if (isset($_GET["PROT_No"])) {
-            $protection = new ProtectionClass("", "", $objet->db);
-            $protection->connexionProctectionByProtNo($_GET["PROT_No"]);
-            $isSecurite = $protection->IssecuriteAdmin($docEntete->DE_No);
-
-            $isVisu = $docEntete->isVisu($protection->PROT_Administrator, $protection->protectedType("Sortie"), $protection->PROT_APRES_IMPRESSION,$isSecurite);
-            if (!$isVisu) {
-                if ($_GET["acte"] == "ajout_ligne") {
-                    try {
-                        $objet->db->connexion_bdd->beginTransaction();
-                        $ref_article = $_GET["designation"];
-                        $docligne = new DocLigneClass(0, $objet->db);
-                        $article = new ArticleClass($ref_article, $objet->db);
-                        echo $docligne->addDocligneSortieMagasinProcess($ref_article, $cbMarqEntete, $qte, "3", $typefac, $machine,$_GET["PROT_No"]);
-                        $article->updateArtStock($docEntete->DO_Tiers, -$qte, -($prix * $qte),$_GET["PROT_No"],$_GET["acte"]);
-                        $objet->db->connexion_bdd->commit();
-                    }
-                    catch(Exception $e){
-                        $objet->db->connexion_bdd->rollBack();
-                        return json_encode($e);
-                    }
-                } else {
-                    try {
-                        $objet->db->connexion_bdd->beginTransaction();
-                        $docligne = new DocLigneClass($cbMarq, $objet->db);
-                        $aqte = $docligne->DL_Qte;
-                        $aprix = $docligne->DL_PrixUnitaire;
-                        $article = new ArticleClass($docligne->AR_Ref, $objet->db);
-                        $docligne->modifDocligneFactureMagasin($qte, $prix, $typefac,$_GET["PROT_No"]);
-                        $article->updateArtStock($docEntete->DO_Tiers, $aqte - $qte, ($aprix * $aqte) - ($prix * $qte),$_GET["PROT_No"],$_GET["acte"]);
-                        $rows = $docligne->getLigneFactureElementByCbMarq();
-                        echo json_encode($rows);
-                        $objet->db->connexion_bdd->commit();
-                    }
-                    catch(Exception $e){
-                        $objet->db->connexion_bdd->rollBack();
-                        return json_encode($e);
-                    }
-                }
-            }
+        $docEntete = new DocEnteteClass($cbMarqEntete);
+        $docligne = new DocLigneClass(0);
+        if ($_GET["acte"] == "ajout_ligne") {
+            $ref_article = $_GET["designation"];
+            echo $docligne->addDocligneSortieMagasinProcess($ref_article, $cbMarqEntete, $qte, "3", $typefac, $machine, $_GET["PROT_No"]);
+        } else {
+            echo $docligne->modifDocligneFactureMagasin($qte, $prix, $typefac, $_GET["PROT_No"]);
         }
     }
 }

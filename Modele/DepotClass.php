@@ -17,7 +17,6 @@ class DepotClass Extends Objet{
     function __construct($id,$db=null) {
         if($id =="")
             $id = 0;
-        $this->db = new DB();
         $this->data = $this->getApiJson("/deNo=$id");
         if(sizeof($this->data) > 0) {
             $this->DE_No = $this->data[0]->DE_No;
@@ -77,147 +76,53 @@ class DepotClass Extends Objet{
         $this->getApiExecute("/majCatTarif&deNo={$this->DE_No}&catTarif={$this->CA_CatTarif}");
     }
 
-    public function insertFDepot()
-    {
-        $query = "
-BEGIN 
-SET NOCOUNT ON;
-            INSERT INTO [dbo].[F_DEPOT]
-           ([DE_No],[DE_Intitule],[DE_Adresse],[DE_Complement],[DE_CodePostal],[DE_Ville]
-           ,[DE_Contact],[DE_Principal],[DE_CatCompta],[DE_Region],[DE_Pays],[DE_EMail]
-           ,[DE_Code],[DE_Telephone],[DE_Telecopie],[DE_Replication],[DP_NoDefaut],[cbDP_NoDefaut]
-           ,[cbProt],[cbCreateur],[cbModification],[cbReplication],[cbFlag])
-     VALUES
-           (/*DE_No*/(SELECT ISNULL((select MAX(DE_No)+1 from f_depot),1)),/*DE_Intitule*/'{$this->DE_Intitule}',/*DE_Adresse*/'{$this->DE_Adresse}'
-           ,/*DE_Complement*/'{$this->DE_Complement}',/*DE_CodePostal*/'{$this->DE_CodePostal}',/*DE_Ville*/'{$this->DE_Ville}'
-           ,/*DE_Contact*/'{$this->DE_Contact}',/*DE_Principal*/0,/*DE_CatCompta*/1
-           ,/*DE_Region*/'{$this->DE_Region}',/*DE_Pays*/'{$this->DE_Pays}',/*DE_EMail*/'{$this->DE_EMail}'
-           ,/*DE_Code*/NULL,/*DE_Telephone*/'{$this->DE_Telephone}',/*DE_Telecopie*/'{$this->DE_Telecopie}'
-           ,/*DE_Replication*/0,/*DP_NoDefaut*/NULL,/*cbDP_NoDefaut*/NULL
-           ,/*cbProt*/0,/*cbCreateur*/'AND',/*cbModification*/CAST(GETDATE() AS DATE)
-           ,/*cbReplication*/0,/*cbFlag*/0)
-           SELECT *
-           FROM F_DEPOT 
-           WHERE cbMarq = @@IDENTITY;
-           END ";
-        $result = $this->db->query($query);
-        $rows = $result->fetchAll(PDO::FETCH_OBJ);
-        $this->DE_No = $rows[0]->DE_No;
-        $this->cbMarq = $rows[0]->cbMarq;
-        $this->majCatTarif();
-    }
 
-    public function insertFDepotTempl()
+    public function insertFDepot($caSoucheVente,$caSoucheAchat,$caSoucheInterne,$caisse,$codeClient)
     {
-        $query = "
-            BEGIN 
-             SET NOCOUNT ON;
-            INSERT INTO [dbo].[F_DEPOTEMPL]
-           ([DE_No],[DP_No],[DP_Code],[DP_Intitule]
-           ,[DP_Zone],[DP_Type],[cbProt],[cbCreateur]
-           ,[cbModification],[cbReplication],[cbFlag])
-            VALUES
-           (/*DE_No*/{$this->DE_No},/*DP_No*/(SELECT ISNULL((SELECT MAX(DP_No)+1 FROM F_DEPOTEMPL),1)),/*DP_Code*/'DEFAUT',/*DP_Intitule*/'Défaut',/*DP_Zone*/0
-           ,/*DP_Type*/0,/*cbProt*/0,/*cbCreateur*/'AND',/*cbModification*/CAST(GETDATE() AS DATE),/*cbReplication*/0,/*cbFlag*/0);
-           
-            DECLARE @cbmarq As INT 
-            SET @cbmarq = @@IDENTITY
-    
-            UPDATE F_DEPOT SET  DP_NoDefaut = (SELECT ISNULL((select DP_No FROM F_DEPOTEMPL WHERE cbMarq=@cbmarq),1))
-                                ,cbDP_NoDefaut = (SELECT ISNULL((select DP_No FROM F_DEPOTEMPL WHERE cbMarq=@cbmarq),1))
-                                ,cbModification = GETDATE()
-             WHERE DE_No = {$this->DE_No}
-             END";
-            $this->db->query($query);
-    }
+        return $this->getApiJson("/insertDepot&deIntitule={$this->formatString($this->DE_Intitule)}&deAdresse={$this->formatString($this->DE_Adresse)}&deComplement={$this->formatString($this->DE_Complement)}&deCodePostal={$this->formatString($this->DE_CodePostal)}&deVille={$this->formatString( $this->DE_Ville)}&deContact={$this->formatString($this->DE_Contact)}&deRegion={$this->formatString($this->DE_Region)}&dePays={$this->formatString($this->DE_Pays)}&deEmail={$this->formatString($this->DE_EMail)}&deTelephone={$this->formatString($this->DE_Telephone)}&deTelecopie={$this->formatString($this->DE_Telecopie)}&protNo=".$_SESSION["id"]."&caSoucheVente=$caSoucheVente&caSoucheAchat=$caSoucheAchat&caSoucheInterne=$caSoucheInterne&affaire={$this->formatString($this->CA_Num)}&caisse=$caisse&codeClient={$this->formatString($codeClient)}");
 
+//        $this->majCatTarif();
+    }
 
     public function insertDepotClient($codeClient)
     {
-        $query = "INSERT INTO Z_DEPOTCLIENT 
-					VALUES ({$this->DE_No},'$codeClient')";
-        $this->db->query($query);
+        $this->getApiExecute("/insertDepotClient&deNo={$this->DE_No}&value=$codeClient");
     }
 
-
     public function insertDepotSouche($CA_SoucheVente,$CA_SoucheAchat,$CA_SoucheStock,$CA_Num){
-        $query = "INSERT INTO Z_DEPOTSOUCHE 
-					VALUES ({$this->DE_No},$CA_SoucheVente,$CA_SoucheAchat,$CA_SoucheStock,'$CA_Num')";
-        $this->db->query($query);
+        $this->getApiExecute( "/insertDepotSouche&deNo={$this->DE_No}&caNum=$CA_Num&caSoucheVente=$CA_SoucheVente&caSoucheAchat=$CA_SoucheAchat&caSoucheStock=$CA_SoucheStock");
     }
 
     public function updateDepotSouche($CA_SoucheVente,$CA_SoucheAchat,$CA_SoucheStock,$CA_Num){
-        $query = "	UPDATE 	Z_DEPOTSOUCHE 
-						SET CA_SoucheVente=$CA_SoucheVente
-							,CA_SoucheAchat=$CA_SoucheAchat
-							,CA_SoucheStock=$CA_SoucheStock
-							,CA_Num='$CA_Num' 
-					WHERE 	DE_No={$this->DE_No}";
-        $this->db->query($query);
+        $this->getApiExecute("/updateDepotSouche&caSoucheVente={$CA_SoucheVente}&caSoucheAchat={$CA_SoucheAchat}&caSoucheStock={$CA_SoucheStock}&caNum={$CA_Num}");
     }
 
     public function insertDepotCaisse($CA_No){
-        $query = "	INSERT INTO Z_DEPOTCAISSE 
-						VALUES ({$this->DE_No},$CA_No)";
-        $this->db->query($query);
+        $this->getApiExecute( "/insertDepotCaisse&deNo={$this->DE_No}&caNo=$CA_No");
     }
 
     public function modifDepotCaisse($CA_No){
-        $query = "	UPDATE	Z_DEPOTCAISSE 
-						SET CA_No=$CA_No 
-					WHERE	DE_No={$this->DE_No}";
-        $this->db->query($query);
+        $this->getApiExecute("/modifDepotCaisse&deNo={$this->DE_No}&caNo=$CA_No");
     }
 
     public function getDepotCaisse(){
-        $query = "	SELECT	* 
-					FROM 	Z_DEPOTCAISSE 
-					WHERE 	DE_No={$this->DE_No}";
-        $result = $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/modifDepotCaisse&deNo={$this->DE_No}");
     }
 
     public function getDepotSouche(){
-        $query = "	SELECT 	* 
-					FROM 	Z_DEPOTSOUCHE 
-					WHERE 	DE_No={$this->DE_No}";
-        $result = $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getDepotSouche&deNo={$this->DE_No}");
     }
 
     public function supprDepotClient(){
-        $query = "	DELETE 
-					FROM 	Z_DEPOTCLIENT 
-					WHERE 	DE_No={$this->DE_No}";
-        $this->db->query($query);
-    }
-    public function supprReglement($rg_no){
-        return "DELETE FROM F_REGLECH WHERE RG_No = $rg_no AND RC_Montant=0;
-                    DELETE FROM F_CREGLEMENT WHERE RG_No = $rg_no;
-                    DELETE FROM Z_RGLT_BONDECAISSE WHERE RG_No = $rg_no;
-                    DELETE FROM Z_RGLT_BONDECAISSE WHERE RG_No_RGLT = $rg_no;";
+        $this->getApiExecute("/supprDepotClient&deNo={$this->DE_No}");
     }
 
     public function alldepotShortDetail(){
         return $this->getApiJson("/depotShortDetail");
     }
 
-
     public function getDepotUser($Prot_No){
-        $query = "  SELECT  A.DE_No
-                            ,DE_Intitule
-                            ,IsPrincipal
-                    FROM    F_DEPOT A
-                    INNER JOIN Z_DEPOTUSER B 
-						ON A.DE_No = B.DE_No
-                    WHERE   Prot_No=$Prot_No
-                    GROUP BY A.DE_No
-                            ,DE_Intitule
-                            ,IsPrincipal";
-        $result= $this->db->query($query);
-        $this->list = Array();
-        $this->list = $result->fetchAll(PDO::FETCH_OBJ);
-        return $this->list;
+        return $this->getApiJson("/getDepotUser&protNo=$Prot_No");
     }
 
     public function getDepotUserSearch($Prot_No,$depotExclude,$searchTerm,$principal=1){
@@ -225,35 +130,17 @@ SET NOCOUNT ON;
     }
 
     public function getDepotUserPrincipal($Prot_No){
-        $query = "  SELECT  A.DE_No
-                            ,DE_Intitule
-                            ,IsPrincipal
-                    FROM    F_DEPOT A
-                    INNER JOIN (SELECT *
-                                FROM Z_DEPOTUSER 
-                                WHERE IsPrincipal = 1) B 
-						ON A.DE_No = B.DE_No
-                    WHERE   Prot_No=$Prot_No
-                    GROUP BY A.DE_No
-                            ,DE_Intitule
-                            ,IsPrincipal";
-        $result= $this->db->query($query);
-        $this->list = Array();
-        $this->list = $result->fetchAll(PDO::FETCH_OBJ);
-        return $this->list;
+        return $this->getApiJson("/getDepotUserPrincipal&protNo=$Prot_No");
     }
 
     public function delete() {
-        $query = "UPDATE F_DEPOT SET DP_NoDefaut = 0,cbDP_NoDefaut = NULL,cbModification=GETDATE() WHERE DE_No={$this->DE_No}; 
-            DELETE FROM F_DEPOT WHERE DE_No={$this->DE_No};
-            DELETE FROM F_DEPOTEMPL WHERE DE_No={$this->DE_No}";
-        $this->db->query($query);
+        $this->getApiJson("/deleteDepot&deNo={$this->DE_No}");
     }
 
     public function supprDepotUser($prot_user)
     {
-        $query = "DELETE FROM Z_DEPOTUSER WHERE Prot_No={$prot_user}";
-        $this->db->query($query);
+        $this->lien = "zdepotuser";
+        return $this->getApiExecute("/supprDepotUser&protNo=$prot_user");
     }
 
     public function insertDepotUser($prot_user)

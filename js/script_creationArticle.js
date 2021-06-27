@@ -289,7 +289,7 @@ jQuery(function($) {
     function ajouterArticle() {
         if ($('#reference').is(':disabled')) {
             $.ajax({
-                url: 'traitement/Creation.php?acte=modif_article&reference=' + $("#reference").val(),
+                url: 'traitement/Creation.php?acte=modif_article&reference=' + $("#reference").val()+"&PROT_No="+$("#PROT_No").val(),
                 method: 'GET',
                 dataType: 'json',
                 data: $("#formArticle").serialize(),
@@ -302,7 +302,7 @@ jQuery(function($) {
             });
         } else {
             $.ajax({
-                url: 'traitement/Creation.php?acte=ajout_article',
+                url: 'traitement/Creation.php?acte=ajout_article&PROT_No='+$("#PROT_No").val(),
                 method: 'GET',
                 dataType: 'json',
                 data: $("#formArticle").serialize(),

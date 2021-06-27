@@ -81,7 +81,7 @@ jQuery(function($){
             var num ='';
             $("#add_err").css('display', 'none', 'important');
             $.ajax({
-                url: 'traitement/Creation.php?acte=ajout_client',
+                url: 'traitement/Creation.php?acte=ajout_client&PROT_No='+$("#PROT_No").val(),
                 method: 'GET',
                 dataType: 'json',
                 data : $("#form-creationClient").serialize(),
@@ -103,7 +103,7 @@ jQuery(function($){
         }else {
             var num ='';
             $.ajax({
-                url: 'traitement/Creation.php?acte=modif_client&page=insertClientMin',
+                url: 'traitement/Creation.php?acte=modif_client&page=insertClientMin&PROT_No='+$("#PROT_No").val(),
                 method: 'GET',
                 dataType: 'json',
                 data : $("#form-creationClient").serialize()+"&CT_Num="+$_GET("CT_Num"),

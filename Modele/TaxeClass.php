@@ -30,8 +30,7 @@ class TaxeClass Extends Objet{
 
     function __construct($id,$db=null)
     {
-        parent::__construct($this->table, $id, 'TA_No',$db);
-        $this->db = new DB();
+        $this->data = $this->getApiJson("/taNo={$id}");
         if (sizeof($this->data) > 0) {
             $this->TA_Intitule = $this->data[0]->TA_Intitule;
             $this->TA_TTaux = $this->data[0]->TA_TTaux;
@@ -74,30 +73,11 @@ class TaxeClass Extends Objet{
     }
 
     public function taxeFromTaCode($taCode){
-        $query = "  SELECT *
-                    FROM    F_Taxe
-                    WHERE   TA_Code='$taCode'";
-        $result=$this->db->requete($query);
-        $row = $result->fetchAll(PDO::FETCH_OBJ);
-        if($row!=null)
-            return $row[0];
-        return null;
+        return $this->getApiJson("/taCode={$taCode}");
     }
 
     public function taxeAttache($cgNumTaxe,$cgNumAssocie){
-        $query = "  SELECT	eta.CG_Num
-                            ,TA_Provenance+1
-                            ,tax.CG_Num
-                    FROM F_TAXE tax
-                    INNER JOIN F_ETAXE eta
-                        ON tax.TA_No = eta.TA_No
-                    WHERE   (eta.CG_Num='' OR eta.CG_Num=@cgNumAssocie)
-                    AND     (tax.CG_Num='' OR tax.CG_Num=@cgNumTaxe)";
-        $result=$this->db->requete($query);
-        $row = $result->fetchAll(PDO::FETCH_OBJ);
-        if($row!=null)
-            return $row[0];
-        return null;
+        return $this->getApiJson("/taxeAttache&cgNumTaxe={$cgNumTaxe}&cgNumAssocie={$cgNumAssocie}");
     }
 
     public function __toString() {

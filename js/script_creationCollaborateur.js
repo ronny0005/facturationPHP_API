@@ -41,7 +41,7 @@ jQuery(function($){
     function Valider(){
         if($_GET("CO_No")==null){
             $.ajax({
-                url: 'traitement/Collaborateur.php?acte=ajout',
+                url: 'traitement/Collaborateur.php?acte=ajout&PROT_No='+$("#PROT_No").val(),
                 method: 'GET',
                 dataType: 'json',
                 data : $("#formCollab").serialize(),
@@ -54,7 +54,7 @@ jQuery(function($){
             }); 
         }else {
             $.ajax({
-                url: 'traitement/Collaborateur.php?acte=modif',
+                url: 'traitement/Collaborateur.php?acte=modif&PROT_No='+$("#PROT_No").val(),
                 method: 'GET',
                 dataType: 'json',
                 data : $("#formCollab").serialize(),

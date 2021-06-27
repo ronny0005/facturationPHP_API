@@ -274,17 +274,17 @@ if(isset($_POST["RG_Modif"]))
                                         if($rows==null){
                                         }else{
                                             foreach($rows as $row) {
-                                                if ($isPrincipal == 0) {
+                                               // if ($isPrincipal == 0) {
                                                     echo "<option value='{$row->CA_No}'";
                                                     if ($row->CA_No == $ca_no) echo " selected";
                                                     echo ">{$row->CA_Intitule}</option>";
-                                                } else {
+                                                /*} else {
                                                     if ($row->IsPrincipal == 0) {
                                                         echo "<option value='{$row->CA_No}'";
                                                         if ($row->CA_No == $ca_no) echo " selected";
                                                         echo ">{$row->CA_Intitule}</option>";
                                                     }
-                                                }
+                                                }*/
                                             }
                                         }
                                         ?>

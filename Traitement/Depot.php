@@ -7,7 +7,7 @@ if(!isset($mobile)){
 }
 if($_GET["acte"] =="suppr"){
     $DE_No = $_GET["DE_No"];
-    $depot = new DepotClass($DE_No,$objet->db);
+    $depot = new DepotClass($DE_No);
     $depot->delete();
     header('Location: ../indexMVC.php?module=3&action=10');
 }

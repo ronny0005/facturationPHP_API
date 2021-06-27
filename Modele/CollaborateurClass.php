@@ -18,7 +18,6 @@ class CollaborateurClass Extends Objet{
 
     function __construct($id,$db=null)
     {
-        $this->db = new DB();
         $this->data = $this->getApiJson("/$id");
         if (sizeof($this->data)>0) {
 
@@ -75,23 +74,12 @@ class CollaborateurClass Extends Objet{
     }
 
     public function getCollaborateurByNom($intitule){
-        $query="SELECT CO_Nom as CT_Num
-                FROM F_COLLABORATEUR
-                WHERE cbCO_Nom='$intitule'";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getCollaborateurByNom&coNom={$this->formatString($intitule)}");
     }
 
     public function getCaissierByIntitule($intitule){
-        $value =str_replace(" ","%",$intitule);
-        $query="SELECT TOP 10   CO_Nom CT_Intitule
-                                ,CO_No CT_Num
-                FROM F_COLLABORATEUR
-                WHERE CO_Caissier=1
-                AND CONCAT(CONCAT(CO_No,' - '),CO_Nom) LIKE '%{$value}%'";
-        $result= $this->db->query($query);
         $rows = array();
-        $value = $result->fetchAll(PDO::FETCH_OBJ);
+        $value = $this->getApiJson("/getCaissierByIntitule&coNom={$this->formatString($intitule)}");
         foreach ($value as $val){
             $rows[] = array("label" => $val->CT_Intitule
             ,"value" => $val->CT_Num);
@@ -117,55 +105,22 @@ class CollaborateurClass Extends Objet{
         return "";
     }
 
-    public function insertCollaborateur($nom, $prenom, $adresse, $complement, $codepostal, $fonction, $ville, $region, $pays, $service, $vendeur, $caissier, $acheteur, $telephone, $telecopie, $email, $controleur, $recouvrement)
+    public function insertCollaborateur($nom, $prenom, $adresse, $complement, $codepostal, $fonction, $ville, $region, $pays, $service, $vendeur, $caissier, $acheteur, $telephone, $telecopie, $email, $controleur, $recouvrement,$protNo)
     {
-        $requete = "
-		BEGIN 
-		SET NOCOUNT ON;
-			INSERT INTO [dbo].[F_COLLABORATEUR]
-           ([CO_No],[CO_Nom],[CO_Prenom],[CO_Fonction],[CO_Adresse]
-           ,[CO_Complement],[CO_CodePostal],[CO_Ville],[CO_CodeRegion]
-           ,[CO_Pays],[CO_Service],[CO_Vendeur],[CO_Caissier]
-           ,[CO_DateCreation],[CO_Acheteur],[CO_Telephone],[CO_Telecopie]
-           ,[CO_EMail],[CO_Receptionnaire],[PROT_No],[cbPROT_No]
-           ,[CO_TelPortable],[CO_ChargeRecouvr],[cbProt],[cbCreateur]
-           ,[cbModification],[cbReplication],[cbFlag])
-		VALUES
-           (/*CO_No*/ISNULL((SELECT MAX(CO_No)CO_No FROM F_COLLABORATEUR),0)+1,/*CO_Nom*/'$nom',/*CO_Prenom*/'$prenom'
-           ,/*CO_Fonction*/'$fonction',/*CO_Adresse*/'$adresse'
-           ,/*CO_Complement*/'$complement',/*CO_CodePostal*/'$codepostal'
-           ,/*CO_Ville*/'$ville',/*CO_CodeRegion*/'$region'
-           ,/*CO_Pays*/'$pays',/*CO_Service*/'$service'
-           ,/*CO_Vendeur*/$vendeur,/*CO_Caissier*/$caissier
-           ,/*CO_DateCreation*/GETDATE(),/*CO_Acheteur*/$acheteur
-           ,/*CO_Telephone*/'$telephone',/*CO_Telecopie*/'$telecopie'
-           ,/*CO_EMail*/'$email',/*CO_Receptionnaire*/$controleur
-           ,/*PROT_No*/0,/*cbPROT_No*/NULL
-           ,/*CO_TelPortable*/'',/*CO_ChargeRecouvr*/$recouvrement
-           ,/*cbProt*/0,/*cbCreateur*/'AND'
-           ,/*cbModification*/GETDATE(),/*cbReplication*/0,/*cbFlag*/0)
-		   SELECT CO_No FROM F_COLLABORATEUR WHERE cbMarq = @@IDENTITY;
-		   END";
-		   
-        $result = $this->db->query($requete);
-        $rows = $result->fetchAll(PDO::FETCH_OBJ);
-        return $rows[0]->CO_No;
+
+        return $this->getApiJson("/insertCollaborateur/coNom={$this->formatString($nom)}&coPrenom={$this->formatString($prenom)}
+        &codePostal={$this->formatString($codepostal)}
+        &coFonction={$this->formatString($fonction)}&coAdresse={$this->formatString($adresse)}&coComplement={$this->formatString($complement)}&coVille={$this->formatString($ville)}
+        &coCodeRegion={$this->formatString($region)}&coPays={$this->formatString($pays)}&coService={$this->formatString($service)}&coVendeur={$vendeur}&coCaissier={$caissier}
+        &coAcheteur={$acheteur}&coTelephone={$telephone}&coTelecopie={$telecopie}&coEmail={$this->formatString($email)}
+        &coReceptionnaire=$controleur&coChargeRecouvr={$recouvrement}&cbCreateur={$protNo}");
+
     }
 
 
-    public function modifCollaborateur($nom, $prenom, $adresse, $complement, $codepostal, $fonction, $ville, $region, $pays, $service, $vendeur, $caissier, $acheteur, $telephone, $telecopie, $email, $controleur, $recouvrement, $co_no)
+    public function modifCollaborateur($nom, $prenom, $adresse, $complement, $codepostal, $fonction, $ville, $region, $pays, $service, $vendeur, $caissier, $acheteur, $telephone, $telecopie, $email, $controleur, $recouvrement, $co_no,$protNo)
     {
-        $requete = "UPDATE [dbo].[F_COLLABORATEUR]
-                SET [CO_Nom] = '$nom',[CO_Prenom] = '$prenom',[CO_Fonction] = '$fonction',[CO_Adresse] = '$adresse'
-                   ,[CO_Complement] = '$complement',[CO_CodePostal] = '$codepostal',[CO_Ville] = '$ville',[CO_CodeRegion] = '$region'
-                   ,[CO_Pays] = '$pays',[CO_Service] = '$service',[CO_Vendeur] = $vendeur,[CO_Caissier] = $caissier
-                   ,[CO_Acheteur] = $acheteur,[CO_Telephone] = '$telephone'
-                   ,[CO_Telecopie] = '$telecopie',[CO_EMail] = '$email',[CO_Receptionnaire] = $controleur
-                   ,[CO_ChargeRecouvr] = $recouvrement
-                   ,[cbModification] = GETDATE()
-             WHERE [CO_No] = $co_no
-             ";
-        $this->db->query($requete);
+        $this->getApiJson("/modifCollaborateur/coNom={$this->formatString($nom)}&coPrenom={$this->formatString($prenom)}&codePostal=$codepostal&coFonction={$this->formatString($fonction)}&coAdresse={$this->formatString($adresse)}&coComplement={$this->formatString($complement)}&coVille={$this->formatString($ville)}&coCodeRegion={$this->formatString($region)}&coPays={$this->formatString($pays)}&coService={$this->formatString($service)}&coVendeur=$vendeur&coCaissier=$caissier&coAcheteur=$acheteur&coTelephone=$telephone&coTelecopie=$telecopie&coEmail={$this->formatString($email)}&coReceptionnaire=$controleur&coChargeRecouvr=$recouvrement&cbCreateur=$protNo&coNo=$co_no");
     }
 
 

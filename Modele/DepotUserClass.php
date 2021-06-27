@@ -22,21 +22,6 @@ class DepotUserClass Extends Objet{
         return "";
     }
 
-    public function getDepotPrincipal($Prot_No){
-        $query= "   SELECT	A.DE_No
-                            ,DE_Intitule
-                            ,IsPrincipal = ISNULL(D.IsPrincipal,0)
-                    FROM	F_DEPOT A
-                    LEFT JOIN Z_DEPOTUSER D 
-                        ON A.DE_No=D.DE_No
-                    WHERE	IsPrincipal = 1
-                    AND     PROT_No = $Prot_No
-                    GROUP BY A.DE_No
-                             ,DE_Intitule
-                             ,IsPrincipal";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
-    }
     public function getDepotUser($Prot_No){
         return $this->getApiJson("/user&protNo=$Prot_No");
     }

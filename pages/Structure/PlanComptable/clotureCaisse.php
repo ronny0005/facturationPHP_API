@@ -1,8 +1,8 @@
 <?php
     $objet = new ObjetCollector();
-    $result = $objet->db->requete($objet->getSoucheVente());
-    $soucheClass = $result->fetchAll(PDO::FETCH_OBJ);
-    $caisseClass = new CaisseClass(0,$objet->db);
+    $protection = new ProtectionClass("","");
+    $soucheClass = $protection->getSoucheVente();
+    $caisseClass = new CaisseClass(0);
     $message=0;
     if(isset($_POST["dateCloture"])){
         $caisseClass->clotureCaisse($objet->getDate($_POST["dateCloture"]),$_POST["caisseDebut"],$_POST["caisseFin"],$_SESSION["id"],$_POST["type"]);

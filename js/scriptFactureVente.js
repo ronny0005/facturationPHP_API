@@ -1083,7 +1083,7 @@ jQuery(function($) {
                                     url: 'traitement/Facturation.php?acte=ajout_ligneA',
                                     method: 'GET',
                                     dataType: 'html',
-                                    data: 'CA_Num=' + $("#affaire").val() + '&EA_Quantite=' + data.DL_Qte + '&EA_Montant=' + data.DL_MontantHT + '&cbMarq=' + data.cbMarq + "&N_Analytique=1"+ajoutParam,
+                                    data: 'CA_Num=' + $("#affaire").val() + '&EA_Quantite=' + data.dl_Qte + '&EA_Montant=' + data.dl_MontantHT + '&cbMarq=' + data.cbMarq + "&N_Analytique=1"+ajoutParam,
                                     async: false,
                                     success: function (data) {
                                     }

@@ -53,7 +53,7 @@ jQuery(function($){
         if($_GET("CA_No")==null){
             var num ='';
             $.ajax({
-                url: 'traitement/Creation.php?acte=ajout_caisse',
+                url: 'traitement/Creation.php?acte=ajout_caisse&PROT_No='+$("#PROT_No").val(),
                 method: 'GET',
                 dataType: 'json',
                 data : $("#formCaisse").serialize(),
@@ -69,7 +69,7 @@ jQuery(function($){
             var num ='';
             var cano=$_GET("CA_No");
             $.ajax({
-                url: 'traitement/Creation.php?acte=modif_caisse&ca_no='+cano,
+                url: 'traitement/Creation.php?acte=modif_caisse&ca_no='+cano+'&PROT_No='+$("#PROT_No").val(),
                 method: 'GET',
                 dataType: 'json',
                 data : $("#formCaisse").serialize(),

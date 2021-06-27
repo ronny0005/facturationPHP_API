@@ -27,7 +27,7 @@
     <thead>
         <tr>
         <?php if($flagNouveau){ ?>
-            <td style="float:right"><a href=indexMVC.php?module=3&action=15"><button type="button" id="nouveau" class="btn btn-primary">Nouveau</button></a></td> <?php } ?>
+            <td style="float:right"><a href="indexMVC.php?module=3&action=15"><button type="button" id="nouveau" class="btn btn-primary">Nouveau</button></a></td> <?php } ?>
         </tr>
         </form>
 </table>
@@ -52,9 +52,9 @@
             $i++;
             if($i%2==0) $classe = "info";
                     else $classe="";
-            echo "<tr class='article $classe' id='article_".$row->CA_No."'>"
-                    . "<td><a href='indexMVC.php?module=3&action=15&CA_No=$row->CA_No'>".$row->CA_Intitule."</a></td>";
-                    if($flagSuppr) echo "<td><a href='Traitement\Depot.php?acte=suppr&CA_No=".$row->CA_No."' onclick=\"if(window.confirm('Voulez-vous vraiment supprimer ".$row->CA_Intitule." ?')){return true;}else{return false;}\"><i class='fa fa-trash-o'></i></a></td>";
+            echo "<tr class='article $classe' id='article_{$row->CA_No}'>
+                    <td><a href='indexMVC.php?module=3&action=15&CA_No=$row->CA_No'>{$row->CA_Intitule}</a></td>";
+                    if($flagSuppr) echo "<td><a href='Traitement\Depot.php?acte=suppr&CA_No={$row->CA_No}' onclick=\"if(window.confirm('Voulez-vous vraiment supprimer ".$row->CA_Intitule." ?')){return true;}else{return false;}\"><i class='fa fa-trash-o'></i></a></td>";
                     echo "</tr>";
             }
         }
