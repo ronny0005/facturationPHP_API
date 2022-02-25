@@ -16,7 +16,7 @@ jQuery(function($) {
     var EC_QteImpute = 0;
     var totalQteA = 0;
     var cbMarqLigne = 0;
-    var admin = 0;
+    var admin = $("#isAdmin").val();
     var typeStock = 0;
     var isModif = $("#isModif").val()
     var isVisu = $("#isVisu").val()
@@ -24,6 +24,7 @@ jQuery(function($) {
     //var protectionprix = 0;
     var negatif = true;
     var prot_no = $("#PROT_No").val()
+    let doModif = $("#DO_Modif").val()
     var typeFacture = $("#typeDocument").val()
     var typeFac = typeFacture;
 
@@ -441,11 +442,13 @@ jQuery(function($) {
                         }
                         var DO_Coord04 = "";
                         if($("#nomClient").val()!=null) DO_Coord04 = $("#nomClient").val();
+                        if( DO_Coord04 == "") DO_Coord04 = $("#DoCoord04").val()
                         $.ajax({
                             url: "traitement/Facturation.php?acte=ajout_entete&type_fac="+typeFacture+"&do_piece="+$("#n_doc").val()+"&souche="+$("#souche").val()+"&de_no="+$("#depot").val()+"&date="+returnDate($("#dateentete").val())+"&client="+$("#CT_Num").val()+"&reference="+$("#ref").val()+"&co_no="+$("#collaborateur").val()+"&cat_compta="+$("#cat_compta").val()+"&cat_tarif="+$("#cat_tarif").val()+"&ca_no="+$("#caisse").val()+"&affaire="+$("#affaire").val()+"&do_statut="+$("#do_statut").val()+"&userName="+$("#userName").html()+"&DO_Coord04="+DO_Coord04+"&machineName="+$("#machineName").html()+dataTrans,
                             method : 'GET',
                             async : false,
                             dataType : 'json',
+                            data : "protNo="+prot_no+"&DO_Coord01="+$("#DoCoord01").val()+"&DO_Coord02="+$("#DoCoord02").val()+"&DO_Coord03="+$("#DoCoord03").val()+"&DO_Coord04="+DO_Coord04,
                             success : function(data) {
                                 $(data).each(function () {
                                     $("#n_doc").val(this.entete);
@@ -472,6 +475,29 @@ jQuery(function($) {
                 alert("Choississez un statut valide !");
             }
     }
+
+    $("#infoCompl").click(function(){
+        $("#InfoComplFields").dialog({
+            resizable: false,
+            height: "auto",
+            width: "400",
+            modal: true,
+            title: "Informations complémentaire",
+            buttons: {
+                "Valider": {
+                    class: 'btn btn-primary',
+                    text: 'Valider',
+                    click: function () {
+                        $("#DoCoord01").val($("#inputDoCoord01").val())
+                        $("#DoCoord02").val($("#inputDoCoord02").val())
+                        $("#DoCoord03").val($("#inputDoCoord03").val())
+                        $("#DoCoord04").val($("#inputDoCoord04").val())
+                        $(this).dialog("close");
+                    }
+                }
+            }
+        });
+    })
 
     function valideReference(reference){
         if(typeFacture=="Achat" || typeFacture=="AchatRetour" || typeFacture=="PreparationCommande" || typeFacture=="AchatPreparationCommande")
@@ -539,7 +565,7 @@ jQuery(function($) {
 
     $('#imprimer').click(function(){
         fichierTraitement();
-        if((typeFacture=="Devis" || typeFacture=="BonLivraison" || typeFacture=="Avoir")){
+        if((typeFac=="Devis" || typeFac=="BonLivraison" || typeFacture=="Livraison" || typeFac=="VenteAvoir")){
             choixFormat();
         } else{
             if((isVisu ==0) || ($("#PROT_Reglement").val() !=2)) {
@@ -1126,7 +1152,7 @@ jQuery(function($) {
 
 
     function modifarticle(elem){
-        if (isVisu  != 1) {
+        if (isVisu  != 1 || (typeFacture == "Livraison" && doModif == 0)) {
             var cbMarq = elem.find("#cbMarq").html();
             var DL_Qte = elem.find("#DL_Qte").html();
             DL_Qte = DL_Qte.replace(",",".");
@@ -1222,6 +1248,118 @@ jQuery(function($) {
         });
     }
     tr_clickArticle();
+
+    $(this).find("td[id^='editLivraison']").click(function () {
+        if(admin == 1)
+            listeElementLivraison(cbMarq,admin)
+    });
+
+    function listeElementLivraison(cbMarq,administrator){
+        $.ajax({
+            url: "Traitement/Facturation.php?acte=listeElementLivraison&cbMarq="+cbMarq+"&admin="+administrator,
+            method: 'GET',
+            data: "cbMarq=" + cbMarq,
+            dataType: 'html',
+            async : false,
+            success: function (data) {
+                $(data).dialog({
+                    resizable: false,
+                    height: "auto",
+                    width: "400",
+                    modal: true,
+                    title: "Liste qté livrée",
+                    buttons: {
+                        "Valider": {
+                            class: 'btn btn-primary',
+                            text: 'Valider',
+                            click: function () {
+                                $("[id^='itemQteLivree']").each(function(){
+                                    qteLivreeData = $(this).find("#qteLivree").val()
+                                    prevQteLivreeData = $(this).find("#prevQte").html()
+                                    cbMarqLigne = $(this).find("#cbMarq").html()
+                                    if(prevQteLivreeData!=qteLivreeData) {
+                                        $.ajax({
+                                            url: "Traitement/Facturation.php?acte=updateQteLivree&cbMarq=" + cbMarqLigne + "&PROT_No=" + prot_no + "&qte=" + qteLivreeData,
+                                            method: 'GET',
+                                            dataType: 'html',
+                                            async: false,
+                                            success: function (data) {
+                                                if (data != "")
+                                                    alert(data)
+                                                else {
+                                                    alert("La modification a été effectuée !")
+                                                    location.reload()
+                                                }
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                        },
+                        "Annuler": {
+                            class: 'btn btn-primary',
+                            text: 'Annuler',
+                            click: function () {
+                                $(this).dialog("close")
+                            }
+                        }
+                    }
+                })
+
+                $("[id^='qteLivree']").each(function(){
+                    $(this).inputmask({   'alias': 'decimal',
+                        'groupSeparator': ' ',
+                        'autoGroup': true,
+                        'digits': 2,
+                        rightAlign: true,
+                        'digitsOptional': false,
+                        'placeholder': '',
+                        allowPlus: true,
+                        allowMinus: negatif
+                    });
+                })
+
+                $("[id^='deleteQteLivree']").each(function() {
+                    cbMarq = $(this).parent().parent().find("#cbMarq").html()
+
+                    $(this).click(function () {
+                        $("<div></div>").dialog({
+                            resizable: false,
+                            height: "auto",
+                            width: "400",
+                            modal: true,
+                            title: "Voulez vous supprimer cette entrée ?",
+                            buttons: {
+                                "Oui": {
+                                    class: 'btn btn-primary',
+                                    text: 'Oui',
+                                    click: function () {
+                                        $.ajax({
+                                            url: "Traitement/Facturation.php?acte=deleteQteLivree&cbMarq=" + cbMarq + "&PROT_No=" + prot_no,
+                                            method: 'GET',
+                                            dataType: 'html',
+                                            async: false,
+                                            success: function (data) {
+                                                $(this).dialog("close")
+                                                location.reload()
+                                            }
+                                        })
+                                    }
+                                }
+                                ,"Non": {
+                                    class: 'btn btn-primary',
+                                    text: 'Non',
+                                    click: function () {
+                                        $(this).dialog("close")
+                                    }
+                                }
+                            }
+                        })
+                    })
+                })
+            }
+        })
+    }
 
     function supprTransformation(cbMarq,DL_PieceBL){
         $("<div>Voulez vous recréer cette ligne dans le document "+DL_PieceBL+" ?</div>").dialog({
@@ -1456,8 +1594,8 @@ jQuery(function($) {
             method: 'GET',
             dataType: 'html',
             async: false,
-            data : "cbMarqEntete="+$("#cbMarqEntete").val()+"&typeFac="+typeFacture+"&protNo="+prot_no
-                +"&flagPxAchat="+$("#flagPxAchat").val()+"&flagPxRevient="+$("#flagPxRevient").val(),
+            data : "cbMarqEntete="+$("#cbMarqEntete").val()+"&typeFac="+typeFac
+                +"&flagPxAchat="+$("#flagPxAchat").val()+"&flagPxRevient="+$("#flagPxRevient").val()+"&PROT_No"+prot_no,
             success: function(data) {
                 $("#tableLigne > tbody").html(data);
             },
@@ -1601,7 +1739,7 @@ jQuery(function($) {
         var montantttc=0;
         var dataTable=0;
         $.ajax({
-            url: "traitement/Facturation.php?acte=liste_article&cbMarq="+$("#cbMarqEntete").val()+"&type_fac="+typeFacture+"&cattarif="+$("#cat_tarif").val()+"&catcompta="+$("#cat_compta").val(),
+            url: "traitement/Facturation.php?acte=liste_article&protNo=0&cbMarq="+$("#cbMarqEntete").val()+"&type_fac="+typeFacture+"&cattarif="+$("#cat_tarif").val()+"&catcompta="+$("#cat_compta").val(),
             method: 'GET',
             async: false,
             dataType: 'html',

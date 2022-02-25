@@ -20,12 +20,20 @@ if(($type=="Achat" || $type=="AchatC" || $type=="AchatRetour" || $type=="AchatRe
 <fieldset class="card entete">
 <legend class="entete">Entete</legend>
 <div class="err" id="add_err"></div>
+    <div id='InfoComplFields' style="display: none" class='row'>
+        <div class='col-12'><label>Entete 1</label><input id='inputDoCoord01' value='' class='form-control' /></div>
+        <div class='col-12'><label>Entete 2</label><input id='inputDoCoord02' value='' class='form-control'  /></div>
+        <div class='col-12'><label>Entete 3</label><input id='inputDoCoord03' value='' class='form-control'  /></div>
+        <div class='col-12'><label>Entete 4</label><input id='inputDoCoord04' value='' class='form-control'  /></div>
+    </div>
 <form id="form-entete" class="form-horizontal" action="indexMVC.php?module=2&action=3" method="GET" >
     <input type="hidden" id="flagMinMax" value="<?php if($type=="Vente" || $type=="BonLivraison") echo $flag_minMax; else echo "0"; ?>"/>
     <input type="hidden" id="flagDelai" value="<?= $protection->getDelai(); ?>"/>
     <input type="hidden" id="flagPxRevient" value="<?= $flagPxRevient; ?>"/>
     <input type="hidden" id="flagPxAchat" value="<?= $flagPxAchat; ?>"/>
     <input type="hidden" id="flagModifClient" value="<?= $flagModifClient; ?>"/>
+    <input type="hidden" id="isAdmin" value="<?= $protection->PROT_Administrator; ?>"/>
+    <input type="hidden" id="DO_Modif" value="<?= $docEntete->DO_Modif; ?>"/>
     <input type="hidden" id="protectDate" value="<?= $protectDate; ?>"/>
     <input type="hidden" id="isModif" value="<?= $isModif; ?>"/>
     <input type="hidden" id="isVisu" value="<?= $isVisu; ?>"/>

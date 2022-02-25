@@ -49,7 +49,7 @@ jQuery(function($){
     function ajouterFamille(){
         if($_GET("FA_CodeFamille")!=null){
             $.ajax({
-                url: 'traitement/Creation.php?acte=modif_famille&FA_CodeFamille='+$_GET("FA_CodeFamille")+'&intitule='+$("#designation").val()+'&niv=1&catal1='+$("#catalniv1").val()+'&catal2='+$("#catalniv2").val()+'&catal3='+$("#catalniv3").val()+'&catal4='+$("#catalniv4").val()+'&val='+$("#catalniv1").val(),
+                url: 'traitement/Creation.php?acte=modif_famille&FA_CodeFamille='+$_GET("FA_CodeFamille")+'&intitule='+$("#designation").val()+'&niv=1&catal1='+$("#catalniv1").val()+'&catal2='+$("#catalniv2").val()+'&catal3='+$("#catalniv3").val()+'&catal4='+$("#catalniv4").val()+'&val='+$("#catalniv1").val()+"&PROT_No="+$("#PROT_No").val(),
                 method: 'GET',
                 dataType: 'json',
                 success: function(data) {
@@ -58,7 +58,7 @@ jQuery(function($){
             });
         }   else{ 
             $.ajax({
-                url: 'traitement/Creation.php?acte=ajout_famille&FA_CodeFamille='+$("#reference").val()+'&intitule='+$("#designation").val()+'&niv=1&catal1='+$("#catalniv1").val()+'&catal2='+$("#catalniv2").val()+'&catal3='+$("#catalniv3").val()+'&catal4='+$("#catalniv4").val()+'&val='+$("#catalniv1").val(),
+                url: 'traitement/Creation.php?acte=ajout_famille&FA_CodeFamille='+$("#reference").val()+'&intitule='+$("#designation").val()+'&niv=1&catal1='+$("#catalniv1").val()+'&catal2='+$("#catalniv2").val()+'&catal3='+$("#catalniv3").val()+'&catal4='+$("#catalniv4").val()+'&val='+$("#catalniv1").val()+"&PROT_No="+$("#PROT_No").val(),
                 method: 'GET',
                 dataType: 'json',
                 success: function(data) {

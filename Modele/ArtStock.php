@@ -42,4 +42,5 @@ class ArtStockClass Extends Objet{
         return "";
     }
 
+
 }

@@ -378,7 +378,7 @@ jQuery(function($) {
                 success: function (data) {
                     var test = parseInt(data[0].isSuppr);
                     var stock = parseFloat(data[0].AS_QteSto);
-                    if (test == 0)
+                    if (test == 0 || typeDocument == "Transfert_confirmation")
                         supprElement(cbMarq, id_sec);
                     else
                         alert("la quantité du depot " + de_intitule + " est inssufisante ! (Qte : " + stock.toLocaleString() + ")");
@@ -474,7 +474,7 @@ jQuery(function($) {
             var totalqteDest = 0;
             var i = 0;
             $.ajax({
-                url: "traitement/Facturation.php?acte=liste_article&cbMarq=" + $("#cbMarqEntete").val() + "&type_fac=" + typeDocument,
+                url: "traitement/Facturation.php?acte=liste_article&protNo=0&cbMarq=" + $("#cbMarqEntete").val() + "&type_fac=" + typeDocument,
                 method: 'GET',
                 dataType: 'html',
                 async: false,

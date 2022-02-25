@@ -315,6 +315,18 @@ class ArticleClass Extends Objet{
         "&clNo2={$this->CL_No2}&clNo3={$this->CL_No3}&clNo4={$this->CL_No4}&cbCreateur={$this->userName}");
     }
 
+    public function getPrixClient($catCompta, $catTarif){
+        return $this->getApiJson("/getPrixClient&arRef={$this->formatString($this->AR_Ref)}&catCompta={$catCompta}&catTarif={$catTarif}");
+    }
+
+    public function getPrixClientAch($catCompta, $catTarif,$ctNum){
+        return $this->getApiJson("/getPrixClientAch&arRef={$this->formatString($this->AR_Ref)}&catCompta={$catCompta}&catTarif={$catTarif}&ctNum={$this->formatString($ctNum)}");
+    }
+
+    public function getLibTaxePied($catCompta, $catTarif){
+        return $this->getApiJson("/getLibTaxePied&fcpType={$catTarif}&fcpChamp={$catCompta}");
+    }
+
     public function queryListeArticle($flagPxAchat,$flagPxRevient,$ar_sommeil,$prixFlag,$stockFlag,$searchString,$orderBy,$orderType ,$start , $length){
         $url = "/queryListeArticle&flagPxAchat=$flagPxAchat&flagPxRevient=$flagPxRevient&arSommeil=$ar_sommeil&prixFlag=$prixFlag&stockFlag=$stockFlag&searchString=$searchString&orderBy=$orderBy&orderType=$orderType&start=$start&length=$length";
         return $this->getApiJson($url);
@@ -445,6 +457,12 @@ class ArticleClass Extends Objet{
     {
         $this->lien = "fartstock";
         return $this->getApiJson("/isStockJSON&arRef={$this->formatString($this->AR_Ref)}&deNo=$de_no");
+    }
+
+    public function isStockDENo($de_no,$dlQte)
+    {
+        $this->lien = "fartstock";
+        return $this->getApiJson("/isStockDENo&dlQte={$dlQte}&deNo={$de_no}&arRef={$this->formatString($this->AR_Ref)}");
     }
 
     public function updateArtStock($de_no, $qte, $montant, $action,$protNo)

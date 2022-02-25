@@ -21,7 +21,7 @@ class DocLigneClass Extends Objet
     , $DL_DatePL, $DL_QtePL, $DL_NoColis, $DL_NoLink, $RP_Code, $DL_QteRessource, $DL_DateAvancement, $cbMarq
     , $cbCreateur, $cbModification, $USERGESCOM, $NOMCLIENT, $DATEMODIF, $ORDONATEUR_REMISE, $MACHINEPC, $GROUPEUSER
     , $cag, $mag, $carat, $eau, $divise, $purity, $pureway, $oz, $cioj, $DL_PUTTC_Rem0, $DL_PrixUnitaire_Rem0, $DL_PUTTC_Rem
-    , $DL_PrixUnitaire_Rem, $DL_Remise, $MT_Taxe1, $MT_Taxe2, $MT_Taxe3;
+    , $DL_PrixUnitaire_Rem, $DL_Remise, $MT_Taxe1, $MT_Taxe2, $MT_Taxe3, $Qte_LivreeBL,$Qte_LivreeBLCalc;
     public $table = 'F_DOCLIGNE';
     public $lien = 'fdocligne';
 
@@ -679,6 +679,18 @@ class DocLigneClass Extends Objet
 
     public function supprLigneFacture($cbMarq,$cbMarqSec,$typeFacture,$protNo){
         return $this->getApiJson("/supprLigneFacture&cbMarq=$cbMarq&cbMarqSec=$cbMarqSec&typeFacture=$typeFacture&protNo=$protNo");
+    }
+
+    public function listeLivraison(){
+        return $this->getApiJson("/getListeLivraison&cbMarq={$this->cbMarq}");
+    }
+
+    public function updateQteLivree($cbMarq,$protNo,$qte){
+        return $this->getApiString("/updateQteLivree&cbMarq={$cbMarq}&protNo={$protNo}&qte={$qte}");
+    }
+
+    public function deleteQteLivree($cbMarq,$protNo){
+        $this->getApiExecute("/updateQteLivree&cbMarq={$cbMarq}&protNo={$protNo}");
     }
 
     public function __toString() {

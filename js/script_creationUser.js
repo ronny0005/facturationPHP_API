@@ -70,6 +70,13 @@ jQuery(function($){
 
     getPrincipal();
 
+    $("#clearEmpl").click(function(){
+        clearEmpl()
+    })
+    function clearEmpl(){
+        $("#emplacement option:selected").removeAttr("selected");
+    }
+
     function getDepotSoucheCaisse(caisse,depot,souche){
         $.ajax({
            url: "indexServeur.php?page=getCaisseDepotSouche",
@@ -86,6 +93,30 @@ jQuery(function($){
         });
     }
 
+    function initEmplacement(){
+        listId = [];
+        $("#emplacement").empty()
+        $("#depotprincipal :selected").each(function() {
+            listId.push($(this).val())
+        })
+
+        $.ajax({
+            url: "indexServeur.php?page=setListEmplacement",
+            method: 'GET',
+            dataType: 'json',
+            data: "listId="+listId+"&PROT_No="+$("#id").val(),
+            success: function(data) {
+                $.each(data, function(i, item) {
+                    var selected = "";
+                    if(item.IsSelect == 1) selected = "selected";
+                    var option = "<option value='"+item.DP_No+"' "+selected+">"+item.DP_Intitule+"</option>"
+                    $("#emplacement").append(option)
+                })
+            }
+        })
+    }
+
+    initEmplacement()
 
     $("#depot").change(function(){
         $("#depotprincipal").empty();

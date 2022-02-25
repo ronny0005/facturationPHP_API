@@ -29,58 +29,58 @@ class Admin {
         if($protection->Prot_No!=""){
             switch($action) {
             case 1 : 
-                if($this->protection->PROT_Right==1) $this->Liste_User(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Liste_User(); else header('Location: accueil');
                 break;
             case 2 : 
-                if($this->protection->PROT_Right==1) $this->Liste_Groupe(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Liste_Groupe(); else header('Location: accueil');
                 break;
             case 3 : 
-                if($this->protection->PROT_Right==1) $this->Nouveau_Groupe(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Nouveau_Groupe(); else header('Location: accueil');
                 break;
             case 4 : 
-                if($this->protection->PROT_Right==1) $this->Nouvel_User(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Nouvel_User(); else header('Location: accueil');
                 break;
             case 5 : 
-                if($this->protection->PROT_Right==1) $this->Liste_Droit(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Liste_Droit(); else header('Location: accueil');
                 break;
             case 6 :
-                if($this->protection->PROT_Right==1) $this->Code_Client(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Code_Client(); else header('Location: accueil');
                 break;
             case 7 :
-                if($this->protection->PROT_Right==1) $this->Envoi_Mail(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Envoi_Mail(); else header('Location: accueil');
                 break;
             case 8 :
-                if($this->protection->PROT_Right==1) $this->Envoi_SMS(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Envoi_SMS(); else header('Location: accueil');
                 break;
             case 9 :
-                if($this->protection->PROT_Right==1) $this->Compte_SMS(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Compte_SMS(); else header('Location: accueil');
                 break;
             case 10 :
-                if($this->protection->PROT_Right==1) $this->Config_acces(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Config_acces(); else header('Location: accueil');
                 break;
             case 11 :
-                if($this->protection->PROT_Right==1) $this->Config_profilUtilisateur(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Config_profilUtilisateur(); else header('Location: accueil');
                 break;
             case 12 :
-                if($this->protection->PROT_Right==1) $this->Deconnexion_totale(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Deconnexion_totale(); else header('Location: accueil');
                 break;
             case 13 :
-                if($this->protection->PROT_Right==1) $this->Fusion_article(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Fusion_article(); else header('Location: accueil');
                 break;
             case 14 :
-                if($this->protection->PROT_Right==1) $this->Fusion_client(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Fusion_client(); else header('Location: accueil');
                 break;
             case 15 :
-                if($this->protection->PROT_Right==1) $this->Calendrier_connexion(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Calendrier_connexion(); else header('Location: accueil');
                 break;
             case 16 :
-                if($this->protection->PROT_Right==1) $this->supprLigneMvt(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->supprLigneMvt(); else header('Location: accueil');
                 break;
             case 17 :
-                if($this->protection->PROT_Right==1) $this->fixCatCompta(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->fixCatCompta(); else header('Location: accueil');
                 break;
                 default :
-                if($this->protection->PROT_Right==1) $this->Liste_User(); else header('Location: indexMVC.php?module=1&action=1');
+                if($this->protection->PROT_Right==1) $this->Liste_User(); else header('Location: accueil');
         }
 
         } else 

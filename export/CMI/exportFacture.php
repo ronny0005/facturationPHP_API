@@ -303,7 +303,7 @@ $ct_identifiant."<br/>";
                     $totalTaxe2=0;
                     $totalTaxe3=0;
                     $totalremise=0;
-                    $rows = $docEntete->getLigneFacture();
+                    $rows = $docEntete->getLigneFacture($protection->Prot_No);
                         foreach ($rows as $row){
                             $totalMontantTTC= $totalMontantTTC+ROUND($row->DL_MontantTTC,2);
                             $totalMontantHT= $totalMontantHT+ROUND($row->DL_MontantHT,2);
@@ -391,7 +391,7 @@ $ct_identifiant."<br/>";
                     $totalTaxe2=0;
                     $totalTaxe3=0;
                     $totalremise=0;
-                    $rows = $docEntete->getLigneFacture();
+                    $rows = $docEntete->getLigneFacture($protection->Prot_No);
                     foreach ($rows as $row){
                         $totalMontantTTC= $totalMontantTTC+ROUND($row->DL_MontantTTC,2);
                         $totalMontantHT= $totalMontantHT+ROUND($row->DL_MontantHT,2);

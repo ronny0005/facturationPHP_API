@@ -145,6 +145,10 @@ class ComptetClass Extends Objet{
 
     }
 
+    public function getDateEcgetTiersheanceSage($ctDate){
+        return $this->getApiJson("/getDateEcgetTiersheanceSage&ctNum={$this->formatString($this->CT_Num)}&ctDate=$ctDate");
+    }
+
     public function modifClientUpdateCANum(){
         $this->getApiExecute("/modifClientUpdateCANum&ctNum={$this->formatString($this->CT_Num)}&caNum={$this->formatString($this->CA_Num)}");
     }

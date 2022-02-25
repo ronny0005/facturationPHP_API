@@ -963,8 +963,8 @@ SELECT DISTINCT 0 DL_NoIn,0 cbMarq,fArt.AR_Ref,fArt.AR_Design DL_Design,0 AG_No1
     public function commandeStock($DE_No,$AR_Ref,$AR_Design){
         $AS_QteMini= 0;
         $AS_QteMaxi= 0;
-        $result = $this->db->requete($this->isStock($DE_No, $AR_Ref));
-        $rows = $result->fetchAll(PDO::FETCH_OBJ);
+        $article = new ArticleClass($AR_Ref);
+        $rows = $article->isStock($DE_No);
         if ($rows != null) {
             $AS_QteSto = $rows[0]->AS_QteSto;
             $AS_QteMini = $rows[0]->AS_QteMini;
@@ -1798,10 +1798,7 @@ ORDER BY  DE_Intitule,
            ,/*CR_ColReglement17*/0,/*CR_ColReglement18*/0,/*CR_ColReglement19*/0,/*CR_ColReglement20*/0
            ,/*CR_ColReglement21*/0,/*CR_ColReglement22*/0,/*CR_ColReglement23*/0)";
     }
-    public function isStock($de_no, $ar_ref) {
-        return "SELECT ISNULL(AS_QteSto,0)AS_QteSto,ISNULL(AS_MontSto,0)AS_MontSto,ISNULL(AS_QteMini,0)AS_QteMini,ISNULL(AS_QteMaxi,0)AS_QteMaxi FROM 
-                F_ARTSTOCK WHERE DE_No = $de_no AND AR_Ref = '$ar_ref'";
-    }
+
     public function sectionByPlan($nAnalytique) {
         $sql ="SELECT CA_Num,CA_Intitule
                 FROM F_COMPTEA
@@ -1943,39 +1940,6 @@ ORDER BY  DE_Intitule,
         return $query;
     }
 
-    public function getPrixClient($ar_ref, $catcompta, $cattarif) {
-        return "
-BEGIN 
-SET NOCOUNT ON;
-DECLARE @flagCat AS TINYINT
-SELECT @flagCat = P_ReportPrixRev
-FROM P_PARAMETRECIAL
-
-            SELECT *,CASE WHEN AC_PrixTTC = 1 THEN Prix /(1+taxe1/100)/(1+taxe2/100)/(1+taxe3/100) ELSE Prix END PrixVente
-            FROM( 
-                SELECT	a.FA_CodeFamille
-                        , a.AR_Ref
-                        , ISNULL(AR_PrixAch,0)AR_PrixAch
-                        , AR_Design
-                        , ISNULL(AR_PrixVen,0)AR_PrixVen
-                        ,Qte_Gros
-                        ,CASE WHEN @flagCat=0 THEN Prix_Min ELSE ISNULL(AC_Coef,0) END Prix_Min
-				        ,CASE WHEN @flagCat=0 THEN Prix_Max ELSE ISNULL(AC_PrixVen,0) END Prix_Max
-                        ,ISNULL(CASE WHEN AC_PrixVen<>0 THEN AC_PrixVen ELSE AR_PrixVen END,0) AS Prix, AC_PrixTTC, AR_PrixTTC,
-			(CASE WHEN ISNULL(TU.TA_Sens,0)=0 THEN -1 ELSE 1 END)*ISNULL(TU.TA_Taux,0) as taxe1, 
-			(CASE WHEN ISNULL(TD.TA_Sens,0)=0 THEN -1 ELSE 1 END)*ISNULL(TD.TA_Taux,0) as taxe2,
-			(CASE WHEN ISNULL(TT.TA_Sens,0)=0 THEN -1 ELSE 1 END)*ISNULL(TT.TA_Taux,0) as taxe3, FCP_Champ 
-                 FROM F_ARTICLE A 
-                 LEFT JOIN (select * from F_ARTCLIENT where AC_Categorie=(SELECT ISNULL((SELECT AC_Categorie FROM F_ARTCLIENT WHERE AR_REF = '$ar_ref' AND AC_Categorie=$cattarif),1)))AR on AR.AR_Ref = A.AR_Ref
-                 LEFT JOIN (SELECT * FROM F_FAMCOMPTA WHERE FCP_Type=0 AND FCP_Champ=$catcompta)FA ON FA.FA_CodeFamille = A.FA_CodeFamille 
-                 LEFT JOIN ".$this->db->baseCompta.".DBO.F_TAXE TU ON TU.TA_Code = FA.FCP_ComptaCPT_Taxe1 
-                 LEFT JOIN ".$this->db->baseCompta.".DBO.F_TAXE TD ON TD.TA_Code = FA.FCP_ComptaCPT_Taxe2 
-                 LEFT JOIN ".$this->db->baseCompta.".DBO.F_TAXE TT ON TT.TA_Code = FA.FCP_ComptaCPT_Taxe3 
-                 WHERE  A.AR_REF = '$ar_ref'  )A;
-                 
-                 END;";
-    }
-
     public function getF_Artclient(){
         return "SELECT AR_Ref,AC_Categorie,AC_PrixVen,AC_PrixTTC,cbModification 
             FROM F_ARTCLIENT";
@@ -2092,34 +2056,6 @@ FROM P_PARAMETRECIAL
                 FROM F_Taxe";
     }
 
-
-    public function getPrixClientAch($ar_ref, $catcompta, $cattarif,$ct_num="") {
-        return "SELECT *,CASE WHEN AC_PrixTTC = 1 THEN Prix /(1+taxe1/100)/(1+taxe2/100)/(1+taxe3/100) ELSE Prix END PrixVente 
-                 FROM( 
-                     SELECT a.FA_CodeFamille, 
-							a.AR_Ref, 
-							CASE WHEN AF_PrixAch IS NULL THEN AR_PrixAch ELSE AF_PrixAch END AR_PrixAch, 
-							AR_Design, 
-							AR_PrixVen,
-							Prix_Min,
-							Prix_Max,
-							CASE WHEN AC_Categorie= 1 THEN AR_PrixVen 
-									WHEN AC_PrixVen<>0 THEN AC_PrixVen ELSE AR_PrixVen END AS Prix, 
-							AC_PrixTTC, 
-							AR_PrixTTC,
-                     (CASE WHEN ISNULL(TU.TA_Sens,0)=0 THEN 1 ELSE -1 END)*ISNULL(TU.TA_Taux,0) as taxe1, 
-                   (CASE WHEN ISNULL(TD.TA_Sens,0)=0 THEN 1 ELSE -1 END)*ISNULL(TD.TA_Taux,0) as taxe2,
-                   (CASE WHEN ISNULL(TT.TA_Sens,0)=0 THEN 1 ELSE -1 END)*ISNULL(TT.TA_Taux,0) as taxe3, FCP_Champ 
-                FROM F_ARTICLE A 
-                LEFT JOIN (SELECT AR_Ref,CT_Num,AF_PrixAch FROM F_ARTFOURNISS WHERE CT_Num ='$ct_num') AF ON A.AR_Ref = AF.AR_Ref
-                  LEFT JOIN (select * from F_ARTCLIENT where AC_Categorie=(SELECT ISNULL((SELECT AC_Categorie FROM F_ARTCLIENT WHERE AR_REF = '$ar_ref' AND AC_Categorie=$cattarif),1)))AR on AR.AR_Ref = A.AR_Ref
-                 LEFT JOIN (SELECT * FROM F_FAMCOMPTA WHERE FCP_Type=1 AND FCP_Champ=$catcompta)FA ON FA.FA_CodeFamille = A.FA_CodeFamille 
-                 LEFT JOIN F_TAXE TU ON TU.TA_Code = FA.FCP_ComptaCPT_Taxe1 
-                 LEFT JOIN F_TAXE TD ON TD.TA_Code = FA.FCP_ComptaCPT_Taxe2 
-                 LEFT JOIN F_TAXE TT ON TT.TA_Code = FA.FCP_ComptaCPT_Taxe3 
-                 WHERE  A.AR_REF = '$ar_ref')A";
-    }
-
     public function getPrixClientAchHT($ar_ref, $catcompta, $cattarif,$prix,$rem) {
         return "SELECT *,CASE WHEN AC_PrixTTCS = 1 AND AR_PrixTTCS = 1 THEN ROUND(".($prix-$rem)."/(1+taxe1/100)/(1+taxe2/100)/(1+taxe3/100),2) ELSE ".($prix-$rem)." END DL_MontantHT,taxe1,taxe2,taxe3,
             CASE WHEN AC_PrixTTCS = 1 AND AR_PrixTTCS = 1 THEN ROUND($prix /(1+taxe1/100)/(1+taxe2/100)/(1+taxe3/100),2) ELSE $prix END DL_PrixUnitaire,
@@ -2154,11 +2090,13 @@ FROM P_PARAMETRECIAL
 
 
     public function getDateEcgetTiersheanceSage($ct_num,$date){
-        $requete = "SELECT REPLACE(CONVERT(VARCHAR(8), CAST(ISNULL(DATEADD(DAY,ER_NbJour,'$date'),'$date')  AS DATE), 5),'-','') date_ech
+        $requete = "DECLARE @date DATE = $date
+                    DECLARE @ctNum NVARCHAR(100) = $ct_num
+                    SELECT REPLACE(CONVERT(VARCHAR(8), CAST(ISNULL(DATEADD(DAY,ER_NbJour,@date),@date)  AS DATE), 5),'-','') date_ech
                     FROM F_COMPTET C
                     LEFT JOIN F_MODELER M ON C.MR_No = M.MR_No
                     LEFT JOIN (SELECT * FROM F_EMODELER EM WHERE N_Reglement=1) EM ON EM.MR_No = M.MR_No
-                    WHERE CT_Num='$ct_num'";
+                    WHERE CT_Num=@ctNum";
         $result = $this->db->requete($requete);
         $rows = $result->fetchAll(PDO::FETCH_OBJ);
         return json_encode($rows);
@@ -2358,33 +2296,6 @@ FROM P_PARAMETRECIAL
                 AND (0=$CA_Souche OR CA_Souche=$CA_Souche)";
     }
 
-
-    public function allTiers() {
-        return "SELECT CO_No,C.CT_Sommeil,C.CT_Intitule,0 AS CT_Type,CT_Num,CG_NumPrinc,N_CatTarif,N_CatCompta,P.CT_Intitule AS LibCatTarif,LibCatCompta,C.cbModification,
-                CT_Adresse,CG_NumPrinc,CT_Telephone,CT_CodeRegion,CT_Ville,CT_Siret,CT_Identifiant,MR_No,DE_No,CA_Num
-                FROM ".$this->db->baseCompta.".dbo.F_COMPTET C 
-                 LEFT JOIN P_CATTARIF P ON P.cbIndice = C.N_CatTarif 
-                 LEFT JOIN (select  row_number() over (order by u.subject) as idcompta, u.LibCatCompta 
-                 from P_CATCOMPTA 
-                 unpivot 
-                       ( 
-                        LibCatCompta 
-                 for subject in (CA_ComptaVen01, CA_ComptaVen02, CA_ComptaVen03, CA_ComptaVen04, CA_ComptaVen05, CA_ComptaVen06, CA_ComptaVen07, CA_ComptaVen08, CA_ComptaVen09, CA_ComptaVen10, CA_ComptaVen11, CA_ComptaVen12, CA_ComptaVen13, CA_ComptaVen14, CA_ComptaVen15, CA_ComptaVen16, CA_ComptaVen17, CA_ComptaVen18, CA_ComptaVen19, CA_ComptaVen20, CA_ComptaVen21, CA_ComptaVen22)
-                 ) u) M ON M.idcompta = C.N_CatCompta WHERE CT_Type=0
-                UNION
-                SELECT CO_No,C.CT_Sommeil,C.CT_Intitule,1 AS CT_Type,CT_Num,CG_NumPrinc,N_CatTarif,N_CatCompta,P.CT_Intitule AS LibCatTarif,LibCatCompta,C.cbModification,CT_Adresse,CG_NumPrinc,CT_Telephone,CT_CodeRegion,CT_Ville,CT_Siret,CT_Identifiant,MR_No,DE_No,CA_Num
-                FROM ".$this->db->baseCompta.".dbo.F_COMPTET C
-                LEFT JOIN P_CATTARIF P ON P.cbIndice = C.N_CatTarif 
-                 LEFT JOIN (select  row_number() over (order by u.subject) as idcompta, u.LibCatCompta 
-                 from P_CATCOMPTA 
-                 unpivot 
-                      ( 
-                        LibCatCompta 
-                        for subject in (CA_ComptaAch01, CA_ComptaAch02, CA_ComptaAch03, CA_ComptaAch04, CA_ComptaAch05, CA_ComptaAch06, CA_ComptaAch07, CA_ComptaAch08, CA_ComptaAch09, CA_ComptaAch10, CA_ComptaAch11, CA_ComptaAch12, CA_ComptaAch13, CA_ComptaAch14, CA_ComptaAch15, CA_ComptaAch16, CA_ComptaAch17, CA_ComptaAch18, CA_ComptaAch19, CA_ComptaAch20, CA_ComptaAch21, CA_ComptaAch22) 
-                 ) u) M ON M.idcompta = C.N_CatCompta WHERE CT_Type=1
-    ";
-    }
-
     public function affichePDevise($value)
     {
         $result = $this->db->query($this->getDevise());
@@ -2406,34 +2317,6 @@ FROM P_PARAMETRECIAL
                 SELECT  *
                 FROM    P_TIERS 
                 WHERE T_Val01T_Intitule LIKE CONCAT(@val,'%') ";
-    }
-
-
-    public function allClientsByCT_Intitule($val) {
-        return "SELECT C.CT_Intitule,CT_Num,CG_NumPrinc,N_CatTarif,N_CatCompta,P.CT_Intitule AS LibCatTarif,LibCatCompta FROM ".$this->db->baseCompta.".dbo.F_COMPTET C " .
-            " LEFT JOIN P_CATTARIF P ON P.cbIndice = C.N_CatTarif " .
-            " LEFT JOIN (select  row_number() over (order by u.subject) as idcompta, u.LibCatCompta " .
-            " from P_CATCOMPTA " .
-            " unpivot " .
-            "       ( " .
-            "        LibCatCompta " .
-            " for subject in (CA_ComptaVen01, CA_ComptaVen02, CA_ComptaVen03, CA_ComptaVen04, CA_ComptaVen05, CA_ComptaVen06, CA_ComptaVen07, CA_ComptaVen08, CA_ComptaVen09, CA_ComptaVen10, CA_ComptaVen11, CA_ComptaVen12, CA_ComptaVen13, CA_ComptaVen14, CA_ComptaVen15, CA_ComptaVen16, CA_ComptaVen17, CA_ComptaVen18, CA_ComptaVen19, CA_ComptaVen20, CA_ComptaVen21, CA_ComptaVen22) " .
-            " ) u) M ON M.idcompta = C.N_CatCompta"
-            . " WHERE C.CT_Intitule like '%$val%' ";
-    }
-
-    public function clientsByCT_Num($code) {
-        return "SELECT CT_Sommeil,MR_No,CO_No,CT_Adresse,CA_Num,CT_CodePostal,DE_No,CT_CodeRegion,CT_Ville,CT_Siret,CT_Identifiant,CT_Telephone,C.CT_Intitule, CT_Num, CG_NumPrinc, N_CatTarif, N_CatCompta, P.CT_Intitule AS LibCatTarif, LibCatCompta 
-                FROM ".$this->db->baseCompta.".dbo.F_COMPTET C 
-                 LEFT JOIN P_CATTARIF P ON P.cbIndice = C.N_CatTarif 
-                 LEFT JOIN (select  row_number() over (order by u.subject) as idcompta, u.LibCatCompta 
-                 from P_CATCOMPTA 
-                 unpivot 
-                       ( 
-                        LibCatCompta 
-                 for subject in (CA_ComptaVen01, CA_ComptaVen02, CA_ComptaVen03, CA_ComptaVen04, CA_ComptaVen05, CA_ComptaVen06, CA_ComptaVen07, CA_ComptaVen08, CA_ComptaVen09, CA_ComptaVen10, CA_ComptaVen11, CA_ComptaVen12, CA_ComptaVen13, CA_ComptaVen14, CA_ComptaVen15, CA_ComptaVen16, CA_ComptaVen17, CA_ComptaVen18, CA_ComptaVen19, CA_ComptaVen20, CA_ComptaVen21, CA_ComptaVen22) 
-                 ) u) M ON M.idcompta = C.N_CatCompta 
-                 WHERE CT_Num ='" . $code . "' ";
     }
 
     public function envoiSms($telephone,$message){
@@ -2557,7 +2440,7 @@ LEFT JOIN (SELECT cbMarq,DO_Piece AS DO_Piece_Dest,DL_PrixUnitaire AS DL_PrixUni
     }
 
     public function getFamilleByCode($code) {
-        return "SELECT * FROM F_FAMILLE WHERE FA_CodeFamille='" . $code . "'";
+        return "SELECT * FROM F_FAMILLE WHERE FA_CodeFamille='$code'";
     }
 
     public function getCollaborateur($type) {

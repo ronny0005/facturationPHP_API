@@ -129,11 +129,16 @@ class FamilleClass Extends Objet{
         }
     }
 
+    public function getFamilleByCode($code) {
+        return $this->getApiJson("/faCodeFamille={$code}");
+    }
     public function maj_famille(){
-        parent::maj(FA_CodeFamille , $this->FA_CodeFamille);
-        parent::maj(FA_Type , $this->FA_Type);
         parent::maj(FA_Intitule , $this->FA_Intitule);
-        parent::maj(FA_UniteVen , $this->FA_UniteVen);
+        parent::maj(CL_No1 , $this->CL_No1);
+        parent::maj(CL_No2 , $this->CL_No2);
+        parent::maj(CL_No3 , $this->CL_No3);
+        parent::maj(CL_No4 , $this->CL_No4);
+/*        parent::maj(FA_UniteVen , $this->FA_UniteVen);
         parent::maj(FA_Coef , $this->FA_Coef);
         parent::maj(FA_SuiviStock , $this->FA_SuiviStock);
         parent::maj(FA_Garantie , $this->FA_Garantie);
@@ -178,13 +183,7 @@ class FamilleClass Extends Objet{
         parent::maj(FA_Publie , $this->FA_Publie);
         parent::maj(FA_RacineRef , $this->FA_RacineRef);
         parent::maj(FA_RacineCB , $this->FA_RacineCB);
-        parent::maj(CL_No1 , $this->CL_No1);
-        parent::maj(CL_No2 , $this->CL_No2);
-        parent::maj(CL_No3 , $this->CL_No3);
-        parent::maj(CL_No4 , $this->CL_No4);
-        parent::maj(cbMarq , $this->cbMarq);
-        parent::maj(cbCreateur , $this->userName);
-        parent::maj(cbModification , $this->cbModification);
+*/
     }
 
     public function getLibTaxePied($cattarif,$catcompta){
@@ -193,35 +192,17 @@ class FamilleClass Extends Objet{
     }
 
     public function getShortList() {
-        $query = "SELECT cbModification,FA_CodeFamille,FA_Intitule,FA_Type
-                  FROM F_FAMILLE  
-                  ORDER BY FA_CodeFamille";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getShortList");
     }
 
     public function getFamilleCount()
     {
-        $query ="    SELECT  count(*) Nb
-                             ,max(cbModification)cbModification 
-                     FROM    F_FAMILLE";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getFamilleCount");
     }
 
     public function getNextArticleByFam($codeFam)
     {
-        $query = "SELECT  F.FA_CodeFamille
-                        ,CONCAT(F.FA_CodeFamille
-                        ,RIGHT('000000000000'+CAST((CASE WHEN MAX(AR_Ref) IS NOT NULL THEN count(*) ELSE 0 END)+1 AS VARCHAR(100))
-                        ,(SELECT GE_ArtLen FROM P_GENAUTO)-LEN(F.FA_CodeFamille))) AR_Ref 
-                 FROM   F_FAMILLE F 
-                 LEFT JOIN F_ARTICLE A 
-                     ON F.FA_CodeFamille = A.FA_CodeFamille  
-                 WHERE F.FA_CodeFamille='$codeFam'
-                GROUP BY F.FA_CodeFamille";
-        $result= $this->db->query($query);
-        return $result->fetchAll(PDO::FETCH_OBJ);
+        return $this->getApiJson("/getNextArticleByFam&faCodeFamille={$codeFam}");
     }
 
     public function modifFamille($code, $intitule, $catal1, $catal2, $catal3, $catal4)
@@ -234,48 +215,9 @@ class FamilleClass Extends Objet{
         $this->db->query($requete);
     }
 
-    public function insertFamille($code, $intitule, $catal1, $catal2, $catal3, $catal4)
+    public function insertFamille($code, $intitule, $catal1, $catal2, $catal3, $catal4,$protNo)
     {
-        $requete = "INSERT INTO [dbo].[F_FAMILLE]
-           ([FA_CodeFamille],[FA_Type],[FA_Intitule],[FA_UniteVen]
-           ,[FA_Coef],[FA_SuiviStock],[FA_Garantie],[FA_Central]
-           ,[FA_Stat01],[FA_Stat02],[FA_Stat03],[FA_Stat04]
-           ,[FA_Stat05],[FA_CodeFiscal],[FA_Pays],[FA_UnitePoids]
-           ,[FA_Escompte],[FA_Delai],[FA_HorsStat],[FA_VteDebit]
-           ,[FA_NotImp],[FA_Frais01FR_Denomination],[FA_Frais01FR_Rem01REM_Valeur],[FA_Frais01FR_Rem01REM_Type]
-           ,[FA_Frais01FR_Rem02REM_Valeur],[FA_Frais01FR_Rem02REM_Type],[FA_Frais01FR_Rem03REM_Valeur],[FA_Frais01FR_Rem03REM_Type]
-           ,[FA_Frais02FR_Denomination],[FA_Frais02FR_Rem01REM_Valeur],[FA_Frais02FR_Rem01REM_Type],[FA_Frais02FR_Rem02REM_Valeur]
-           ,[FA_Frais02FR_Rem02REM_Type],[FA_Frais02FR_Rem03REM_Valeur],[FA_Frais02FR_Rem03REM_Type],[FA_Frais03FR_Denomination]
-           ,[FA_Frais03FR_Rem01REM_Valeur],[FA_Frais03FR_Rem01REM_Type],[FA_Frais03FR_Rem02REM_Valeur],[FA_Frais03FR_Rem02REM_Type]
-           ,[FA_Frais03FR_Rem03REM_Valeur],[FA_Frais03FR_Rem03REM_Type],[FA_Contremarque],[FA_FactPoids]
-           ,[FA_FactForfait],[FA_Publie],[FA_RacineRef],[FA_RacineCB]
-           ,[CL_No1],[cbCL_No1],[CL_No2],[cbCL_No2],[CL_No3],[cbCL_No3],[CL_No4],[cbCL_No4]
-           ,[cbProt],[cbCreateur],[cbModification],[cbReplication],[cbFlag])
-     VALUES
-           (/*FA_CodeFamille*/'$code',/*FA_Type*/0,/*FA_Intitule, */'$intitule',/*FA_UniteVen*/4
-           ,/*FA_Coef*/0,/*FA_SuiviStock*/2,/*FA_Garantie*/0,/*FA_Central*/''
-           ,/*FA_Stat01*/'',/*FA_Stat02*/'',/*FA_Stat03*/'',/*FA_Stat04*/''
-           ,/*FA_Stat05*/'',/*FA_CodeFiscal*/'',/*FA_Pays, */'',/*FA_UnitePoids*/2
-           ,/*FA_Escompte*/0,/*FA_Delai*/0,/*FA_HorsStat*/0,/*FA_VteDebit*/0
-           ,/*FA_NotImp*/0,/*FA_Frais01FR_Denomination*/'Coût de stockage'
-           ,/*FA_Frais01FR_Rem01REM_Valeur*/0,/*FA_Frais01FR_Rem01REM_Type*/0
-           ,/*FA_Frais01FR_Rem02REM_Valeur*/0,/*FA_Frais01FR_Rem02REM_Type*/0
-           ,/*FA_Frais01FR_Rem03REM_Valeur*/0,/*FA_Frais01FR_Rem03REM_Type*/0
-           ,/*FA_Frais02FR_Denomination*/'Coût de transport',/*FA_Frais02FR_Rem01REM_Valeur*/0
-           ,/*FA_Frais02FR_Rem01REM_Type*/0,/*FA_Frais02FR_Rem02REM_Valeur*/0
-           ,/*FA_Frais02FR_Rem02REM_Type*/0,/*FA_Frais02FR_Rem03REM_Valeur*/0
-           ,/*FA_Frais02FR_Rem03REM_Type*/0,/*FA_Frais03FR_Denomination*/0
-           ,/*FA_Frais03FR_Rem01REM_Valeur*/0,/*FA_Frais03FR_Rem01REM_Type*/0
-           ,/*FA_Frais03FR_Rem02REM_Valeur*/0,/*FA_Frais03FR_Rem02REM_Type*/0
-           ,/*FA_Frais03FR_Rem03REM_Valeur*/0,/*FA_Frais03FR_Rem03REM_Type*/0
-           ,/*FA_Contremarque*/0,/*FA_FactPoids*/0,/*FA_FactForfait*/0,/*FA_Publie*/0
-           ,/*FA_RacineRef*/'$code',/*FA_RacineCB*/''
-           ,/*CL_No1*/$catal1,/*cbCL_No1*/(SELECT CASE WHEN $catal1=0 THEN NULL ELSE $catal1 END),/*CL_No2*/$catal2,/*cbCL_No2*/(SELECT CASE WHEN $catal2=0 THEN NULL ELSE $catal2 END)
-           ,/*CL_No3*/$catal3,/*cbCL_No3*/(SELECT CASE WHEN $catal3=0 THEN NULL ELSE $catal3 END),/*CL_No4*/$catal4,/*cbCL_No4*/(SELECT CASE WHEN $catal4=0 THEN NULL ELSE $catal4 END)
-           ,/*cbProt*/0,/*cbCreateur, char(4)*/'AND',/*cbModification, smalldatetime*/CAST(GETDATE() AS DATE),/*cbReplication*/0,/*cbFlag*/0)
-";
-        $this->db->query($requete);
-
+        $this->getApiExecute("/insertFamille&code={$code}&intitule={$this->formatString($intitule)}&clNo1={$catal1}&clNo2={$catal2}&clNo3={$catal3}&clNo4={$catal4}&protNo={$protNo}");
     }
 
 

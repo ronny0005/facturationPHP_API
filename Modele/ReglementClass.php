@@ -149,6 +149,14 @@ class ReglementClass Extends Objet{
         if($val==6) return "Vrst bancaire";
     }
 
+    function TitreTypeCaisse($val){
+        if($val==5) return "Entrée de caisse";
+        if($val==4) return "Sortie de caisse";
+        if($val==2) return "Fond de caisse";
+        if($val==16) return "Transfert caisse";
+        if($val==6) return "Versement bancaire";
+    }
+
     public function afficheMvtCaisse($rows,$flagAffichageValCaisse,$flagCtrlTtCaisse){
         $i=0;
         $classe="";
@@ -180,9 +188,9 @@ class ReglementClass Extends Objet{
                 echo "<tr class='reglement $classe' id='reglement_{$row->RG_No}'>
                                                 <td style='color:blue;text-decoration:underline' id='RG_No'>{$row->RG_No}</a></td>
                                                 <td id='RG_Piece'>{$row->RG_Piece}</td>
-                                                <td id='RG_Date'>{$this->getDateDDMMYYYY($row->RG_Date)}</td>
+                                                <td id='RG_Date'>{$this->objetCollection->getDateDDMMYYYY($row->RG_Date)}</td>
                                                 <td id='RG_Libelle'>{$row->RG_Libelle}</td>
-                                                <td id='RG_Montant'>{$this->formatChiffre($montant)}</td>
+                                                <td id='RG_Montant'>{$this->objetCollection->formatChiffre($montant)}</td>
                                                 <td style='display:none' id='RG_MontantHide'>$montant</td>
                                                 <td style='display:none' id='CA_No'>{$row->CA_No}</td>
                                                 <td style='display:none' id='CA_No_DestLigne'>{$row->CA_No_Dest}</td>
@@ -210,6 +218,7 @@ class ReglementClass Extends Objet{
                 echo "<td style='display:none' id='CA_NumIntituleLigne'>{$row->CA_IntituleText}</td>";
 
                 echo "<td style='display:none' id='RG_DateLigne'>".date("dmy", strtotime($row->RG_Date))."</td>";
+                echo "<td><i id='imprimMvt' class='fa fa-print fa-fw'></i></td>";
                 echo "</tr>";
                 $sommeMnt = $sommeMnt + $montant;
             }
@@ -217,7 +226,7 @@ class ReglementClass Extends Objet{
 <td id='rgltTotal'><b>Total</b></td><td></td><td></td><td></td><td><b>{$this->formatChiffre($sommeMnt)}</b></td><td></td><td></td><td></td>";
 if($flagAffichageValCaisse==0) echo "<td></td>";
 if($flagCtrlTtCaisse==0) echo "<td></td>";
-            echo "</tr>";
+            echo "<td></td></tr>";
         }
     }
     public function initVariables(){
@@ -455,11 +464,11 @@ if($flagCtrlTtCaisse==0) echo "<td></td>";
         $this->getApiExecute("/insertMvtCaisse&rgMontant=$rgMontant&protNo=$protNo&caNum=$caNum&libelle={$this->formatString($libelle)}&rgTypeReg=$rgTypeReg&caNo=$caNo&cgNumBanque=$cgNumBanque&isModif=$isModif&rgDate=$rgDate&joNum=$joNum&caNoDest=$caNoDest&cgAnalytique=$cgAnalytique&rgTyperegModif=$rgTyperegModif&journalRec=$journalRec&rgNoDest=$rgNoDest");
     }
 
-    public function addReglement($mobile/*$_GET["mobile"]*/,$jo_num/*$_GET["JO_Num"]*/,$rg_no_lier/*$_GET["RG_NoLier"]*/,$ct_num /*$_GET['CT_Num']*/
+    public function addReglement($protNo,$mobile/*$_GET["mobile"]*/,$jo_num/*$_GET["JO_Num"]*/,$rg_no_lier/*$_GET["RG_NoLier"]*/,$ct_num /*$_GET['CT_Num']*/
                                 ,$ca_no/*$_GET["CA_No"]*/,$boncaisse /*$_GET["boncaisse"]*/,$libelle /*$_GET['libelle']*/,$caissier /*$_GET['caissier']*/
                                 ,$date/*$_GET['date']*/,$modeReglementRec /*$_GET["mode_reglementRec"]*/
                                 ,$montant /*$_GET['montant']*/,$impute/*$_GET['impute']*/,$RG_Type /*$_GET['RG_Type']*/,$afficheData=true,$typeRegl=""){
-        $url = "/addReglement&protNo={$_SESSION["id"]}&joNum=$jo_num&rgNoLier=$rg_no_lier&ctNum=$ct_num&caNo=$ca_no&bonCaisse=$boncaisse&libelle={$this->formatString($libelle)}&caissier=$caissier&date=$date&modeReglementRec=$modeReglementRec&montant=$montant&impute=$impute&rgType=$RG_Type&afficheData=$afficheData&typeRegl=$typeRegl";
+        $url = "/addReglement&protNo={$protNo}&joNum=$jo_num&rgNoLier=$rg_no_lier&ctNum=$ct_num&caNo=$ca_no&bonCaisse=$boncaisse&libelle={$this->formatString($libelle)}&caissier=$caissier&date=$date&modeReglementRec=$modeReglementRec&montant=$montant&impute=$impute&rgType=$RG_Type&afficheData=$afficheData&typeRegl=$typeRegl";
         $info = $this->getApiJson($url);
         if($afficheData)
             echo json_encode($info);

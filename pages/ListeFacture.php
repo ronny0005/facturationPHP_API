@@ -189,11 +189,16 @@ $titre="";
                                 </div>
                             <?php }
                             ?>
+
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-2">
+                            <label>N° Pièce</label>
+                            <input type="text" class="form-control" name="DOPiece" id="DOPiece" />
+                        </div>
                         <div class="col-6 col-lg-2 mt-3 mt-lg-4">
                                 <input type="submit" id="valider" class="btn btn-primary w-100" value="Valider"/>
                         </div>
 <?php
-                            if($protectedNouveau && ($type!="VenteC" || $type!="VenteRetourC")){
+                            if($protectedNouveau && ($type!="VenteC" && $type!="VenteRetourC" && $type!="Livraison")){
                                     if($type!="Transfert_valid_confirmation"){
                                     ?>
 
@@ -242,7 +247,7 @@ $titre="";
 
                         <tbody>
                         <?php
-                        $listFacture = $docEntete->listeFacture($depot,$objet->getDate($datedeb),$objet->getDate($datefin),$_SESSION["id"],$client);
+                        $listFacture = $docEntete->listeFacture($depot,$objet->getDate($datedeb),$objet->getDate($datefin),$_SESSION["id"],$client,"");
                         if(sizeof($listFacture)==0){
 
                         }else{

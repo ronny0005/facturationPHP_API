@@ -173,7 +173,7 @@ $docEntete = new DocEnteteClass($_GET["cbMarq"]);
     <th style='width:100px'>Montant TTC</th>
 </tr>	
 <?php
-        $rows = $docEntete->getLigneFacture();
+        $rows = $docEntete->getLigneFacture(0);
 $i=0;
         $id_sec=0;
         if($rows==null){

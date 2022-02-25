@@ -1,5 +1,6 @@
 jQuery(function($){
 
+    let prot_no = $("#PROT_No").val()
     function $_GET(param) {
         var vars = {};
         window.location.href.replace( location.hash, '' ).replace(
@@ -71,7 +72,7 @@ jQuery(function($){
                     url: "traitement/Facturation.php?acte=confirmation_document",
                     method: 'GET',
                     dataType: 'html',
-                    data: "cbMarq=" + cbMarq + "&qte=" + qte,
+                    data: "cbMarq=" + cbMarq + "&qte=" + qte+"&PROT_No="+prot_no,
                     async: false,
                     success: function (data) {
                         if (data != "")

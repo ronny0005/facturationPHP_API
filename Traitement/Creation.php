@@ -14,6 +14,8 @@ include("../Modele/F_TarifClass.php");
 include("../Modele/ProtectionClass.php");
 include("../Modele/ArtClientClass.php");
 include("../Modele/MailComplete.php");
+include("../Modele/DepotEmplClass.php");
+include("../Modele/DepotEpmlUserClass.php");
 
 if(strcmp($_GET["acte"],"modif_article") == 0){
     $article = new ArticleClass(strtoupper($_GET["reference"]),$objet->db);
@@ -170,18 +172,18 @@ if(strcmp($_GET["acte"],"modif_famille") == 0){
     $niv=$_GET["niv"];
     $no=$_GET["val"];
     if(isset($_GET["catal1"]))
-    $catal1 = $_GET["catal1"];
+        $catal1 = $_GET["catal1"];
     if(isset($_GET["catal2"]))
-    $catal2 = $_GET["catal2"];
+        $catal2 = $_GET["catal2"];
     if(isset($_GET["catal3"]))
-    $catal3 = $_GET["catal3"];
+        $catal3 = $_GET["catal3"];
     if(isset($_GET["catal4"]))
-    $catal4 = $_GET["catal4"];
+        $catal4 = $_GET["catal4"];
     if(!isset($_GET["valide"]))
-        $famille = new FamilleClass($ref,$objet->db);
-        $famille->modifFamille($ref,$intitule,$catal1,$catal2,$catal3,$catal4);
-    $result=$objet->db->requete($objet->getCatalogueChildren($niv,$no));
-    $rows = $result->fetchAll(PDO::FETCH_OBJ);
+        $famille = new FamilleClass($ref);
+    $famille->userName = $_GET["PROT_No"];
+    $famille->cbCreateur = $_GET["PROT_No"];
+    $famille->maj_famille();
     $data = array('codeFAM' => $ref);
     echo json_encode($data);
 }
@@ -189,8 +191,7 @@ if(strcmp($_GET["acte"],"modif_famille") == 0){
 if(strcmp($_GET["acte"],"ajout_famille") == 0){
     $ref = strtoupper($_GET["FA_CodeFamille"]);
     $intitule = str_replace("'", "''", $_GET["intitule"]);
-    $result=$objet->db->requete($objet->getFamilleByCode($ref));
-    $rows = $result->fetchAll(PDO::FETCH_OBJ);
+    $rows = $famille->getFamilleByCode($ref);
     if($rows==null){
     $catal1 = 0;
     $catal2 = 0;
@@ -207,20 +208,14 @@ if(strcmp($_GET["acte"],"ajout_famille") == 0){
     if(isset($_GET["catal4"]))
     $catal4 = $_GET["catal4"];
     $famille = new FamilleClass(0,$objet->db);
-    $famille->insertFamille($ref,$intitule,$catal1,$catal2,$catal3,$catal4);
+    $famille->insertFamille($ref,$intitule,$catal1,$catal2,$catal3,$catal4,$_GET["PROT_No"]);
     $data = array('codeFAM' => $ref);
     echo json_encode($data);
     }else {
-        echo $ref." existe déjà !";
+        echo "$ref existe déjà !";
     }
 }
 
-
-if(strcmp($_GET["acte"],"liste_clientIntitule") == 0){
-    $result=$objet->db->requete($objet->allClientsByCT_Intitule($_GET["CT_Intitule"]));
-    $rows = $result->fetchAll(PDO::FETCH_OBJ);
-    echo json_encode($rows);
-}
 
 if(strcmp($_GET["acte"],"ListeFamilleRemise") == 0){
     $famille = new FamilleClass(0,$objet->db);
@@ -724,6 +719,26 @@ if(strcmp($_GET["acte"],"ajout_user") == 0){
     }
     $protection->PROT_UserProfil = $profiluser;
     $protection->ajoutUser($_GET["securiteAdmin"]);
+    if($protection->cbMarq!=""){
+        if(isset($_GET["depot"])){
+            $depot = $_GET["depot"];
+            $depotClass = new DepotClass(0,$objet->db);
+            $depotClass->supprDepotUser($protection->PROT_No);
+            foreach($depot as $dep) {
+                $depotClass = new DepotClass($dep,$objet->db);
+                $depotClass->insertDepotUser($protection->PROT_No);
+            }
+        }
+    }
+
+    if(isset($_GET["emplacement"])){
+        $depotEmplUser = new DepotEmplUserClass(0,$objet->db);
+        $depotEmplUser->supprDepotEmplUser($protection->PROT_No);
+        foreach($_GET["emplacement"] as $emp){
+            $depotEmplUser->insertDepotEmplUser($protection->PROT_No,$emp);
+        }
+        $depotEmplUser->updateEmplacement($protection->PROT_No);
+    }
 }
 
 if(strcmp($_GET["acte"],"ajout_depot") == 0){
@@ -885,6 +900,7 @@ if(strcmp($_GET["acte"],"modif_user") == 0){
             $depotClass->insertDepotUser($id);
         }
     }
+
     if(isset($_GET["depotprincipal"])){
         $depotprincipal = $_GET["depotprincipal"];
         foreach($depotprincipal as $dep){
@@ -892,6 +908,17 @@ if(strcmp($_GET["acte"],"modif_user") == 0){
             $depotClass->setPrincipalDepotUser($id,$dep);
         }
     }
+
+    $depotEmplUser = new DepotEmplUserClass(0,$objet->db);
+    $depotEmplUser->supprDepotEmplUser($id);
+    if(isset($_GET["emplacement"])){
+
+        foreach($_GET["emplacement"] as $emp){
+            $depotEmplUser->insertDepotEmplUser($id,$emp);
+        }
+        $depotEmplUser->updateEmplacement($id);
+    }
+
     $data = array('Prot_No' => $username);
     echo json_encode($data);
 }

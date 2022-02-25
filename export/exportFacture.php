@@ -6,6 +6,7 @@ include("../Modele/ComptetClass.php");
 include("../Modele/DepotClass.php");
 include("../Modele/ProtectionClass.php");
 include("../Modele/DocEnteteClass.php");
+use Spipu\Html2Pdf\Html2Pdf;
 
 session_start();
 $objet = new ObjetCollector();
@@ -223,7 +224,7 @@ table.reglement td{
         $totalTaxe1=0;
         $totalTaxe2=0;
         $totalTaxe3=0;
-        $rows = $docEntete->getLigneFacture();
+        $rows = $docEntete->getLigneFacture($protection->Prot_No);
             foreach ($rows as $row){
                 $totalMontantTTC= $totalMontantTTC+ROUND($row->DL_MontantTTC,2);
                 $totalMontantHT= $totalMontantHT+ROUND($row->DL_MontantHT,2);
@@ -304,7 +305,7 @@ if($format=="A5"){
         $totalTaxe1=0;
         $totalTaxe2=0;
         $totalTaxe3=0;
-        $rows = $docEntete->getLigneFacture();
+        $rows = $docEntete->getLigneFacture($protection->Prot_No);
             foreach ($rows as $row){
                 $totalMontantTTC= $totalMontantTTC+ROUND($row->DL_MontantTTC,2);
                 $totalMontantHT= $totalMontantHT+ROUND($row->DL_MontantHT,2);

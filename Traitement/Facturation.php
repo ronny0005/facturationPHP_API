@@ -125,8 +125,8 @@ if($_GET["acte"] =="ajout_entete"){
     $docEntete = new DocEnteteClass(0);
     echo json_encode($docEntete->ajoutEntete( isset($_GET["do_piece"]) ? $_GET["do_piece"] : "",
         $_GET["type_fac"], $_GET["date"], $_GET["date"], $_GET["affaire"], $_GET["client"], isset($_GET["userName"]) ? $_GET["userName"] : "",
-        $mobile, isset($_GET["machineName"]) ? $_GET["machineName"] : "",
-        isset($_GET["doCood2"]) ? $_GET["doCood2"] : "", isset($_GET["doCood3"]) ? $_GET["doCood3"] : "",isset($_GET["DO_Coord04"]) ? $_GET["DO_Coord04"] : "",
+        $mobile, isset($_GET["machineName"]) ? $_GET["machineName"] : "",isset($_GET["DO_Coord01"]) ? $_GET["DO_Coord01"] : "",
+        isset($_GET["DO_Coord02"]) ? $_GET["DO_Coord02"] : "", isset($_GET["DO_Coord03"]) ? $_GET["DO_Coord03"] : "",isset($_GET["DO_Coord04"]) ? $_GET["DO_Coord04"] : "",
         $_GET["do_statut"], $latitude, $longitude, $_GET["de_no"], $_GET["cat_tarif"], $_GET["cat_compta"], $_GET["souche"], $_GET["ca_no"],
         $_GET["co_no"], str_replace("'","''",$_GET["reference"])));
 }
@@ -164,7 +164,7 @@ if( $_GET["acte"] =="entete_document") {
 
 // mise à jour de la référence
 if( $_GET["acte"] =="reste_a_payer"){
-    $docEntete = new DocEnteteClass($_GET["EntetecbMarq"],$objet->db);
+    $docEntete = new DocEnteteClass($_GET["EntetecbMarq"]);
     $reste_a_payer = $docEntete->resteAPayer;
     $data = array('reste_a_payer' => $reste_a_payer);
     echo json_encode($data);
@@ -234,7 +234,7 @@ if( $_GET["acte"] == "liste_article"){
 
     $docligne = new DocLigneClass(0,$objet->db);
         if($entete!=null)
-            $rowsligne=$docEntete->listeLigneFacture();
+            $rowsligne=$docEntete->listeLigneFacture($_SESSION["id"]);
         foreach ($rowsligne as $row) {
             $docligne= new DocLigneClass($row->cbMarq);
             $totalQte = $totalQte + $docligne->DL_Qte;
@@ -306,14 +306,6 @@ if( $_GET["acte"] == "liste_article"){
         array_push($table, $totalTTC);
     }
 
-    if($objet->db->flagDataOr==1 && $do_domaine==0 && $do_type==6){
-        array_push ($tabLib, "Total Devise");
-        array_push ($table, ($totalHT*$docEntete->DO_Cours));
-        array_push ($tabLib, "Total Carat");
-        array_push ($table, $totalCarat);
-        array_push ($tabLib, "Total Pureway");
-        array_push ($table, $totalPureway);
-    }
     if(sizeof($rowsligne)>0){
         for($i=0;$i<sizeof($tabLib);$i++){
             if($tabLib[$i]!=""){
@@ -341,7 +333,7 @@ function getItem($table,$val){
 // mise à jour de la référence
 if( $_GET["acte"] =="calcul_pied"){
     $docEntete = new DocEnteteClass($_GET["cbMarq"],$objet->db);
-    echo json_encode($docEntete->getLigneFacture());
+    echo json_encode($docEntete->getLigneFacture(0));
 }
 
 if($_GET["acte"] =="saisie_comptable") {
@@ -534,6 +526,7 @@ $isVisu = $docEntete->isVisu($protectionClass->PROT_Administrator,$protectionCla
                 if((($typeDocument =="Achat" || $typeDocument =="AchatC" || $typeDocument =="AchatT" || $typeDocument =="AchatPreparationCommande"|| $typeDocument =="PreparationCommande")&& $flagPxAchat!=0))
                     echo "display:none";?>"><?= $objet->formatChiffre(round($docligne->DL_PrixUnitaire, 2)); ?> </td>
                 <td id='DL_Qte'><?= $objet->formatChiffre($qteLigne) ?></td>
+                <td style="<?php if($typeDocument!="Livraison") echo "display:none";?>" id='Qte_LivreeBL' ><?= $objet->formatChiffre($qteLivreeLigne); ?></td>
                 <td id='DL_Remise'><?= $remiseLigne?></td>
                 <td id='PUTTC' style="<?php
                 if((($typeDocument =="Achat" || $typeDocument =="AchatC" || $typeDocument =="AchatT" || $typeDocument =="AchatPreparationCommande"|| $typeDocument =="PreparationCommande")&& $flagPxAchat!=0))
@@ -555,18 +548,34 @@ $isVisu = $docEntete->isVisu($protectionClass->PROT_Administrator,$protectionCla
                 <?php
             if ((!$isVisu && ($typeDocument == "PreparationCommande" || $typeDocument == "AchatPreparationCommande")))
                 echo "<td id='lignea_{$docligne->cbMarq}'><i class='fa fa-sticky-note fa-fw'></i></td>";
-            if ($protectionClass->PROT_Administrator || $protectionClass->PROT_Right)
-                echo "  <td id='modif_{$docligne->cbMarq}'>
+                if ($protectionClass->PROT_Administrator || $protectionClass->PROT_Right) {
+                    echo "  <td id='modif_{$docligne->cbMarq}'>
                             <i class='fa fa-pencil fa-fw'></i>
-                        </td>
-                        <td id='suppr_{$docligne->cbMarq}'>
+                        </td>";
+                    if ($typeDocument == "Livraison"){
+                        echo "<td id='editLivraison'>";
+                        if($docligne->Qte_LivreeBL!=0)
+                            echo"<i class='fa fa-list fa-fw'></i>";
+                        echo "</td>";
+                    }
+                    echo"<td id='suppr_{$docligne->cbMarq}'>
                             <i class='fa fa-trash-o'></i>
                         </td>";
-            else
-                if(!$isVisu)
-                    echo "<td id='modif_{$docligne->cbMarq}'>
-                            <i class='fa fa-pencil fa-fw'></i></td>
-                            <td id='suppr_{$docligne->cbMarq}'><i class='fa fa-trash-o'></i></a></td>";
+                }
+                else {
+                    if (!$isVisu || ($docEntete->DO_Modif==0 && $type == "Livraison"))
+                        echo "<td id='modif_{$docligne->cbMarq}'>
+                            <i class='fa fa-pencil fa-fw'></i></td>";
+                    if ($type == "Livraison"){
+                        echo "<td id='editLivraison'>";
+                        if($docligne->Qte_LivreeBL!=0)
+                            echo"<i class='fa fa-list fa-fw'></i>";
+                        echo "</td>";
+                    }
+
+                    if (!$isVisu)
+                        echo "<td id='suppr_{$docligne->cbMarq}'><i class='fa fa-trash-o'></i></a></td>";
+                }
                 if($protectionClass->PROT_CBCREATEUR!=2)
                     echo "<td></td><td>{$docligne->getcbCreateurName()}</td>";
                 echo"</tr>";
@@ -578,7 +587,51 @@ $isVisu = $docEntete->isVisu($protectionClass->PROT_Administrator,$protectionCla
         }
     }
 }
+                if($_GET["acte"]=="listeElementLivraison") {
+                    $docligne = new DocLigneClass($_GET["cbMarq"]);
 
+                    echo "  <div class='table-responsive'>
+<table id='listQteLivree' class='table table-striped'>
+<tr class='text-center'>
+    <th>Qté BL</th>
+    <th>User</th>
+    <th>Date</th>";
+
+                    if($_GET["admin"]==1)
+                        echo "<th></th>";
+                    echo"</tr>";
+                    foreach($docligne->listeLivraison() as $row){
+                        echo "<tr id='itemQteLivree'>
+<td>";
+                        if($_GET["admin"]==1)
+                        {
+                            echo "<input type='' name='qteLivree' class='form-control' id='qteLivree' value='{$objet->formatChiffre($row->DL_QteBL)}' />";
+                        }
+                        else{
+                            echo $objet->formatChiffre($row->DL_QteBL);
+                        }
+                        echo"</td>
+<td>{$row->USER_GESCOM}<span id='prevQte' style='display:none'>{$objet->formatChiffre($row->DL_QteBL)}</span></td>
+    <td>{$objet->getDateDDMMYYYY($row->cbModification)}</td>
+      <td style='display:none' id='cbMarq'>{$row->cbMarq}</td>";
+
+
+                        if($_GET["admin"]==1)
+                            echo "<td><i id='deleteQteLivree' class='fa fa-trash fa-fw'></i></td>";
+                        echo"</tr>";
+                    }
+                    echo "</table></div>";
+                }
+
+                if($_GET["acte"]=="deleteQteLivree") {
+                    $docligne = new DocLigneClass(0);
+                    $docligne->deleteQteLivree($_GET["cbMarq"],$_GET["PROT_No"]);
+                }
+
+                if($_GET["acte"]=="updateQteLivree") {
+                    $docligne = new DocLigneClass(0);
+                    echo $docligne->updateQteLivree($_GET["cbMarq"],$_GET["PROT_No"],$_GET["qte"]);
+                }
 if($_GET["acte"]=="initLigneconfirmation_document") {
     $docligne = new DocLigneClass(0,$objet->db);
     $docligne->ligneConfirmationVisuel($_GET["cbMarq"]);
@@ -839,7 +892,7 @@ if( $_GET["acte"] =="suppr_factureConversion"){
                             $doPieceBL = $docligne->DL_PieceBL;
                         }
                         $data = $docEnteteBL->ajoutEntete($doPieceBL,$docEnteteBL->type_fac,$docligne->DL_DateBC,$docEntete->DO_Date,$docEntete->CA_Num
-                            ,$docEntete->DO_Tiers,"","","",$docEntete->DO_Coord02
+                            ,$docEntete->DO_Tiers,"","","",$docEntete->DO_Coord01,$docEntete->DO_Coord02
                             ,$docEntete->DO_Coord03,$docEntete->DO_Coord04,$docEntete->DO_Statut,$docEntete->latitude
                             ,$docEntete->longitude,$docEntete->DE_No,$docEntete->DO_Tarif,$docEntete->N_CatCompta
                             ,$docEntete->DO_Souche,$docEntete->CA_No,$docEntete->CO_No,$docEntete->DO_Ref,1);
@@ -875,7 +928,7 @@ if( $_GET["acte"] =="transformDocLigne"){
     $cbMarq=0;
     if($result==null) {
         $data = $docEnteteBL->ajoutEntete($doPieceBL, $docEnteteBL->type_fac, $docligne->DL_DateBC, $docEntete->DO_Date, $docEntete->CA_Num
-            , $docEntete->DO_Tiers, "", "", "", $docEntete->DO_Coord02
+            , $docEntete->DO_Tiers, "", "", "", $docEntete->DO_Coord01, $docEntete->DO_Coord02
             , $docEntete->DO_Coord03, $docEntete->DO_Coord04, $docEntete->DO_Statut, $docEntete->latitude
             , $docEntete->longitude, $docEntete->DE_No, $docEntete->DO_Tarif, $docEntete->N_CatCompta
             , $docEntete->DO_Souche, $docEntete->CA_No, $docEntete->CO_No, $docEntete->DO_Ref,1);

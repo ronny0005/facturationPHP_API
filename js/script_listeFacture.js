@@ -9,6 +9,43 @@ jQuery(function($){
     }
 
 
+    function displayListeFacture(){
+        $.ajax({
+            url: "indexServeur.php?page=displayListeFacture",
+            method: 'GET',
+            dataType: 'html',
+            data : "typeFac="+$("#typedocument").val()+"&client="+$("#CT_Num").val()+"&depot="+$("#depot").val()+"&datedeb="+$("#datedebut").val()+"&datefin="+$("#datefin").val()+"&protNo="+$("#PROT_No").val()+"&type="+$("#type").val(),
+            beforeSend : function () {
+                // before send, show the loading gif
+                $("#tableListeFacture").html("<div style='margin: 0 auto;' class='loader'></div>")
+            },
+            success: function (data) {
+                $("#tableListeFacture").hide().html(data).fadeIn("slow")
+            }
+        });
+    }
+
+    displayListeFacture()
+
+    $("#DOPiece").keyup(function(){
+        if($(this).val().length > 3) {
+            $.ajax({
+                url: "indexServeur.php?page=findDocByPiece&value=" + $(this).val()+"&type_fac="+type+"&PROT_No="+$("#PROT_No").val(),
+                method: 'GET',
+                dataType: 'html',
+                async: false,
+                beforeSend : function () {
+                    // before send, show the loading gif
+                    $("#tableListeFacture > tbody").html("<div style='margin: 0 auto;' class='loader'></div>")
+                }
+                ,
+                success: function (data) {
+                    $("#tableListeFacture > tbody").html(data)
+                }
+            });
+        }
+    })
+
     $("#datefin").datepicker({dateFormat: "ddmmy", altFormat: "ddmmy"});
     $("#datedebut").datepicker({dateFormat: "ddmmy", altFormat: "ddmmy"});
 

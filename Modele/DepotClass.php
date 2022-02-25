@@ -165,4 +165,8 @@ class DepotClass Extends Objet{
         }
         return $rows;
     }
+
+    public function listEmpl($listId,$protNo){
+        $this->getApiJson("/listEmpl&listId={$listId}&protNo={$protNo}");
+    }
 }

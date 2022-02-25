@@ -63,26 +63,26 @@ jQuery(function($){
     $("a").each(function() {
         var href =$(this).attr("href");
         if(href!=undefined)
-        if(href.indexOf("$$")!=-1)
-        {
-            var source= href.substr(0,href.indexOf("?"));
-            source = source+"?module="+$_GET("module")+"&action="+$_GET("action")+"&";
-            var last = href.substr(href.indexOf("?")+1,href.length);
-            $(this).attr("href",source.concat(last));
-            var img = $(this).find("img");
-            if(img.attr("alt") == "Non trié"  || img.attr("alt") == "Unsorted"){
-                img.remove()
-                $(this).append("<span class='fa fa-arrows-v'/>")
+            if(href.indexOf("$$")!=-1)
+            {
+                var source= href.substr(0,href.indexOf("?"));
+                source = source+"?module="+$_GET("module")+"&action="+$_GET("action")+"&";
+                var last = href.substr(href.indexOf("?")+1,href.length);
+                $(this).attr("href",source.concat(last));
+                var img = $(this).find("img");
+                if(img.attr("alt") == "Non trié"  || img.attr("alt") == "Unsorted"){
+                    img.remove()
+                    $(this).append("<span class='fa fa-arrows-v'/>")
+                }
+                if(img.attr("alt") == "Trié par ordre croissant" || img.attr("alt") == "Sorted Ascending"){
+                    img.remove()
+                    $(this).append("<span class='fa fa-caret-up'/>")
+                }
+                if(img.attr("alt") == "Trié par ordre décroissant"  || img.attr("alt") == "Sorted Descending"){
+                    img.remove()
+                    $(this).append("<span class='fa fa-caret-down'/>")
+                }
             }
-            if(img.attr("alt") == "Trié par ordre croissant" || img.attr("alt") == "Sorted Ascending"){
-                img.remove()
-                $(this).append("<span class='fa fa-caret-up'/>")
-            }
-            if(img.attr("alt") == "Trié par ordre décroissant"  || img.attr("alt") == "Sorted Descending"){
-                img.remove()
-                $(this).append("<span class='fa fa-caret-down'/>")
-            }
-        }
     })
 
     $("#ComptegDebut").select2({
@@ -92,6 +92,31 @@ jQuery(function($){
         ,placeholder: "Tout les comptes"
         ,ajax: {
             url: "indexServeur.php?page=getComptegByCGNum",
+            dataType: 'json',
+            delay: 250,
+            data: function (data) {
+                return {
+                    searchTerm: data.term // search term
+                };
+            },
+            processResults: function (response) {
+                return {
+                    results: response
+                };
+            },
+            cache: true
+        }
+    }).on("select2:select", function (e) {
+
+    });
+
+    $("#Emplacement").select2({
+        theme: "bootstrap"
+        , allowClear: true
+        , dropdownAutoWidth: true
+        ,placeholder: "Tout les emplacements"
+        ,ajax: {
+            url: "indexServeur.php?page=getEmplacement&protNo="+$("#PROT_No").val(),
             dataType: 'json',
             delay: 250,
             data: function (data) {
@@ -218,6 +243,56 @@ jQuery(function($){
             ,placeholder: "Tout"
             ,ajax: {
                 url: "indexServeur.php?page=getTiersByNumIntitule&typeTiers="+typeTiers,
+                dataType: "json",
+                delay: 250,
+                data: function (data) {
+                    return {
+                        searchTerm: data.term // search term
+                    };
+                },
+                processResults: function (response) {
+                    return {
+                        results: response
+                    };
+                },
+                cache: true
+            }
+        }).on("select2:select", function (e) {
+
+        });
+
+        $("#FournisseurDebut").select2({
+            theme: "bootstrap"
+            ,allowClear: true
+            ,dropdownAutoWidth: true
+            ,placeholder: "Tout"
+            ,ajax: {
+                url: 'indexServeur.php?page=getTiersByNumIntitule&typeTiers=1',
+                dataType: 'json',
+                delay: 250,
+                data: function (data) {
+                    return {
+                        searchTerm: data.term // search term
+                    };
+                },
+                processResults: function (response) {
+                    return {
+                        results: response
+                    };
+                },
+                cache: true
+            }
+        }).on("select2:select", function (e) {
+
+        });
+
+        $("#FournisseurFin").select2({
+            theme: "bootstrap"
+            ,allowClear: true
+            ,dropdownAutoWidth: true
+            ,placeholder: "Tout"
+            ,ajax: {
+                url: "indexServeur.php?page=getTiersByNumIntitule&typeTiers=1",
                 dataType: "json",
                 delay: 250,
                 data: function (data) {

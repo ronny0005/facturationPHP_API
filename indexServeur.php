@@ -22,6 +22,8 @@ include("modele/CompteaClass.php");
 include("modele/P_CommunicationClass.php");
 include("modele/LiaisonEnvoiMailUser.php");
 include("Modele/LiaisonEnvoiSMSUser.php");
+include("modele/DepotEmplClass.php");
+include("modele/DepotEpmlUserClass.php");
 include("Modele/ContatDClass.php");
 include("Modele/DocLigneClass.php");
 include("Modele/ComptetClass.php");
@@ -78,13 +80,15 @@ switch ($val) {
         envoiRequete($objet->getCollaborateur(),$objet);
         break;
     case "getPrixClientAch":
-        envoiRequete($objet->getPrixClientAch($_GET['AR_Ref'], $_GET['N_CatCompta'], $_GET['N_CatTarif'],$_GET["CT_Num"]),$objet);
+        $article = new ArticleClass($_GET["AR_Ref"]);
+        echo json_encode($article->getPrixClientAch($_GET['N_CatCompta'], $_GET['N_CatTarif'],$_GET["CT_Num"]));
         break;
     case "getPrixClientAchHT":
         envoiRequete($objet->getPrixClientAchHT($_GET['AR_Ref'], $_GET['N_CatCompta'], $_GET['N_CatTarif'], $_GET['Prix'],$_GET['remise']),$objet);
         break;
     case "getLibTaxePied":
-        envoiRequete($objet->getLibTaxePied($_GET['N_CatTarif'],$_GET['N_CatCompta']),$objet);
+        $article = new ArticleClass(0);
+        echo json_encode($article->getLibTaxePied($_GET['N_CatCompta'], $_GET['N_CatTarif']));
         break;
     case "getF_Artclient":
         envoiRequete($objet->getF_Artclient(),$objet);
@@ -120,11 +124,16 @@ switch ($val) {
         envoiRequete($objet->getF_TaxeCount(),$objet);
         break;
 
+    case "setListEmplacement":
+        $depotClass = new DepotClass(0,$objet->db);
+        echo json_encode($depotClass->listEmpl($_GET["listId"],$_GET["PROT_No"]));
+        break;
     case "getDateEcheance":
         echo $objet->getDateEcgetTiersheance($_GET["CT_Num"],$_GET["Date"]);
         break;
     case "getDateEcheanceSage":
-        echo $objet->getDateEcgetTiersheanceSage($_GET["CT_Num"],$_GET["Date"]);
+        $comptet = new ComptetClass($_GET["CT_Num"]);
+        echo json_encode($comptet->getDateEcgetTiersheanceSage($_GET["Date"]));
         break;
     case "getTiersByIntitule":
         $client = new ComptetClass(0);
@@ -641,7 +650,8 @@ switch ($val) {
         break;
 
     case "getPrixClient":
-        envoiRequete($objet->getPrixClient($_GET['AR_Ref'], $_GET['N_CatCompta'], $_GET['N_CatTarif']),$objet);
+        $article = new ArticleClass($_GET['AR_Ref']);
+        echo json_encode($article->getPrixClient($_GET['N_CatCompta'], $_GET['N_CatTarif']));
         break;
     case "insertDepotClient":
         envoiRequete($objet->insertDepotClient($_GET['DE_No'], $_GET['CodeClient']),$objet);
@@ -698,10 +708,12 @@ switch ($val) {
         envoiRequete($objet->stat_articleAchatByCANum("AR.AR_Ref,AR_Design", $_GET["datedeb"], $_GET["datefin"], $_GET["famille"], $_GET["article"], $_GET["N_Analytique"]),$objet);
         break;
     case "isStock":
-        envoiRequete($objet->isStock($_GET['DE_No'], $_GET['AR_Ref']),$objet);
+        $article = new ArticleClass($_GET['AR_Ref']);
+        echo json_encode($article->isStock($_GET['DE_No']));
         break;
     case "isStockDENo":
-        envoiRequete($objet->isStockDENo($_GET['DE_No'], $_GET['AR_Ref'],str_replace(' ','',str_replace(',','.',$_GET["DL_Qte"]))),$objet);
+        $article = new ArticleClass($_GET['AR_Ref']);
+        echo json_encode($article->isStockDENo($_GET['DE_No'],str_replace(' ','',str_replace(',','.',$_GET["DL_Qte"]))));
         break;
     case "verifSupprAjout":
         $docligne = new DocLigneClass($_GET["cbMarq"]);
@@ -1060,45 +1072,6 @@ switch ($val) {
         envoiRequete($objet->getConditionnementMax(),$objet);
         break;
 
-
-    case "getFactureByDENo":
-        $docEntete = new DocEnteteClass(0);
-        $listFacture = $docEntete->getListeFacture($_GET['DE_No'],$_GET['provenance'],$objet->getDate($_GET['datedeb']) ,$objet->getDate($_GET['datefin']),$_GET['client'],0,6);
-        echo json_encode($listFacture);
-        break;
-    case "getTicketByDENo":
-        envoiRequete($objet->getTicketByDENo($_GET['DE_No'],$_GET['provenance'], $_GET['datedeb'], $_GET['datefin'], $_GET['client']),$objet);
-        break;
-    case "getFactureAchatByDENo":
-        $docEntete = new DocEnteteClass(0);
-        $listFacture = $docEntete->getListeFacture($_GET['DE_No'],0,$objet->getDate($_GET['datedeb']) ,$objet->getDate($_GET['datefin']),$_GET['client'],1,16);
-        echo json_encode($listFacture);
-        break;
-    case "getBonLivraisonByDENo":
-        $docEntete = new DocEnteteClass(0);
-        $listFacture = $docEntete->getListeFacture($_GET['DE_No'],0,$objet->getDate($_GET['datedeb']) ,$objet->getDate($_GET['datefin']),$_GET['client'],0,3);
-        echo json_encode($listFacture);
-        break;
-    case "getFactureByDENoDevis":
-        $docEntete = new DocEnteteClass(0);
-        $listFacture = $docEntete->getListeFacture($_GET['DE_No'],0,$objet->getDate($_GET['datedeb']) ,$objet->getDate($_GET['datefin']),$_GET['client'],0,0);
-        echo json_encode($listFacture);
-        break;
-    case "getFactureByTransfert":
-        $docEntete = new DocEnteteClass(0);
-        $listFacture = $docEntete->listeTransfert($_GET['DE_No'], $objet->getDate($_GET['datedeb']), $objet->getDate($_GET['datefin']));
-        echo json_encode($listFacture);
-        break;
-    case "getFactureByEntree":
-        $docEntete = new DocEnteteClass(0);
-        $listFacture = $docEntete->listeEntree($_GET['DE_No'], $objet->getDate($_GET['datedeb']), $objet->getDate($_GET['datefin']));
-        echo json_encode($listFacture);
-        break;
-    case "getFactureByDENoSorite":
-        $docEntete = new DocEnteteClass(0);
-        $listFacture = $docEntete->listeSortie($_GET['DE_No'], $objet->getDate($_GET['datedeb']), $objet->getDate($_GET['datefin']));
-        echo json_encode($listFacture);
-        break;
     case "getFactureCO":
         envoiRequete($objet->getFactureCO($_GET['CO_No'], $_GET['CT_Num']),$objet);
         break;
@@ -1204,6 +1177,118 @@ switch ($val) {
             $term=$_GET["searchTerm"];
         echo json_encode($compteg->allSearch($term,10));
         break;
+    case "getEmplacement":
+        $DepotEmplClass = new DepotEmplClass(0,$objet->db);
+        $term="";
+        if(isset($_GET["term"]))
+            $term=$_GET["term"];
+        if(isset($_GET["searchTerm"]))
+            $term=$_GET["searchTerm"];
+        $protectionClass = new ProtectionClass("","",$objet->db);
+        $protectionClass->connexionProctectionByProtNo($_GET["protNo"]);
+        if($protectionClass->PROT_Right == 1)
+            echo json_encode($DepotEmplClass->allSearch($term,10));
+        else
+            echo json_encode($DepotEmplClass->allSearchUser($term,$_GET["protNo"],10));
+    break;
+
+    case "findDocByPiece":
+        $docEntete = new DocEnteteClass(0);
+        $protection = new ProtectionClass("","");
+        $protection->connexionProctectionByProtNo($_GET["PROT_No"]);
+        $docEntete->setTypeFac($_GET["type_fac"]);
+        $listFacture = $docEntete->listeFacture(0,"","",$_GET["PROT_No"],"",$_GET["value"]);
+
+        $admin=0;
+
+        if($protection->PROT_Administrator==1 || $protection->PROT_Right==1)
+            $admin=1;
+
+        $typeListe= "documentVente";
+        if($docEntete->DO_Domaine==4 || $docEntete->DO_Domaine == 2 || $docEntete->type_fac =="Transfert_valid_confirmation")
+            $typeListe = "documentStock";
+        if($docEntete->DO_Domaine == 1)
+            $typeListe = "documentAchat";
+        $protected = $protection->protectedType($docEntete->type_fac);
+
+        $protectedSuppression = $protection->SupprType($typeListe);
+        $protectedNouveau = $protection->NouveauType($docEntete->type_fac);
+
+        foreach ($listFacture as $row){
+            $message="";
+            $avance="";
+            $total = round($row->ttc);
+            if($docEntete->type_fac=="Ticket" || $docEntete->DO_Domaine ==1 || $docEntete->DO_Domaine == 0){
+                $avance = round($row->avance);
+                if($avance==null) $avance = 0;
+                $message =$row->statut;
+            }
+            $date = new DateTime($row->DO_Date);
+            ?>
+            <tr data-toggle="tooltip" data-placement="top" title="<?= $row->PROT_User ?>"
+            class='facture' id='article_<?= $row->DO_Piece ?>'>
+            <td id='entete'><a href='<?= $docEntete->lien($row->cbMarq) ?>'><?= $row->DO_Piece ?></a></td>
+            <td id="DO_Ref"><?= $row->DO_Ref ?></td>
+            <td class="d-none"><span class="d-none" id='cbMarq'><?= $row->cbMarq ?></span>
+                <span style='display:none' id='DL_PieceBL'><?= $row->DL_PieceBL ?></span>
+                <span style='display:none' id='cbCreateur'><?= $row->PROT_User ?></span>
+            </td>
+            <td id="DO_Date"><?= $date->format('d-m-Y') ?></td>
+            <?php
+            if($docEntete->DO_Domaine==0 || $docEntete->DO_Domaine==1)
+                echo "<td>{$row->CT_Intitule}</td>";
+            if($docEntete->DO_Domaine==0 || $docEntete->DO_Domaine==1 || $docEntete->type_fac=="Entree"|| $docEntete->type_fac=="Sortie")
+                echo "<td>{$row->DE_Intitule}</td>";
+            if($docEntete->type_fac=="Transfert_detail" || $docEntete->type_fac=="Transfert" || $docEntete->type_fac=="Transfert_confirmation" || $docEntete->type_fac=="Transfert_valid_confirmation")
+                echo"<th>{$row->DE_Intitule}</th>
+                                            <th>{$row->DE_Intitule_dest}</th>";
+            ?>
+            <td><?= $objet->formatChiffre($total) ?></td>
+            <?php
+            if($docEntete->type_fac=="Ticket" || ($docEntete->DO_Domaine==0 && ($docEntete->DO_Type!=0 && $docEntete->DO_Type!=1)) ||  $docEntete->DO_Domaine==1)
+                echo "<td>{$objet->formatChiffre($avance)}</td>
+                                        <td id='statut'>{$message}</td>";
+            if(($docEntete->type_fac=="BonLivraison" || $docEntete->type_fac=="Devis") && ($admin==1 || ($protected))) echo '<td><input type="button" class="btn btn-primary" value="Convertir en facture" id="transform"/></td>';
+            if(($protectedSuppression)){
+                echo "<td id='supprFacture'>";
+                if($protectedSuppression) //if(($type=="Ticket" || $type=="BonLivraison" || $type=="Vente" || $type=="AchatRetour" || $type=="AchatRetourC" || $type=="AchatRetourT" || $type=="AchatT" || $type=="VenteT" || $type=="VenteC" || $type=="Achat" || $type=="AchatC" || $type=="Entree"|| $type=="Sortie"|| $type=="Transfert"|| $type=="Transfert_valid_confirmation" || $type=="Transfert_confirmation" || $type=="Transfert_detail") && $avance==0)
+                    echo "<i class='fa fa-trash-o'></i></td>";
+            }
+            echo "<td>";
+            if($docEntete->type_fac!="Transfert_valid_confirmation" && $row->DO_Imprim ==1)
+                echo "<i class='fa fa-print'></i>";
+            echo "</td>";
+            if($protection->PROT_CBCREATEUR!=2)
+                echo "<td>{$row->PROT_User}</td>";
+            echo "</tr>";
+        }
+        break;
+
+    case "displayListeFacture":
+        $protectionClass = new ProtectionClass("","");
+        $protectionClass->connexionProctectionByProtNo($_GET["protNo"]);
+        $docEntete = new DocEnteteClass(0);
+        $docEntete->setTypeFac(($_GET["type"] !="undefined") ? $_GET["type"] : $_GET["typeFac"]);
+        $admin=0;
+        if($protectionClass->PROT_Administrator==1 || $protectionClass->PROT_Right==1)
+            $admin=1;
+
+        $typeListe= "documentVente";
+        if($docEntete->DO_Domaine==4 || $docEntete->DO_Domaine == 2 || $docEntete->type_fac=="Transfert_valid_confirmation")
+            $typeListe = "documentStock";
+        if($docEntete->DO_Domaine == 1)
+            $typeListe = "documentAchat";
+
+        $protected = $protectionClass->protectedType($docEntete->type_fac);
+        $protectedSuppression = $protectionClass->SupprType($typeListe);
+        $protectedNouveau = $protectionClass->NouveauType($docEntete->type_fac);
+        $docEntete = $docEntete->displayListeFacture($_GET["depot"],$_GET["datedeb"],$_GET["datefin"],$_GET["client"],$admin,$protected,$protectedSuppression,$protectionClass->PROT_CBCREATEUR,$_GET["protNo"]);
+        break;
+
+    case "setListEmplacement":
+        $depotClass = new DepotClass(0);
+        echo json_encode($depotClass->listEmpl($_GET["listId"],$_GET["PROT_No"]));
+        break;
     case "headerSaisiJournalHtml":
         $journal = new JournalClass(0);
         foreach ($journal->headerSaisiJournal($_GET["exercice"],$_GET["JO_Num"]) as $value){
@@ -1300,188 +1385,33 @@ switch ($val) {
         $reglement->remboursementRglt($_GET["RG_Date"],$_GET["RG_Montant"]);
         break;
     case "addReglement":
+        $jo_num = "";
+        if(isset($_GET["JO_Num"]))
+            $jo_num = $_GET["JO_Num"];
+        $rg_no_lier = 0;
+        if(isset($_GET["RG_NoLier"]))
+            $rg_no_lier = $_GET["RG_NoLier"];
+        $cg_num = "";
+        $ct_num=$_GET['CT_Num'];
+        $ca_no = $_GET['CA_No'];
+        $boncaisse=0;
+        $banque = 0;
+        if(isset($_GET["boncaisse"]) && $_GET["boncaisse"]==1) {
+            $boncaisse = $_GET["boncaisse"];
+        }
+        $libelle = $_GET['libelle'];
+        $caissier = $_GET['caissier'];
+        $date = $_GET['date'];
+        $reglement = new ReglementClass(0);
 
-        $admin = 0;
-        $limitmoinsDate = "";
-        $limitplusDate = "";
-
-        $mobile = "";
-        if(isset($_GET["mobile"]))
-            $mobile = $_GET["mobile"];
-        else
-            if(!isset($_SESSION))
-                session_start();
-        if(isset($_SESSION)){
-            $protectionClass = new ProtectionClass($_SESSION["login"],$_SESSION["mdp"],$objet->db);
-            if($protectionClass->PROT_Right!=1) {
-                $limitmoinsDate = date('d/m/Y', strtotime(date('Y-m-d'). " - ".$protectionClass->getDelai()." day"));
-                $limitplusDate = date('d/m/Y', strtotime(date('Y-m-d'). " + ".$protectionClass->getDelai()." day"));
-                $str = strtotime(date("M d Y ")) - (strtotime($_GET["date"]));
-                $nbDay = abs(floor($str/3600/24));
-                if($nbDay>$protectionClass->getDelai())
-                    $admin =1;
-            }
+        if($_GET["mode_reglementRec"]=="05"){
+            $libelle = "Verst distant $libelle";
         }
 
-        if($admin==0) {
-            $cg_num = "";
-            $ct_intitule = "";
-            $rg_no_lier = 0;
-            $jo_num = "";
-            if(isset($_GET["JO_Num"]))
-                $jo_num = $_GET["JO_Num"];
-            if(isset($_GET["RG_NoLier"]))
-                $rg_no_lier = $_GET["RG_NoLier"];
-            $ct_num=$_GET['CT_Num'];
-            $ca_no = $_GET['CA_No'];
-            $boncaisse=0;
-            $banque = 0;
-            $co_no=0;
-            if(isset($_GET["boncaisse"]) && $_GET["boncaisse"]==1) {
-                $boncaisse = $_GET["boncaisse"];
-                $co_no = $ct_num;
-                $ct_num="";
-                $banque = 3;
-            }
-            $comptet = new ComptetClass($ct_num,"all",$objet->db);
-            if($comptet->CT_Num!=""){
-                $cg_num = $comptet->CG_NumPrinc;
-                $ct_intitule = $comptet->CT_Intitule;
-            }else{
-                $banque = 3;
-                $ct_num="";
-            }
-            $email="";
-            $telephone="";
-            $collab_intitule="";
-            $caissier_intitule="";
-            $libelle = $_GET['libelle'];
-            $caissier = $_GET['caissier'];
-            if(isset($_GET["boncaisse"]) && $_GET["boncaisse"]==1)
-                $caissier = $co_no;
-            $rg_typereg=0;
-            if($_GET["mode_reglementRec"]=="05"){
-                $banque = 2;
-                $libelle = "Verst distant".$libelle;
-            }
-            if($_GET["mode_reglementRec"]=="10"){
-                $rg_typereg = 5;
-            }
-            $caisseClass = new CaisseClass($ca_no,$objet->db);
-            if($caisseClass->CA_No!=""){
-                $ca_intitule = $caisseClass->CA_Intitule;
-            }
-
-            $collaborateur = new CollaborateurClass($caissier,$objet->db);
-            if($collaborateur->CO_No!=""){
-                $collaborateur_caissier = $collaborateur->CO_Nom;
-                $email=$collaborateur ->CO_EMail;
-                $collab_intitule = $collaborateur ->CO_Nom;
-                $telephone=$collaborateur ->CO_Telephone;
-            }
-
-            if($rg_no_lier==0) {
-                $message = "VERSEMENT DISTANT D' UN MONTANT DE {$objet->formatChiffre($_GET['montant'])}"
-                    . " AFFECTE AU COLLABORATEUR $collaborateur_caissier POUR LE CLIENT $ct_intitule A DATE DU {$_GET['date']}";
-                if (($email != "" || $email != null) && $_GET['mode_reglementRec'] == "05") {
-                    $mail = new Mail();
-                    $mail->sendMail($message."<br/><br/><br/> {$this->db->db}", $email,  "Versement distant");
-                }
-            }
-
-            $mobile = "";
-            if(isset($_GET["mobile"]))
-                $mobile = $_GET["mobile"];
-            $creglement = new ReglementClass(0,$objet->db);
-            $creglement->initVariables();
-            $creglement->RG_Date = $_GET['date'];
-            $creglement->RG_DateEchCont = $_GET['date'];
-            $creglement->JO_Num = $jo_num;
-            $creglement->CG_Num = $cg_num;
-            $creglement->CA_No = $ca_no;
-            $creglement->CO_NoCaissier = $caissier;
-            $creglement->RG_Libelle = $libelle;
-            $creglement->RG_Montant = $_GET['montant'];
-            $creglement->RG_Impute = $_GET['impute'];
-            $creglement->RG_Type = $_GET['RG_Type'];
-            $creglement->N_Reglement = $_GET['mode_reglementRec'];
-            $creglement->RG_TypeReg=$rg_typereg;
-            $creglement->RG_Ticket=0;
-            $creglement->RG_Banque=$banque;
-            $creglement->CT_NumPayeur = $ct_num;
-            $creglement->setuserName("",$mobile);
-            try{
-                $objet->db->connexion_bdd->beginTransaction();
-                $RG_NoInsert = $creglement->insertF_Reglement();
-
-                if(($telephone!="" || $telephone!=null) && $_GET['mode_reglementRec']=="05"){
-                    $contactD = new ContatDClass(1,$objet->db);
-                    $contactD->sendSms($telephone,$message);
-                }
-
-                if($rg_no_lier==0) {
-                    $message = 'VERSEMENT DISTANT D\' UN MONTANT DE ' . $_GET['montant'] . ' AFFECTE AU COLLABORATEUR ' . $collaborateur_caissier . ' POUR LE CLIENT ' . $ct_intitule . ' A DATE DU ' . date("d/m/Y", strtotime($_GET['date']));
-                    $result = $objet->db->requete($objet->getCollaborateurEnvoiMail("Versement distant"));
-                    $rows = $result->fetchAll(PDO::FETCH_OBJ);
-                    if ($rows != null) {
-                        foreach ($rows as $row) {
-                            $email = $row->CO_EMail;
-                            //$collab_intitule = $row->CO_Nom;
-                            if (($email != "" || $email != null) && $_GET['mode_reglementRec'] == "05") {
-                                $mail = new Mail();
-                                $mail->sendMail($message."<br/><br/><br/> {$this->db->db}", $email,  "Versement distant");
-                            }
-                        }
-                    }
-
-                    $result = $objet->db->requete($objet->getCollaborateurEnvoiSMS("Versement distant"));
-                    $rows = $result->fetchAll(PDO::FETCH_OBJ);
-                    if ($rows != null) {
-                        foreach ($rows as $row) {
-                            //$collab_intitule = $row->CO_Nom;
-                            $telephone = $row->CO_Telephone;
-                            if (($telephone != "" || $telephone != null) && $_GET['mode_reglementRec'] == "05") {
-                                $contactD = new ContatDClass(1,$objet->db);
-                                $contactD->sendSms($telephone,$message);
-                            }
-                        }
-                    }
-                }
-
-                if($rg_no_lier!=0) {
-                    $RG_No = 0;
-                    $result = $objet->db->requete($objet->lastLigneCReglement());
-                    $rows = $result->fetchAll(PDO::FETCH_OBJ);
-                    if ($rows != null) {
-                        $RG_No = $rows[0]->RG_No;
-                    }
-
-                    $objet->db->requete($objet->insertZ_RGLT_BONDECAISSE($RG_No, $rg_no_lier));
-
-                    $CA_No = 0;
-                    $CO_NoCaissier = 0;
-
-                    $reglementClass = new ReglementClass($RG_No,$objet->db);
-                    $reglementClassLier = new ReglementClass($rg_no_lier,$objet->db);
-                    if($reglementClassLier->cbMarq!="") {
-                        $reglementClass->maj("CA_No", $reglementClassLier->CA_No);
-                        $reglementClass->maj("CO_NoCaissier", $reglementClassLier->CO_NoCaissier);
-                    }
-                    $reglementClass->maj("RG_Impute",1);
-                    $reglementClass->majcbModification();
-                }
-                $objet->incrementeCOLREGLEMENT();
-                $objet->db->connexion_bdd->commit();
-            }
-            catch(Exception $e){
-                $objet->db->connexion_bdd->rollBack();
-                return json_encode($e);
-            }
-
-            echo json_encode($reglementClass);
-        }
-        else
-            echo "la date doit être comprise entre $limitmoinsDate et $limitplusDate.";
+        $reglement->addReglement($_GET['PROT_No'],""/*$_GET["mobile"]*/,$jo_num/*$_GET["JO_Num"]*/,$rg_no_lier/*$_GET["RG_NoLier"]*/,$ct_num /*$_GET['CT_Num']*/
+            ,$ca_no/*$_GET["CA_No"]*/,$boncaisse /*$_GET["boncaisse"]*/,$libelle /*$_GET['libelle']*/,$caissier /*$_GET['caissier']*/
+            ,$date/*$_GET['date']*/,$_GET["mode_reglementRec"] /*$_GET["mode_reglementRec"]*/
+            ,$_GET['montant'] /*$_GET['montant']*/,$_GET['impute']/*$_GET['impute']*/,$_GET['RG_Type'] /*$_GET['RG_Type']*/,false,"");
         break;
 
     case "ajoutReglementLigne" :
@@ -1697,7 +1627,8 @@ switch ($val) {
     case "clients":
         switch ($_GET["op"]) {
             case "tiers":
-                envoiRequete($objet->allTiers(),$objet);
+                $comptet = new ComptetClass(0);
+                echo json_encode($comptet->allTiersMax());
                 break;
             case "tiersMax":
                 $comptet = new ComptetClass(0);
@@ -1714,8 +1645,6 @@ switch ($val) {
             default:
                 $comptet = new ComptetClass($_GET["op"]);
                 echo json_encode($comptet->allClients());
-
-                envoiRequete($objet->clientsByCT_Num($_GET["op"]), $objet);
                 break;
         }
         break;

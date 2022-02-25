@@ -138,6 +138,12 @@
                 ?>
             </select>
         </div>
+        <div class="col-6 col-lg-3" >
+            <label>Liste emplacement</label>
+            <select class="form-control" id="emplacement" name="emplacement[]" multiple>
+            </select>
+            <input type="button" value="Effacer" id="clearEmpl" class="btn btn-primary mt-3 w-100" />
+        </div>
         </div>
         <div class="row mt-3">
             <div class="col-12 col-lg-2" >

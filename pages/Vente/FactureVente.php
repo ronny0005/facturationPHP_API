@@ -75,12 +75,22 @@ $isSecurite = $protection->IssecuriteAdmin(0);
         $avance=$docEntete->avance;
         $reste_a_payer=$docEntete->resteAPayer;
         $isSecurite = $protection->IssecuriteAdmin($docEntete->DE_No);
-        if(sizeof($docEntete->listeLigneFacture())>1)
+        if(sizeof($docEntete->listeLigneFacture($protection->Prot_No))>1)
             $isLigne=1;
     }
     $type=$_GET["type"];
     $isModif = $docEntete->isModif();
     $isVisu = $docEntete->isVisu();
+    if($type=="Livraison"){
+        $isModif = 0;
+        $isVisu = 1;
+    }
+    if($protection->ProtectAdmin==1)
+        $admin=0;
+    if($type=="Livraison"){
+        $isModif = 0;
+        $isVisu = 1;
+    }
     if($protection->ProtectAdmin==1)
         $admin=0;
     $protected = $protection->PROT_Right;

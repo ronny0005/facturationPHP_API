@@ -213,6 +213,8 @@ $classQte = "col-lg-2";
                 echo "display:none";?>
                     ">PU HT</th>
             <th><?php echo $libQte; ?></th>
+            <th style="<?php
+            if($type!="Livraison") echo "display:none";?>">Qté livrée</th>
             <th>Remise</th>
             <th style="
             <?php
@@ -229,9 +231,12 @@ $classQte = "col-lg-2";
             <th></th>
 
 <?php
+if (!$isVisu || ($docEntete->DO_Modif==0 && $type == "Livraison"))
+    echo "<th></th>";
+if ($type == "Livraison")
+    echo "<th></th>";
 if (!$isVisu)
-    echo "<th></th>
-            <th></th>";
+    echo "<th></th>";
 
         if($protection->PROT_CBCREATEUR!=2)
                 echo "<th>Createur</th>";
@@ -241,7 +246,7 @@ if (!$isVisu)
     <tbody id="article_body">
       <?php
       if(isset($_GET["cbMarq"])) {
-          $rows = $docEntete->listeLigneFacture();
+          $rows = $docEntete->listeLigneFacture($protection->Prot_No);
           $i = 0;
           $classe = "";
           $fournisseur = 0;
@@ -284,11 +289,9 @@ if (!$isVisu)
                         echo "display:none";?>">
                         <?= $objet->formatChiffre(round($docligne->DL_PrixUnitaire, 2)); ?></td>
                     <td id='DL_Qte'><?= $objet->formatChiffre($qteLigne); ?></td>
-                  <?php
-                        if($objet->db->flagDataOr!=1) echo "<td id='DL_Remise'>$remiseLigne</td>";
-                    ?>
-                      <td id='PUTTC'
-                          style="<?php
+                      <td style="<?php if($type!="Livraison") echo "display:none";?>" id='Qte_LivreeBL'><?= $objet->formatChiffre($qteLivreeLigne); ?></td>
+                      <td id='DL_Remise'><?= $remiseLigne ?></td>
+                      <td id='PUTTC' style="<?php
                           if((($type=="Achat" || $type=="AchatC" || $type=="AchatT" || $type=="AchatPreparationCommande"|| $type=="PreparationCommande")&& $flagPxAchat!=0))
                               echo "display:none";?>"><?= $objet->formatChiffre($puttcLigne); ?></td>
                       <td id='DL_MontantHT' style="<?php
@@ -310,10 +313,11 @@ if (!$isVisu)
                   <?php
                   if (!isset($_GET["visu"]) && ($_GET["type"] == "PreparationCommande" || $_GET["type"] == "AchatPreparationCommande"))
                       echo "<td id='lignea_{$docligne->cbMarq}'><i class='fa fa-sticky-note fa-fw'></i></td>";
-                  if (!$isVisu)
+                  if (!$isVisu || ($docEntete->DO_Modif==0 && $type == "Livraison"))
                       echo "<td id='modif_{$docligne->cbMarq}'>
                                 <i class='fa fa-pencil fa-fw'></i>
-                            </td>
+                            </td>";
+                  if (!$isVisu) echo"
                             <td id='suppr_{$docligne->cbMarq}'><i class='fa fa-trash-o'></i></a></td>";
                   if($protection->PROT_CBCREATEUR!=2)
                       echo "<td>{$docligne->getcbCreateurName()}</td>";

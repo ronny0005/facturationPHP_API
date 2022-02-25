@@ -18,8 +18,8 @@ if(isset($_POST["CA_NoSource"])){
     $caisseSource = new CaisseClass($_POST["CA_NoSource"]);
     $caisseDest = new CaisseClass($_POST["CA_NoDest"]);
     $reglement = new ReglementClass(0);
-    $reglement->addReglement("",$caisseSource->JO_Num,null,null,$caisseSource->CA_No,0,$_POST["libelle"],$caisseSource->CO_NoCaissier,$_POST["date"],4,$_POST["montant"],0,2);
-    $reglement->addReglement("",$caisseDest->JO_Num,null,null,$caisseDest->CA_No,0,$_POST["libelle"],$caisseDest->CO_NoCaissier,$_POST["date"],5,$_POST["montant"],0,2);
+    $reglement->addReglement($protection->Prot_No, "",$caisseSource->JO_Num,null,null,$caisseSource->CA_No,0,$_POST["libelle"],$caisseSource->CO_NoCaissier,$_POST["date"],4,$_POST["montant"],0,2);
+    $reglement->addReglement($protection->Prot_No, "",$caisseDest->JO_Num,null,null,$caisseDest->CA_No,0,$_POST["libelle"],$caisseDest->CO_NoCaissier,$_POST["date"],5,$_POST["montant"],0,2);
 }
 ?>
     <div id="milieu">    

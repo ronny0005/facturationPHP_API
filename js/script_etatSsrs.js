@@ -68,6 +68,55 @@ jQuery(function($){
                 }
             })
     })
+    $("#FournisseurDebut").autocomplete({
+        source: "indexServeur.php?page=getTiersByNumIntitule&type=1",
+        autoFocus: true,
+        select: function (event, ui) {
+            $("#FournisseurDebutParam").val(ui.item.CT_Num)
+            $("#FournisseurDebut").val(ui.item.CT_Intitule)
+        }
+    })
+
+    $("#FournisseurDebut").focusout(function(){
+        if($("#FournisseurDebut").val()!="")
+            $.ajax({
+                url: "indexServeur.php?page=getTiersByNumIntitule&type=1&term="+$("#FournisseurDebutParam").val(),
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if(data!="")
+                        $("#FournisseurDebut").val(data[0].CT_Intitule)
+                    else
+                        $("#FournisseurDebut").val("")
+                }
+            })
+    })
+
+    $("#FournisseurFin").autocomplete({
+        source: "indexServeur.php?page=getTiersByNumIntitule&type=1",
+        autoFocus: true,
+        select: function (event, ui) {
+            $("#FournisseurFinParam").val(ui.item.CT_Num)
+            $("#FournisseurFin").val(ui.item.CT_Intitule)
+        }
+    })
+
+    $("#FournisseurFin").focusout(function(){
+        if($("#FournisseurFin").val()!="")
+            $.ajax({
+                url: "indexServeur.php?page=getTiersByNumIntitule&type=1&term="+$("#FournisseurFinParam").val(),
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if(data!="")
+                        $("#FournisseurFin").val(data[0].CT_Intitule)
+                    else
+                        $("#FournisseurFin").val("")
+                }
+            })
+    })
+
+
 
     $("#ClientDebut").autocomplete({
         source: "indexServeur.php?page=getTiersByNumIntitule&type=0",
@@ -77,34 +126,6 @@ jQuery(function($){
             $("#ClientDebut").val(ui.item.CT_Intitule)
         }
     })
-/*    $("#ClientDebut").select2({
-        theme: "bootstrap"
-        , allowClear: true
-        , dropdownAutoWidth: true
-        ,placeholder: 'Select an item'
-        ,ajax: {
-            url: '/autocompletePro.php',
-            dataType: 'json',
-            delay: 250,
-            data: function (data) {
-                return {
-                    searchTerm: data.term // search term
-                };
-            },
-            processResults: function (response) {
-                return {
-                    results: response
-                };
-            },
-            cache: true
-        }
-        }).on("select2:select", function (e) {
-        $("#filter").submit();
-    });
-
-    $(".select2-selection__clear").click(function(){
-        $("#filter").submit()
-    })*/
 
     $("#ClientDebut").focusout(function(){
         if($("#ClientDebut").val()!="")

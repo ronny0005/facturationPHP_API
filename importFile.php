@@ -22,6 +22,8 @@ include("modele/CompteaClass.php");
 include("modele/P_CommunicationClass.php");
 include("modele/LiaisonEnvoiMailUser.php");
 include("Modele/LiaisonEnvoiSMSUser.php");
+include("modele/DepotEmplClass.php");
+include("modele/DepotEpmlUserClass.php");
 include("Modele/ContatDClass.php");
 include("Modele/DocLigneClass.php");
 include("Modele/ComptetClass.php");
@@ -42,18 +44,16 @@ include("module/Caisse.php");
 include("module/Etat.php");
 include("module/Admin.php");
 include("module/PlanComptable.php");
-
 if(isset($_SESSION) && sizeof($_SESSION)==0) {
     header('Location: connexion');
     die();
 }
 $objet = new ObjetCollector();
 $protection = new ProtectionClass("","");
-if(isset($_SESSION["login"]))
-    $protection = new ProtectionClass($_SESSION["login"], $_SESSION["mdp"]);
+if(isset($_SESSION["id"]))
+    $protection->connexionProctectionByProtNo($_SESSION["id"]);
 
 if($protection->Prot_No=="") {
-
     header('Location: connexion');
     die();
 }

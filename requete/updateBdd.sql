@@ -100,6 +100,17 @@ CREATE TABLE [dbo].[Z_DEPOTUSER](
                                             )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+IF OBJECT_ID('[dbo].[Z_DEPOTEMPLUSER]', 'U') IS NULL
+CREATE TABLE [dbo].[Z_DEPOTEMPLUSER](
+                                        [Prot_No] [int] NOT NULL,
+                                        [DP_No] [int] NOT NULL,
+                                        CONSTRAINT [PK_DEPOTEMPLUSER] PRIMARY KEY CLUSTERED
+                                            (
+                                             [Prot_No] ASC,
+                                             [DP_No] ASC
+                                                )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90) ON [PRIMARY]
+) ON [PRIMARY]
+GO
 /****** Object:  Table [dbo].[Z_ECRITURECPIECE]    Script Date: 28/08/2018 20:12:48 ******/
 SET ANSI_NULLS ON
 GO
@@ -234,17 +245,27 @@ insert into Z_TypeEnvoiMail values('Modification de la facture');
 insert into Z_TypeEnvoiMail values('Prix modifié');
 insert into Z_TypeEnvoiMail values('Stock épuisé');
 insert into Z_TypeEnvoiMail values('Stock cumulé');
+
+IF COL_LENGTH('Z_LogInfo','USERGESCOM') IS NULL
 ALTER TABLE F_DOCLIGNE ADD [USERGESCOM] [varchar](40) NULL;
+IF COL_LENGTH('Z_LogInfo','NOMCLIENT') IS NULL
 ALTER TABLE F_DOCLIGNE ADD 	[NOMCLIENT] [varchar](60) NULL;
+IF COL_LENGTH('Z_LogInfo','DATEMODIF') IS NULL
 ALTER TABLE F_DOCLIGNE ADD [DATEMODIF] [smalldatetime] NULL;
+IF COL_LENGTH('Z_LogInfo','ORDONATEUR_REMISE') IS NULL
 ALTER TABLE F_DOCLIGNE ADD [ORDONATEUR_REMISE] [varchar](69) NULL;
+IF COL_LENGTH('Z_LogInfo','MACHINEPC') IS NULL
 ALTER TABLE F_DOCLIGNE ADD 	[MACHINEPC] [varchar](69) NULL;
+IF COL_LENGTH('Z_LogInfo','GROUPEUSER') IS NULL
 ALTER TABLE F_DOCLIGNE ADD	[GROUPEUSER] [varchar](10) NULL;
 
+IF COL_LENGTH('Z_LogInfo','longitude') IS NULL
 ALTER TABLE F_DOCENTETE ADD [longitude] [float] NULL;
+IF COL_LENGTH('Z_LogInfo','latitude') IS NULL
 ALTER TABLE F_DOCENTETE ADD 	[latitude] [float] NULL;
+IF COL_LENGTH('Z_LogInfo','VEHICULE') IS NULL
 ALTER TABLE F_DOCENTETE ADD 	[VEHICULE] [varchar](10) NULL;
-ALTER TABLE F_DOCENTETE ADD [CHAUFFEUR] [varchar](10) NULL;
+IF COL_LENGTH('Z_LogInfo','CHAUFFEUR') IS NULL
 ALTER TABLE F_DOCENTETE ADD [CHAUFFEUR] [varchar](10) NULL;
 GO
 
@@ -318,11 +339,56 @@ CREATE TABLE dbo.Z_ProtUser (
                                 ProtectAdmin TINYINT
 )
 
+IF OBJECT_ID('[dbo].[Z_DocligneLivree]', 'U') IS NULL
+CREATE TABLE [dbo].[Z_DocligneLivree](
+                                         [cbMarqLigne] [int] NOT NULL,
+                                         [AR_Ref] [varchar](70) NOT NULL,
+                                         [DL_QteBL] [numeric](24, 6) NOT NULL,
+                                         [DL_QteBLRestant] [numeric](24, 6) NOT NULL,
+                                         [USER_GESCOM] [varchar](70) NOT NULL,
+                                         [cbModification] [smalldatetime] NOT NULL,
+                                         [cbMarq] [int] IDENTITY(1,1) NOT NULL
+)
+
 INSERT INTO dbo.LIB_CMD VALUES(34095,'Clôture de caisse',1,1113,0)
 
+
+IF COL_LENGTH('Z_LogInfo','DateDocument') IS NULL
 ALTER TABLE Z_LogInfo ADD DateDocument DATE
 
 
 
+IF COL_LENGTH('F_DOCLIGNE','ORDONATEUR_REMISE') IS NULL
 ALTER TABLE F_DOCLIGNE ADD ORDONATEUR_REMISE VARCHAR(69)
+
+IF COL_LENGTH('F_DOCLIGNE','DL_SUPER_PRIX') IS NULL
+ALTER TABLE F_DOCLIGNE ADD DL_SUPER_PRIX NUMERIC(24,6) NULL
+
+IF COL_LENGTH('F_DOCLIGNE','DL_QTE_SUPER_PRIX') IS NULL
+ALTER TABLE F_DOCLIGNE ADD DL_QTE_SUPER_PRIX NUMERIC(24,6) NULL
+
+IF COL_LENGTH('F_DOCLIGNE','DL_COMM') IS NULL
+ALTER TABLE F_DOCLIGNE ADD DL_COMM VARCHAR(69)
+
+IF COL_LENGTH('F_DOCLIGNE','GROUPEUSER') IS NULL
 ALTER TABLE F_DOCLIGNE ADD GROUPEUSER VARCHAR(10)
+
+
+IF COL_LENGTH('F_DOCLIGNE','Qte_LivreeBL') IS NULL
+ALTER TABLE F_DOCLIGNE ADD Qte_LivreeBL NUMERIC(24,6) NULL
+IF COL_LENGTH('F_DOCLIGNE','Qte_RestantBL') IS NULL
+ALTER TABLE F_DOCLIGNE ADD Qte_RestantBL NUMERIC(24,6) NULL
+
+IF NOT EXISTS(SELECT R_CODE
+              FROM P_REGLEMENT WHERE R_CODE = '06' AND 	R_Intitule ='ORANGE_MONEY')
+    UPDATE	P_REGLEMENT
+    SET	R_Intitule ='ORANGE_MONEY'
+      ,R_CODE = '06'
+    WHERE	cbIndice=5
+
+IF NOT EXISTS(SELECT R_CODE
+              FROM P_REGLEMENT WHERE R_CODE = '07' AND 	R_Intitule ='MTN_MONEY')
+    UPDATE	P_REGLEMENT
+    SET	R_Intitule ='MTN_MONEY'
+      ,R_CODE = '07'
+    WHERE	cbIndice=6

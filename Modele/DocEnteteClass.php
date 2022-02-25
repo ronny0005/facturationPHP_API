@@ -135,7 +135,7 @@ class DocEnteteClass Extends Objet{
             $this->avance = $this->AvanceDoPiece();
             $this->ttc = $this->montantRegle();
             $this->resteAPayer = $this->ttc - $this->avance;
-            if (sizeof($this->listeLigneFacture()) == 0)
+            if (sizeof($this->listeLigneFacture(0)) == 0)
                 $this->statut = "crédit";
             else {
                 if (($this->DO_Domaine == 0 || $this->DO_Domaine == 1) && $this->dr_regle() == 1 && $this->resteAPayer == 0) {
@@ -586,11 +586,14 @@ class DocEnteteClass Extends Objet{
 
     public function setTypeFac($typefac){
         $this->type_fac = $typefac;
-        if($typefac=="Vente"){
+        if($typefac=="Vente" || $typefac=="Livraison"){
             $this->DO_Domaine = 0;
             $this->DO_Type = 6;
             $this->doccurent_type = 6;
-            $this->DO_Provenance=0;
+            if($typefac=="Livraison")
+                $this->DO_Provenance=-1;
+            else
+                $this->DO_Provenance=0;
         }
         if($typefac=="VenteT"){
             $this->DO_Domaine = 0;
@@ -912,8 +915,8 @@ class DocEnteteClass Extends Objet{
     }
 
 
-    public function listeLigneFacture(){
-        return $this->getApiJson("/listeLigneFacture&cbMarq={$this->cbMarq}");
+    public function listeLigneFacture($protNo){
+        return $this->getApiJson("/listeLigneFacture&cbMarq={$this->cbMarq}&protNo=$protNo");
     }
 
 
@@ -1069,7 +1072,7 @@ class DocEnteteClass Extends Objet{
             if($docTransform==null){
                 $data = $docEntete->ajoutEntete("", $type_res,
                     $date_ins, $date_ins, $this->CA_Num, $this->DO_Tiers, "",
-                    "", "", $this->DO_Coord02, $this->DO_Coord03, $this->DO_Coord04,
+                    "", "", $this->DO_Coord01, $this->DO_Coord02, $this->DO_Coord03, $this->DO_Coord04,
                     $this->DO_Statut, $latitude, $longitude, $this->DE_No, $this->DO_Tarif, $this->N_CatCompta,
                     $this->DO_Souche, $this->CA_No, $this->CO_No, $ref_ins);
                 $enteteCbMarq = $data["cbMarq"];
@@ -1140,7 +1143,7 @@ class DocEnteteClass Extends Objet{
             return "Document-Mvttrft-$type";
     }
 
-    public function getListeFacture($de_no, $datedeb, $datefin,$client,$protNo){
+    public function getListeFacture($de_no, $datedeb, $datefin,$client,$protNo,$doPiece){
         $DO_Type = $this->DO_Type;
         if($this->type_fac =="VenteT")
             $DO_Type = 67;
@@ -1148,7 +1151,9 @@ class DocEnteteClass Extends Objet{
             $DO_Type = 1617;
         if($this->type_fac =="RetourT")
             $DO_Type = 67;
-        return $this->getApiJson( "/getListeFacture&doProvenance={$this->DO_Provenance}&doType=$DO_Type&doDomaine={$this->DO_Domaine}&deNo=$de_no&dateDeb=$datedeb&dateFin=$datefin&client=$client&protNo=$protNo&doPiece=");
+        if($this->type_fac =="Livraison")
+            $DO_Type = -1;
+        return $this->getApiJson( "/getListeFacture&doProvenance={$this->DO_Provenance}&doType=$DO_Type&doDomaine={$this->DO_Domaine}&deNo=$de_no&dateDeb=$datedeb&dateFin=$datefin&client=$client&protNo=$protNo&doPiece=$doPiece");
     }
 
 public function setValueMvt(){
@@ -1236,7 +1241,7 @@ public function setValueMvtEntree (){
     ;$this->cbReplication=0;$this->cbFlag=0;
 }
 
-    public function listeFacture($depot,$datedeb,$datefin,$protNo,$client){
+    public function listeFacture($depot,$datedeb,$datefin,$protNo,$client,$doPiece){
         $listFacture = array();
         if($this->type_fac == "Transfert"){
             $listFacture = $this->listeTransfert($depot, $datedeb, $datefin,$protNo);
@@ -1258,7 +1263,7 @@ public function setValueMvtEntree (){
                                 $listFacture = $this->listeSortie($depot, $datedeb, $datefin,$protNo);
                             }
                             else
-                                $listFacture = $this->getListeFacture($depot,$datedeb ,$datefin,$client,$protNo);
+                                $listFacture = $this->getListeFacture($depot,$datedeb ,$datefin,$client,$protNo,$doPiece);
         return $listFacture;
     }
 
@@ -1488,7 +1493,8 @@ public function setValueMvtEntree (){
     }
 
 
-    public function ajoutEntete($do_pieceG,$typeFacG,$doDate,$doDateEch,$affaireG,$client,$username,$mobile,$machine_pc,$doCoord2,$doCoord3,$doCoord4,$doStatut,$latitude,$longitude,$de_no,$catTarif,$catCompta,$souche,$ca_no,$co_no,$reference,$transform=0){
+    public function ajoutEntete($do_pieceG,$typeFacG,$doDate,$doDateEch,$affaireG,$client,$username,$mobile,$machine_pc,$doCoord1,$doCoord2,$doCoord3,$doCoord4,$doStatut,$latitude,$longitude,$de_no,$catTarif,$catCompta,$souche,$ca_no,$co_no,$reference,$transform=0){
+        $DO_Coord01 = (isset($doCoord1) && $doCoord1!="") ? $doCoord1 : "";
         $DO_Coord02 = (isset($doCoord2)) ? $doCoord2 : "";
         $DO_Coord03 = (isset($doCoord3)) ? $doCoord3 : "";
         $DO_Coord04 = (isset($doCoord4)) ? $doCoord4 : "";
@@ -1499,7 +1505,7 @@ public function setValueMvtEntree (){
         $machine = (isset($machine_pc)) ? $machine_pc : "";
         $ca_no = ($ca_no=="") ? 0 : $ca_no;
 
-        $url = "/ajoutEntete&protNo={$_SESSION["id"]}&doPiece={$this->formatString($do_piece)}&typeFacture=$typeFacG&doDate=$doDate&doSouche=$souche&caNum={$this->formatString($affaire)}&ctNum={$this->formatString($client)}&machineName={$this->formatString($machine_pc)}&doCoord01=&doCoord02=$DO_Coord02&doCoord03=$DO_Coord03&doCoord04=$DO_Coord04&doStatut=$doStatut&catTarif=$catTarif&catCompta=$catCompta&deNo=$de_no&caNo=$ca_no&coNo=$co_no&reference={$this->formatString($reference)}&longitude=$longitude&latitude=$latitude";
+        $url = "/ajoutEntete&protNo={$_SESSION["id"]}&doPiece={$this->formatString($do_piece)}&typeFacture=$typeFacG&doDate=$doDate&doSouche=$souche&caNum={$this->formatString($affaire)}&ctNum={$this->formatString($client)}&machineName={$this->formatString($machine_pc)}&doCoord01=$DO_Coord01&doCoord02=$DO_Coord02&doCoord03=$DO_Coord03&doCoord04=$DO_Coord04&doStatut=$doStatut&catTarif=$catTarif&catCompta=$catCompta&deNo=$de_no&caNo=$ca_no&coNo=$co_no&reference={$this->formatString($reference)}&longitude=$longitude&latitude=$latitude";
         $docEntete = $this->getApiJson($url);
         if(isset($docEntete[0]->message))
             return $docEntete[0]->message;
@@ -3045,7 +3051,7 @@ public function setValueMvtEntree (){
             $infoEntete= $res;
 
         $var = $this->ajoutEntete($infoEntete->DO_Type,$infoEntete->DO_Piece,"Vente",$infoEntete->DO_Date,$infoEntete->DO_Date,
-            $ca_num,$infoEntete->DO_Tiers,"","","","","",$infoEntete->DO_Statut,"0","0",$infoEntete->DE_No,
+            $ca_num,$infoEntete->DO_Tiers,"","","","","","",$infoEntete->DO_Statut,"0","0",$infoEntete->DE_No,
             0,$infoEntete->N_CatCompta,$infoEntete->DO_Souche,$infoEntete->CA_No,$infoEntete->CO_No,"cloture ".$infoEntete->DO_Ref);
         $docEntete = new DocEnteteClass($var["cbMarq"]);
         $query = "SELECT MAX(AR_Ref)AR_Ref,SUM(QTE) QTE,SUM(CARAT)CARAT,SUM(CIOJ)CIOJ
@@ -3337,4 +3343,90 @@ public function setValueMvtEntree (){
         return "";
     }
 
+    public function displayListeFacture($depot,$datedeb,$datefin,$client,$admin,$protected,$protectedSuppression,$cbCreateur,$protNo){
+        ?>
+        <thead>
+        <tr>
+            <th>Numéro Pièce</th>
+            <th>Reference</th>
+            <th class="d-none"></th>
+            <th>Date</th>
+            <?php if($this->DO_Domaine==0) echo"<th>Client</th>";
+            if($this->DO_Domaine==0 || $this->DO_Domaine==2 || $this->type_fac=="Entree"||  $this->type_fac=="Sortie") echo "<th>Dépot</th>";
+            if($this->DO_Domaine == 1) echo"<th>Fournisseur</th>
+                            <th>Dépot</th>";
+            if( $this->type_fac=="Transfert_detail" ||  $this->type_fac=="Transfert" ||  $this->type_fac=="Transfert_valid_confirmation" ||  $this->type_fac=="Transfert_confirmation") echo"<th>Dépot source</th>
+                            <th>Dépot dest.</th>";
+            ?>
+            <th>Total TTC</th>
+            <?php
+            if( $this->type_fac=="Ticket" || ($this->DO_Domaine==0 && ($this->DO_Type!=0 && $this->DO_Type!=1)) ||  $this->DO_Domaine==1)
+                echo "<th>Montant r&eacute;gl&eacute;</th>
+                            <th>Statut</th>"; ?>
+            <?php if(($this->type_fac == "BonLivraison" || $this->type_fac == "Devis") && ($admin==1 || ($protected))) echo "<th></th>"; ?>
+            <?php if($protectedSuppression) echo "<th></th>"; ?>
+            <th></th>
+            <?php
+            if($cbCreateur!=2)
+                echo "<th>Créateur</th>";
+            ?>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        $listFacture = $this->listeFacture($depot,$this->objetCollection->getDate($datedeb),$this->objetCollection->getDate($datefin),$protNo,$client,"");
+        if(sizeof($listFacture)==0){
+
+        }else{
+            foreach ($listFacture as $row){
+                $message="";
+                $avance="";
+                $total = round($row->ttc);
+                if($this->type_fac=="Ticket" || $this->DO_Domaine ==1 || $this->DO_Domaine == 0){
+                    $avance = round($row->avance);
+                    if($avance==null) $avance = 0;
+                    $message =$row->statut;
+                }
+                $date = new DateTime($row->DO_Date);
+                ?>
+            <tr data-toggle="tooltip" data-placement="top" title="<?= $row->PROT_User ?>"
+                class='facture' id='article_<?= $row->DO_Piece ?>'>
+                <td id='entete'><a href='<?= $this->lien($row->cbMarq) ?>'><?= $row->DO_Piece ?></a></td>
+                <td id="DO_Ref"><?= $row->DO_Ref ?></td>
+                <td class="d-none"><span class="d-none" id='cbMarq'><?= $row->cbMarq ?></span>
+                    <span style='display:none' id='DL_PieceBL'><?= $row->DL_PieceBL ?></span>
+                    <span style='display:none' id='cbCreateur'><?= $row->PROT_User ?></span>
+                </td>
+                <td id="DO_Date"><?= $date->format('d-m-Y') ?></td>
+                <?php
+                if($this->DO_Domaine==0 || $this->DO_Domaine==1)
+                    echo "<td>{$row->CT_Intitule}</td>";
+                if($this->DO_Domaine==0 || $this->DO_Domaine==1 || $this->DO_Domaine==2 || $this->type_fac=="Entree"|| $this->type_fac=="Sortie")
+                    echo "<td>{$row->DE_Intitule}</td>";
+                if($this->type_fac=="Transfert_detail" || $this->type_fac=="Transfert" || $this->type_fac=="Transfert_confirmation" || $this->type_fac=="Transfert_valid_confirmation")
+                    echo"<th>{$row->DE_Intitule}</th>
+                        <th>{$row->DE_Intitule_dest}</th>";
+                ?>
+                <td><?= $this->objetCollection->formatChiffre($total) ?></td>
+                <?php
+                if($this->type_fac=="Ticket" || ($this->DO_Domaine==0 && ($this->DO_Type!=0 && $this->DO_Type!=1)) ||  $this->DO_Domaine==1)
+                    echo "<td>{$this->objetCollection->formatChiffre($avance)}</td>
+                    <td id='statut'>{$message}</td>";
+                if(($this->type_fac == "BonLivraison" || $this->type_fac =="Devis") && ($admin==1 || ($protected))) echo '<td><input type="button" class="btn btn-primary" value="Convertir en facture" id="transform"/></td>';
+                if(($protectedSuppression)){
+                    echo "<td id='supprFacture'>";
+                    if($protectedSuppression) //if(($type=="Ticket" || $type=="BonLivraison" || $type=="Vente" || $type=="AchatRetour" || $type=="AchatRetourC" || $type=="AchatRetourT" || $type=="AchatT" || $type=="VenteT" || $type=="VenteC" || $type=="Achat" || $type=="AchatC" || $type=="Entree"|| $type=="Sortie"|| $type=="Transfert"|| $type=="Transfert_valid_confirmation" || $type=="Transfert_confirmation" || $type=="Transfert_detail") && $avance==0)
+                        echo "<i class='fa fa-trash-o'></i></td>";
+                }
+                echo "<td>";
+                if($this->type_fac !="Transfert_valid_confirmation" && $row->DO_Imprim ==1)
+                    echo "<i class='fa fa-print'></i>";
+                echo "</td>";
+                if($cbCreateur!=2)
+                    echo "<td>{$row->PROT_User}</td>";
+                echo "</tr>";
+            }
+        }
+        echo"</tbody>";
+    }
 }

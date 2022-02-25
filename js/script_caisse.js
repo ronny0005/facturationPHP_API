@@ -97,6 +97,20 @@ jQuery(function ($) {
         var impression="export/exportMouvementCaisse.php?caisseComplete="+$("#caisseComplete").val()+"&type_mvt_ent="+$("#type_mvt_ent").val()+"&dateReglementEntete_deb="+$("#dateReglementEntete_deb").val()+"&dateReglementEntete_fin="+$("#dateReglementEntete_fin").val()+"";
         window.open(impression,'_blank');
     });
+
+    function imprimMvtCaisse(){
+
+        $("tr[id^='reglement_']").each(function () {
+            var Imprim = $(this).find("#imprimMvt");
+            var rgNo = $(this).find("#RG_No").html();
+            Imprim.click(function(){
+                var impression="export/exportMvtCaisse.php?rgNo="+rgNo;
+                window.open(impression,'_blank');
+            })
+        })
+    }
+    imprimMvtCaisse()
+
     function valeurCaisse(){
         if($('#type_mvt_lig').val()==5){
             $("#divCaisseDest").fadeOut();

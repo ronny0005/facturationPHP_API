@@ -17,14 +17,14 @@ class MenuAchat {
          $objet = new ObjetCollector();
          $protection = new ProtectionClass("","",$objet->db);
          if(isset($_SESSION["login"]))
-             $protection = new ProtectionClass($_SESSION["login"], $_SESSION["mdp"],$objet->db);
+             $protection = new ProtectionClass($_SESSION["login"], $_SESSION["mdp"]);
          if($protection->Prot_No!=""){
              switch($action) {
                 case 1 :
-                    if($protection->PROT_Right==1 || ($protection->PROT_DOCUMENT_ACHAT_FACTURE!=2)) $this->ListeFacture();  else header('Location: indexMVC.php?module=1&action=1'); //rechercher un étudiant par domaine d'activité
+                    if($protection->PROT_Right==1 || ($protection->PROT_DOCUMENT_ACHAT_FACTURE!=2)) $this->ListeFacture();  else header('Location: accueil'); //rechercher un étudiant par domaine d'activité
                     break;
                 case 2 :
-                    if($protection->PROT_Right==1 || ($protection->PROT_DOCUMENT_ACHAT_FACTURE!=2)) $this->Facture();  else header('Location: indexMVC.php?module=1&action=1'); //rechercher un étudiant par domaine d'activité
+                    if($protection->PROT_Right==1 || ($protection->PROT_DOCUMENT_ACHAT_FACTURE!=2)) $this->Facture();  else header('Location: accueil'); //rechercher un étudiant par domaine d'activité
                     break;
                     default :
                             $this->ListeFacture(); // On décide ce que l'on veut faire
