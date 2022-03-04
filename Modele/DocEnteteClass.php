@@ -36,7 +36,7 @@ class DocEnteteClass Extends Objet{
 
     function __construct($id,$db=null)
     {
-        $this->db = new DB();
+        $this->objetCollection = new ObjetCollector();
         $this->cbMarq = $id;
         $this->avance = 0;
         $this->ttc = 0;

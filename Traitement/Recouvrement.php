@@ -54,9 +54,10 @@ if(strcmp($_GET["acte"],"addReglement") == 0) {
         $montant = str_replace(" ", "", $_GET['montantRec']);
         $impute = $_GET['impute'];
         $RG_Type = $_GET['RG_Type'];
-        $reglement->addReglement($mobile, $jo_num, $rg_no_lier, $ct_num
+        $reglement->addReglement($_GET["PROT_No"], $jo_num, $rg_no_lier, $ct_num
             , $ca_no, $boncaisse, $libelle, $caissier
             , $date, $modeReglementRec, $montant, $impute, $RG_Type, true, $typeRegl);
+
 //    header("Location: ../Reglement-$typeRegl-$caissier-$ct_num-$dateReglementEntete_deb-$dateReglementEntete_fin-$modeReglementRec-$jo_num-$ca_no-$type-$cloture");
         header("Location: ../indexMVC.php?module=1&action=$valAction&typeRegl=$typeRegl&caissier=$caissier&CT_Num=$ct_num&dateReglementEntete_deb=$dateReglementEntete_deb&dateReglementEntete_fin=$dateReglementEntete_fin&mode_reglement=0&journal=$jo_num&caisse=$ca_no&type=$type&cloture=$cloture");
 }

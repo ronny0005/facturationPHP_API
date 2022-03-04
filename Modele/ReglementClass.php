@@ -464,7 +464,7 @@ if($flagCtrlTtCaisse==0) echo "<td></td>";
         $this->getApiExecute("/insertMvtCaisse&rgMontant=$rgMontant&protNo=$protNo&caNum=$caNum&libelle={$this->formatString($libelle)}&rgTypeReg=$rgTypeReg&caNo=$caNo&cgNumBanque=$cgNumBanque&isModif=$isModif&rgDate=$rgDate&joNum=$joNum&caNoDest=$caNoDest&cgAnalytique=$cgAnalytique&rgTyperegModif=$rgTyperegModif&journalRec=$journalRec&rgNoDest=$rgNoDest");
     }
 
-    public function addReglement($protNo,$mobile/*$_GET["mobile"]*/,$jo_num/*$_GET["JO_Num"]*/,$rg_no_lier/*$_GET["RG_NoLier"]*/,$ct_num /*$_GET['CT_Num']*/
+    public function addReglement($protNo,$jo_num/*$_GET["JO_Num"]*/,$rg_no_lier/*$_GET["RG_NoLier"]*/,$ct_num /*$_GET['CT_Num']*/
                                 ,$ca_no/*$_GET["CA_No"]*/,$boncaisse /*$_GET["boncaisse"]*/,$libelle /*$_GET['libelle']*/,$caissier /*$_GET['caissier']*/
                                 ,$date/*$_GET['date']*/,$modeReglementRec /*$_GET["mode_reglementRec"]*/
                                 ,$montant /*$_GET['montant']*/,$impute/*$_GET['impute']*/,$RG_Type /*$_GET['RG_Type']*/,$afficheData=true,$typeRegl=""){

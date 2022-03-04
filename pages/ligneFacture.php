@@ -269,6 +269,7 @@ if (!$isVisu)
                   if ($i % 2 == 0) $classe = "info";
                   else $classe = "";
                   $qteLigne = (round($docligne->DL_Qte * 100) / 100);
+                    $qteLivreeLigne = (round($docligne->Qte_LivreeBLCalc * 100) / 100);
                   $remiseLigne = $docligne->DL_Remise;
                   $puttcLigne = ROUND($docligne->DL_PUTTC, 2);
                   $montantHTLigne = ROUND($docligne->DL_MontantHT, 2);
@@ -317,10 +318,19 @@ if (!$isVisu)
                       echo "<td id='modif_{$docligne->cbMarq}'>
                                 <i class='fa fa-pencil fa-fw'></i>
                             </td>";
-                  if (!$isVisu) echo"
-                            <td id='suppr_{$docligne->cbMarq}'><i class='fa fa-trash-o'></i></a></td>";
+
+                  if ($type == "Livraison"){
+                      echo "<td id='editLivraison'>";
+                      if($docligne->Qte_LivreeBL!=0)
+                          echo"<i class='fa fa-list fa-fw'></i>";
+                      echo "</td>";
+                  }
+
+                  if (!$isVisu)
+                      echo"<td id='suppr_{$docligne->cbMarq}'><i class='fa fa-trash-o'></i></a></td>";
                   if($protection->PROT_CBCREATEUR!=2)
-                      echo "<td>{$docligne->getcbCreateurName()}</td>";
+                      echo "<td></td><td>{$docligne->getcbCreateurName()}</td>";
+
                   echo "</tr>";
                   $totalht = $totalht + ROUND($docligne->DL_MontantHT, 2);
                   $tva = $tva + ROUND($docligne->MT_Taxe1, 2);

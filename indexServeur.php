@@ -23,7 +23,7 @@ include("modele/P_CommunicationClass.php");
 include("modele/LiaisonEnvoiMailUser.php");
 include("Modele/LiaisonEnvoiSMSUser.php");
 include("modele/DepotEmplClass.php");
-include("modele/DepotEpmlUserClass.php");
+include("modele/DepotEmplUserClass.php");
 include("Modele/ContatDClass.php");
 include("Modele/DocLigneClass.php");
 include("Modele/ComptetClass.php");
@@ -1529,6 +1529,53 @@ switch ($val) {
                             <td class="text-right"><?= $objet->formatChiffre($totalResteAPayer) ?></td>
                         </tfoot>
     <?php
+        break;
+    case "statistiqueCaisse":
+        session_start();
+        ?>
+        <thead>
+        <tr>
+            <th>Caisse</th>
+            <th class="text-center" style="width: 150px">Solde Initial</th>
+            <th class="text-center" style="width: 150px">Entrée</th>
+            <th class="text-center" style="width: 150px">Sortie</th>
+            <th class="text-center" style="width: 150px">Solde Final</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        $totalDebit = 0;
+        $totalCredit = 0;
+        $totalSoldeInitial = 0;
+        $totalSoldeFinal = 0;
+
+        $etat = new EtatClass();
+        $listStatCaisseDuJour =  $etat->statCaisseDuJour($_GET["PROT_No"]);
+        foreach ($listStatCaisseDuJour as $value){
+            $totalDebit = $totalDebit + $value->DEBIT;
+            $totalCredit = $totalCredit + $value->CREDIT;
+            $totalSoldeInitial = $totalSoldeInitial + $value->SoldeInitial;
+            $totalSoldeFinal = $totalSoldeFinal + $value->SoldeFinal;
+            ?>
+            <tr>
+                <td><?= $value->CA_Intitule ?></td>
+                <td class="text-right"><?= $objet->formatChiffre($value->SoldeInitial) ?></td>
+                <td class="text-right"><?= $objet->formatChiffre($value->CREDIT) ?></td>
+                <td class="text-right"><?= $objet->formatChiffre($value->DEBIT) ?></td>
+                <td class="text-right"><?= $objet->formatChiffre($value->SoldeFinal) ?></td>
+            </tr>
+            <?php
+        }
+        ?>
+        </tbody>
+        <tfoot class="font-weight-bold">
+        <td>Total</td>
+        <td class="text-right"><?= $objet->formatChiffre($totalSoldeInitial) ?></td>
+        <td class="text-right"><?= $objet->formatChiffre($totalCredit) ?></td>
+        <td class="text-right"><?= $objet->formatChiffre($totalDebit) ?></td>
+        <td class="text-right"><?= $objet->formatChiffre($totalSoldeFinal) ?></td>
+        </tfoot>
+        <?php
         break;
     case "top10Vente":
         session_start();

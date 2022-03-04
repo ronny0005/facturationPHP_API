@@ -219,6 +219,7 @@ else {
                 <input type="hidden" value="2" name="action"/>
                 <input type="hidden" value="addReglement" name="acte"/>
                 <input type="hidden" value="<?= $client ?>" name="client_ligne" id="client_ligne" />
+                <input type="hidden" value="<?= $protection->Prot_No ?>" name="PROT_No" id="PROT_No" />
                 <input type="hidden" value="" name="dateReglementEntete_deb" id="dateReglementEntete_deb_ligne" />
                 <input type="hidden" value="" name="dateReglementEntete_fin" id="dateReglementEntete_fin_ligne" />
                 <input type="hidden" value="" name="mode_reglement" id="mode_reglement_ligne" />

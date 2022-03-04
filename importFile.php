@@ -23,7 +23,7 @@ include("modele/P_CommunicationClass.php");
 include("modele/LiaisonEnvoiMailUser.php");
 include("Modele/LiaisonEnvoiSMSUser.php");
 include("modele/DepotEmplClass.php");
-include("modele/DepotEpmlUserClass.php");
+include("modele/DepotEmplUserClass.php");
 include("Modele/ContatDClass.php");
 include("Modele/DocLigneClass.php");
 include("Modele/ComptetClass.php");

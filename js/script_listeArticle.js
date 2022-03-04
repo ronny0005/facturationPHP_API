@@ -58,15 +58,16 @@ var stockFlag = -1;
     sommeil = $("#sommeil").val();
     prixFlag = $("#prixFlag").val();
     stockFlag = $("#stockFlag").val();
-    var info = [            {"data": "AR_Ref",
-        "render": function(data, type, row, meta) {
-            if (type === 'display') {
-                console.log(row)
-                data = '<a href="ficheArticle-' + row.cbMarq + '">' + data + '</a>';
+    var info = [
+        {   "data": "AR_Ref",
+            "render": function(data, type, row, meta) {
+                if (type === 'display') {
+                    console.log(row)
+                    data = '<a href="ficheArticle-' + row.cbMarq + '">' + data + '</a>';
+                }
+                return data;
             }
-            return data;
-        }
-    },
+        },
         {"data": "AR_Design"},
         {"data": "FA_CodeFamille"},
         {"data": "AS_QteSto",

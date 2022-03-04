@@ -1595,7 +1595,7 @@ jQuery(function($) {
             dataType: 'html',
             async: false,
             data : "cbMarqEntete="+$("#cbMarqEntete").val()+"&typeFac="+typeFac
-                +"&flagPxAchat="+$("#flagPxAchat").val()+"&flagPxRevient="+$("#flagPxRevient").val()+"&PROT_No"+prot_no,
+                +"&flagPxAchat="+$("#flagPxAchat").val()+"&flagPxRevient="+$("#flagPxRevient").val()+"&PROT_No="+prot_no,
             success: function(data) {
                 $("#tableLigne > tbody").html(data);
             },

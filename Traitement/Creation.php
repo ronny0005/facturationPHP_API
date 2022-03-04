@@ -15,7 +15,7 @@ include("../Modele/ProtectionClass.php");
 include("../Modele/ArtClientClass.php");
 include("../Modele/MailComplete.php");
 include("../Modele/DepotEmplClass.php");
-include("../Modele/DepotEpmlUserClass.php");
+include("../Modele/DepotEmplUserClass.php");
 
 if(strcmp($_GET["acte"],"modif_article") == 0){
     $article = new ArticleClass(strtoupper($_GET["reference"]),$objet->db);

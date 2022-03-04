@@ -482,9 +482,9 @@ if($_GET["acte"]=="ligneFacture"){
     $flagPxRevient=$_GET["flagPxRevient"];
     $flagPxAchat=$_GET["flagPxAchat"];
     $protectionClass = new ProtectionClass("","",$objet->db);
-    $protectionClass->connexionProctectionByProtNo($_GET["protNo"]);
+    $protectionClass->connexionProctectionByProtNo($_GET["PROT_No"]);
     $typeDocument = $_GET["typeFac"];
-    $rows = $docEntete->listeLigneFacture();
+    $rows = $docEntete->listeLigneFacture($_GET["PROT_No"]);
     $do_domaine = $docEntete->DO_Domaine;
     $i = 0;
     $classe = "";
@@ -510,6 +510,7 @@ if($_GET["acte"]=="ligneFacture"){
             $puttcLigne = ROUND($docligne->DL_PUTTC, 2);
             $montantHTLigne = ROUND($docligne->DL_MontantHT, 2);
             $montantTTCLigne = ROUND($docligne->DL_MontantTTC, 2);
+            $qteLivreeLigne = (round($docligne->Qte_LivreeBLCalc * 100) / 100);
             if ($typeDocument == "VenteRetour") {
                 $qteLigne = -$qteLigne;
                 $montantTTCLigne = -$montantTTCLigne;

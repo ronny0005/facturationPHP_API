@@ -42,8 +42,9 @@ if(isset($_GET["type"]))
 if(isset($_GET["type"])) $type=$_GET["type"];
 if(isset($_GET["caisse"])) $caisse=$_GET["caisse"];
 if(isset($_GET["mode_reglement"])) $treglement=$_GET["mode_reglement"];
-$result=$objet->db->requete($objet->getNumContribuable());     
-$rows = $result->fetchAll(PDO::FETCH_OBJ);
+$protectioncial = new ProtectionClass("","");
+$protectioncial->connexionProctectionByProtNo($_SESSION["id"]);
+$rows = $protectioncial->getNumContribuable();
 if($rows==null){
 }
 else{
