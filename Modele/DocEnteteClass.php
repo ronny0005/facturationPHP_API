@@ -3429,4 +3429,13 @@ public function setValueMvtEntree (){
         }
         echo"</tbody>";
     }
+
+    public function getDocumentByDoDomaineDoType($typeDocument,$comptabiliser,$doPiece) {
+        return $this->getApiJson("/getDocumentByDoPieceType&typeDocument={$typeDocument}&comptabiliser={$comptabiliser}&doPiece={$doPiece}");
+    }
+
+    public function comptablisationDocument($TypeDocument,$Comptabiliser,$DO_Piece){
+        return $this->getApiExecute("/comptablisationDocument&typeDocument={$TypeDocument}&comptabiliser={$Comptabiliser}&doPiece={$DO_Piece}");
+    }
+
 }

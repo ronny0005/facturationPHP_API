@@ -264,6 +264,12 @@ switch ($val) {
         }
         break;
 
+    case "getDocumentByDoPieceType":
+        $docEntete = new DocEnteteClass(0);
+        $listDocument = $docEntete->getDocumentByDoDomaineDoType($_GET["TypeDocument"],$_GET["Comptabiliser"],$_GET["term"]);
+        echo json_encode($listDocument) ;
+        break;
+
         case "getDepotByDENoIntitule":
         session_start();
         $depot = new DepotClass(0);

@@ -85,6 +85,9 @@ class PlanComptable {
                     else
                         header('Location: accueil');
                     break;
+                case 21 :
+                    $this->comptabiliserDocuemnt();
+                    break;
                 default :
                     $this->Plan_comptable();
             }
@@ -174,6 +177,15 @@ class PlanComptable {
     public function cloture_comptable() {
         include("settings.php");
         include("pages/Structure/PlanComptable/clotureComptable.php");
+    }
+
+    public function comptabiliserDocuemnt() {
+        include("settings.php");
+        if(isset($_POST["valider"])){
+            $docEntete = new DocEnteteClass(0);
+            $docEntete->comptablisationDocument($_POST["TypeDocument"],$_POST["Comptabiliser"],$_POST["DO_Piece"]);
+        }
+        include("pages/Structure/PlanComptable/comptabiliserDocument.php");
     }
 
 }
