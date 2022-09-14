@@ -15,9 +15,9 @@ jQuery(function($){
         return vars;
     }
 
-    function autocompleteDoPiece(comptabiliser) {
+    function autocompleteDoPiece(comptabiliser,typeDocument) {
         $("#DO_Piece").autocomplete({
-            source: "indexServeur.php?page=getDocumentByDoPieceType&TypeDocument=" + $("#TypeDocument").val() + "&Comptabiliser=" + comptabiliser,
+            source: "indexServeur.php?page=getDocumentByDoPieceType&TypeDocument=" + typeDocument + "&Comptabiliser=" + comptabiliser,
             autoFocus: true,
             select: function (event, ui) {
                 event.preventDefault();
@@ -28,9 +28,13 @@ jQuery(function($){
             }
         })
     }
-    autocompleteDoPiece( $("#Comptabiliser").val())
+    autocompleteDoPiece( $("#Comptabiliser").val(),$("#TypeDocument").val())
 
     $("#Comptabiliser").change(function(){
-        autocompleteDoPiece( $("#Comptabiliser").val())
+        autocompleteDoPiece( $("#Comptabiliser").val(),$("#TypeDocument").val())
+    })
+
+    $("#TypeDocument").change(function(){
+        autocompleteDoPiece( $("#Comptabiliser").val(),$("#TypeDocument").val())
     })
 });

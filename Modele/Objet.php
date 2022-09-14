@@ -187,7 +187,8 @@ class Objet {
     }
 
     function formatAmount($valeur){
-        return str_replace(" ","",$valeur);
+        $value = str_replace(" ","",$valeur);
+        return ($value=="") ? 0 : $value;
     }
 
     public function formatChiffre($chiffre){

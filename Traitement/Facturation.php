@@ -66,6 +66,7 @@ if($_GET["acte"] =="regle") {
                     $date_ech = $_GET["date_ech"];
                 }
                 $url = "/regle&cbMarq=$cbMarq&typeFacture={$docEntete->formatString($_GET["typeFacture"])}&protNo={$_SESSION["id"]}&valideRegle=$valideRegle&valideRegltImprime=".((isset($_GET["valideRegltImprime"])) ? 1:0)."&montantAvance=$mtt_avance&modeReglement=$mode_reglement&dateReglt={$objet->getDate($date_reglt)}&libReglt={$docEntete->formatString($lib_reglt)}&dateEch={$objet->getDate($date_ech)}";
+                echo $url;
                 $docEntete->getApiString($url);
             }
         }

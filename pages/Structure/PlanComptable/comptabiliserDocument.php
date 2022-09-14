@@ -15,7 +15,7 @@ $protection = new ProtectionClass($_SESSION["login"], $_SESSION["mdp"]);
 <script src="js/Structure/Comptabilite/script_comptabiliserDocument.js?d=<?php echo time(); ?>"></script>
 <section class="enteteMenu bg-light p-2 mb-3">
     <h3 class="text-center text-uppercase">
-        Comptabiliser Document
+        Decomptabiliser Document
     </h3>
 </section>
 
@@ -39,7 +39,7 @@ if(isset($_POST["valider"])){
                 <label>Option</label>
                 <select class="form-control" name="Comptabiliser" id="Comptabiliser">
                     <option value="decomptabiliser">Décomptabiliser</option>
-                    <option value="comptabiliser">Comptabiliser</option>
+                    <!--<option value="comptabiliser">Comptabiliser</option> -->
                 </select>
             </div>
             <div class="col-6 col-sm-2">

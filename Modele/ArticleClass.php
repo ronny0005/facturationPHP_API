@@ -105,8 +105,10 @@ class ArticleClass Extends Objet{
     function __construct($id,$db=null)
     {
         $this->db = new DB();
-        parent::__construct($this->table, $id, 'AR_Ref',$db);
-        if (sizeof($this->data) > 0) {
+
+        $this->data = $this->getApiJson("/getF_ArticleJSON&arRef=$id");
+        $this->cbMarq = 0;
+        if ($this->data!=NULL && sizeof($this->data) > 0) {
             $this->AR_Ref = $this->data[0]->AR_Ref;
             $this->AR_Design = $this->data[0]->AR_Design;
             $this->FA_CodeFamille = $this->data[0]->FA_CodeFamille;
